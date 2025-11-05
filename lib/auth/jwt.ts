@@ -7,6 +7,7 @@ export interface JWTPayload {
   dealerId: string;
   email: string;
   role: string;
+  [key: string]: unknown;
 }
 
 export async function signJWT(payload: JWTPayload): Promise<string> {
