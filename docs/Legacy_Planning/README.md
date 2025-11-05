@@ -4,6 +4,15 @@ Central reference for HRAFN architecture, security, and agentic flows.
 
 ---
 
+## Current Plan (12-Week Demo)
+
+- **[Development Plan](./development_plan.md)** — Phased implementation strategy (Next.js full-stack, ETL, DRAGIN, NLQ, agents, benchmarks)
+- **[Client Presentation Guide](./presentation_guide.md)** — Slides and diagrams aligned to the development plan
+
+The sections below are reference design and specifications used to inform the current plan.
+
+---
+
 ## Table of Contents
 
 ### Security & Governance

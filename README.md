@@ -13,63 +13,72 @@ HRAFN is an alpha-stage dealer intelligence and recommendation engine that inges
 
 ```mermaid
 graph TB
-    subgraph Sources["Data Sources"]
-        DMS[Dealer Systems]
-        WEBECOM[Web and E-comm]
+    subgraph Frontend["Frontend (Next.js 14 App Router)"]
+        NEXTUI[React + TypeScript + shadcn/ui]
     end
-    
-    subgraph Processing["Processing Layer"]
-        DRAGIN[DRAGIN Retriever]
-        AGENTS[Agents Huginn Munin]
-        CRAWL[Playwright Crawlers]
+
+    subgraph API["Backend (Next.js API Routes - Server Only)"]
+        APIR[API Routes and Server Actions]
+        AUTH[Auth and JWT Middleware]
+        RATE[Rate Limiting and Validation]
     end
-    
-    subgraph Storage["Storage & Security"]
-        SUPABASE[(Supabase Postgres)]
+
+    subgraph External["External Systems"]
+        TEKION[Tekion DMS]
+        CDK[CDK Global]
+        WEB[Competitor Websites]
     end
-    
-    subgraph API["API Layer"]
-        VERCEL[Vercel Dashboard API]
+
+    subgraph AI["AI Layer"]
+        OPENAI[OpenAI Dev to Llama Prod]
+        DRAGIN[DRAGIN Retrieval pgvector]
+        AGENTS[Specialist Agents Inventory first]
     end
-    
-    subgraph Frontend["Frontend"]
-        REACT[React TypeScript]
-        UI[shadcn Components]
+
+    subgraph Storage["Storage and Security"]
+        SUPABASE[(Supabase Postgres RLS)]
     end
-    
-    DMS --> DRAGIN
-    WEBECOM --> CRAWL
-    CRAWL --> DRAGIN
-    DRAGIN --> AGENTS
-    AGENTS --> SUPABASE
-    SUPABASE --> VERCEL
-    VERCEL --> REACT
-    REACT --> UI
+
+    NEXTUI -->|HTTP| APIR
+    APIR -->|Service Role| SUPABASE
+    APIR -->|OAuth/API Keys| TEKION
+    APIR -->|OAuth/API Keys| CDK
+    APIR -->|Crawlers| WEB
+    APIR --> OPENAI
+    OPENAI --> DRAGIN
+    DRAGIN --> SUPABASE
 ```
 
 **Legend:**
-- **Dealer Systems**: DMS, CRM, Inventory, Scheduler
-- **Web and E-comm**: Dealer websites, e-commerce platforms
-- **DRAGIN Retriever**: Distributed RAG over integrations - retrieval, indexing, normalization
-- **Agents Huginn Munin**: Huginn (monitoring/alerts), Munin (recommendations/actions)
-- **Playwright Crawlers**: Automated web scraping for competitive intelligence
-- **Supabase Postgres**: PostgreSQL with RLS, Auth, Object Storage
-- **Vercel Dashboard API**: Next.js API routes for dealer dashboard
-- **React TypeScript**: Frontend application
-- **shadcn Components**: UI component library
+- **Next.js API Routes**: Single server surface; all secrets server-side
+- **DRAGIN Retrieval**: Distributed RAG across SQL + vectors (pgvector)
+- **Specialist Agents**: Inventory-first for demo; others follow
+- **Supabase Postgres**: RLS-enforced multi-tenant database
+- **OpenAI → Llama**: Dev-time OpenAI, production migration to Llama
 
 ### Core Components
-- **Frontend**: Vite + React 18 + TypeScript with shadcn/ui components
-- **Backend**: Supabase (Postgres, Edge Functions, Auth, Object Storage)
-- **Intelligence Layer**: DRAGIN (retrieval/index/normalization) + Huginn/Munin agents
-- **Security**: Row Level Security (RLS) for dealer isolation, aggregate-safe analytics
-- **APIs**: Dealer integration adapters, competitive crawlers
+- **Full-Stack Framework**: Next.js 14 (App Router) — React 18 + TypeScript + shadcn/ui
+- **Backend Layer**: Next.js API Routes for all secure operations (no client DB access)
+- **Database**: Supabase Postgres with RLS; accessed via server-only service role
+- **Intelligence**: DRAGIN retrieval (pgvector) + specialist agents (Inventory-first)
+- **Integrations**: Tekion/CDK adapters and optional Playwright-based competitive crawlers
+- **APIs**: Single surface area at Next.js API routes (rate limited, validated)
+
+### Security Essentials
+- Credentials and service role keys are server-side only; never in the browser
+- All DB reads/writes go through Next.js API routes; RLS enforced
+- JWT includes `dealer_id` claim; middleware verifies and scopes requests
+- Basic rate limiting and input validation on API routes
 
 ## 📁 Repository Structure
 - `/docs`: Documentation and design specs
 
 ## 📚 Documentation
 For a full table of contents and detailed guides, please refer to the [docs/README.md](docs/README.md).
+
+### Planning and Timeline
+- Development Plan: [docs/Legacy_Planning/development_plan.md](docs/Legacy_Planning/development_plan.md)
+- Client Presentation Guide: [docs/Legacy_Planning/presentation_guide.md](docs/Legacy_Planning/presentation_guide.md)
 
 ## About
 HRAFN is an alpha-stage platform for dealer intelligence and recommendations, emphasizing recommendation logs, dealer isolation, and aggregate-safe analytics. The platform uses secure multi-tenant architecture with RLS enforcement and comprehensive data pipelines for automated competitive analysis.
