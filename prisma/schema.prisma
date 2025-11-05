@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Dealer {
+  id          String             @id @default(uuid()) @db.Uuid
+  name        String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  users       UserDealerRole[]
+  sessions    Session[]
+}
+
+model User {
+  id          String             @id @default(uuid()) @db.Uuid
+  email       String             @unique
+  passwordHash String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  roles       UserDealerRole[]
+  sessions    Session[]
+}
+
+enum Role {
+  admin
+  manager
+  viewer
+}
+
+model UserDealerRole {
+  id        String  @id @default(uuid()) @db.Uuid
+  userId    String  @db.Uuid
+  dealerId  String  @db.Uuid
+  role      Role
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dealerId, role])
+  @@index([dealerId])
+  @@index([userId])
+}
+
+model Session {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  dealerId    String   @db.Uuid
+  jwtId       String   @unique
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dealer Dealer @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@index([dealerId])
+  @@index([userId])
+}
+
+
