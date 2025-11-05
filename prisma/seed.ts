@@ -1,5 +1,6 @@
-import { PrismaClient, Prisma, $Enums } from "@prisma/client";
+import { PrismaClient, $Enums } from "@prisma/client";
 import crypto from "crypto";
+import { hashPassword } from "../lib/auth/password";
 
 const prisma = new PrismaClient();
 
@@ -14,7 +15,7 @@ async function main() {
   });
 
   const password = "devpassword";
-  const passwordHash = crypto.createHash("sha256").update(password).digest("hex");
+  const passwordHash = await hashPassword(password);
 
   const user = await prisma.user.upsert({
     where: { email: "dev@dealer.test" },
@@ -51,6 +52,7 @@ async function main() {
 
 main()
   .catch((e) => {
+    console.log("Error seeding database");
     console.error(e);
     process.exit(1);
   })
