@@ -2,47 +2,6 @@
 
 HRAFN is an alpha-stage dealer intelligence and recommendation engine that ingests dealer integration data and powers recommendations, execution logs, and aggregate-safe benchmarking. The platform provides dealers with real-time insights into inventory, sales, and competitive positioning through modern React dashboards and secure Supabase backend.
 
-## Quick Links
-- [Documentation Overview](docs/README.md)
-- [Architecture Overview](docs/architecture_overview.md)
-- [Data Model](docs/data_model.md)
-- [Database Schema](docs/database_schema.md)
-- [Security & RLS](docs/security_rls.md)
-
-## 🚀 Quick Start (10 Minutes to Running App)
-
-### Prerequisites
-- **Node.js**: v18+ (check with `node --version`)
-- **Git**: Latest version
-- **Supabase CLI**: Install with `npm install -g supabase`
-
-### 1. Clone & Install
-```bash
-git clone https://github.com/your-org/hrafn_dealer.git
-cd hrafn_dealer
-npm install
-```
-
-### 2. Environment Setup
-```bash
-# Copy environment template
-cp .env.template .env
-
-# Edit .env with your values (see Environment Variables section below)
-```
-
-### 3. Database Setup
-```bash
-# Start local Supabase
-supabase start
-
-# Apply all migrations
-supabase db reset
-
-# Verify setup
-supabase status
-```
-
 ## Philosophy: AI-Native by Design
 
 - Utilizes autonomous agents (Huginn, Munin) to continuously gather and process dealer data.
@@ -108,9 +67,6 @@ graph TB
 
 ## 📁 Repository Structure
 - `/docs`: Documentation and design specs
-- `/supabase`: Database schema, migrations, and Supabase configurations
-- `/src`: Frontend application source code
-- `/public`: Static assets and public files
 
 ## 📚 Documentation
 For a full table of contents and detailed guides, please refer to the [docs/README.md](docs/README.md).
