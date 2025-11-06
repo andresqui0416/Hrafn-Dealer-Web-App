@@ -15,7 +15,7 @@ export function Footer() {
     <footer
       className={cn(
         "border-t border-zinc-200 py-6 text-sm dark:border-zinc-800",
-        shouldHide && "hidden"
+        shouldHide && "hidden",
       )}
     >
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4">
@@ -45,4 +45,3 @@ export function Footer() {
     </footer>
   );
 }
-

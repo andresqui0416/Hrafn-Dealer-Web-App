@@ -58,6 +58,7 @@ sequenceDiagram
 ```
 
 **Legend:**
+
 - **Dealer GM**: Dealer General Manager (user)
 - **Dealer Copilot**: Natural language query interface (NLQ UI)
 - **Edge API**: Supabase Edge Function API
@@ -70,4 +71,5 @@ sequenceDiagram
 - **Web Competitor Sites**: Web scraping for competitor analysis
 
 ## Change Log
+
 - v0.1: Initial draft defining end-to-end NLQ co-pilot flow for pricing recommendations

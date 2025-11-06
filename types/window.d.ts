@@ -3,4 +3,3 @@ interface WindowEventMap {
   "auth:login": Event;
   "auth:logout": Event;
 }
-

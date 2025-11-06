@@ -97,6 +97,7 @@ flowchart LR
 ```
 
 **Legend:**
+
 - **Cron Temporal Cloud scheduler**: Scheduled job orchestration (Cron, Temporal, or cloud scheduler)
 - **Website Comps**: Website and competitor analysis
 - **Web Comps Agent**: Agent for web scraping and competitive intelligence
@@ -116,29 +117,36 @@ flowchart LR
 ## Baseline Math
 
 ### Cohorting
+
 - `cohort_id` := hash(concat(region, segment, drivetrain, price_band, model_year_band)).
 - Required keys: `region`, `segment`. Optional keys used when coverage ≥ 65%.
 - Cohorts regenerate nightly; IDs are stable unless keys change.
 
 ### Windows & Aggregation
+
 - Default baseline window: last 90 days rolling; report window configurable (e.g., last 7/30 days).
 - Aggregation grain: `day` for time series, `month` for inventory turns.
 - Metrics per `cohort_id, day` from aggregate tables (`aggregate_inventory_metrics`, `aggregate_offer_performance`).
 
 ### Outlier Handling
+
 - Winsorize each metric at [p1, p99] within cohort-day before computing baselines.
 - Minimum distinct dealer contributors per cell: **N ≥ 5** (strict). Cells failing this are suppressed (see Suppression Rules).
 
 ### Percentiles & Central Tendency
+
 For each `(cohort_id, day, metric)`:
+
 - Compute `p10, p25, p50, p75, p90` using t-digest or P² algorithm for streaming accuracy.
 - Compute `mean` and `stddev` with Welford’s algorithm.
 
 ### Seasonality & Smoothing
+
 - 7‑day moving average for daily series; 4‑week moving average for weekly series.
 - Optional STL decomposition for seasonal adjustment on long horizons (> 180 days).
 
 ### Scores
+
 - **Z‑score:** `z = (value - mean) / stddev` (guard: if `stddev < 1e-6`, set `z = 0`).
 - **Uplift vs Median:** `uplift_pct = (value - p50) / NULLIF(p50,0)`.
 - **Anomaly Score:** `anomaly = sigmoid(|z|) * coverage_weight`, where `coverage_weight = min(1, N/20)`.
@@ -150,16 +158,20 @@ Outputs populate `benchmarks_baselines` (percentiles) and `benchmarks_scores` (v
 ## Suppression & Privacy Rules
 
 ### K‑Anonymity
+
 - Suppress any cell with contributor count **N < 5**.
 - Secondary suppression: if only one cell in a group is suppressed and the remainder enables inference, suppress the next smallest cell to maintain k‑anonymity.
 
 ### Dominance Rule
+
 - If the largest contributor accounts for > 60% of the cell’s total weight, suppress the cell.
 
 ### Noise (Optional DP)
+
 - For public or OEM‑wide exports, add Laplace noise with `ε = 8` at the cohort‑day level to `p50` and means. Internal dealer dashboards use raw aggregates with suppression only.
 
 ### Role Enforcement
+
 - Aggregates are **SELECT‑only** behind the `analytics` role. No dealer identifiers present.
 
 Suppressed cells return `null` values plus `suppressed=true` and `reason` in the payload.
@@ -167,6 +179,7 @@ Suppressed cells return `null` values plus `suppressed=true` and `reason` in the
 ---
 
 ## Data Quality Gates
+
 - Reject cohort‑day if coverage (dealers reporting) < 50% of the expected cohort members for that day.
 - Flag and exclude any source where metric jumps > 5σ day‑over‑day before baseline computation.
 
@@ -198,6 +211,7 @@ WHERE v.contributors >= 5 AND v.dominance_pct <= 0.60;
 ```
 
 ## Change Log
+
 - v0.1: Initial draft defining agentic architecture with benchmarking, baseline math, and suppression rules
 
 ---

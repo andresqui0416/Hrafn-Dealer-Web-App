@@ -34,4 +34,3 @@ export function corsMiddleware(request: NextRequest): NextResponse | null {
 
   return null;
 }
-

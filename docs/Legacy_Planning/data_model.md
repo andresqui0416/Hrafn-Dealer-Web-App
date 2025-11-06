@@ -13,6 +13,7 @@ This document outlines the updated HRAFN database schema designed to support sec
 The core of the platform is built around strict **row-level security (RLS)** to ensure each dealer's data is securely isolated. All dealer-scoped tables include a `dealer_id` foreign key and enforce RLS policies that restrict access to data only for the authenticated dealer.
 
 ### Key Principles:
+
 - **Dealer Integration Data** replaces previous CDK-specific terminology to accommodate diverse dealer data sources.
 - All transactional and operational data is scoped by `dealer_id`.
 - RLS policies use JWT claims to enforce strict data visibility.
@@ -28,6 +29,7 @@ To enable market benchmarking, competitive intelligence, and aggregate analytics
 All aggregate tables must enforce k-anonymity (suppress cells with N<5) and are SELECT-only for analytics roles.
 
 ### Features:
+
 - Aggregated tables support cross-dealer comparisons without compromising individual dealer privacy.
 - Benchmark metrics such as pricing trends, inventory velocity, and incentive effectiveness.
 - Designed for high-performance analytical queries.
@@ -48,7 +50,7 @@ erDiagram
     dealers ||--o{ sales_leads : "manages leads"
     dealers ||--o{ sales_activity_history : "tracks activities"
     dealers ||--o{ recommendation_logs : "logs recommendation executions"
-    
+
     %% Aggregate Intelligence Domain
     aggregate_inventory_metrics {
         text model_family PK
@@ -61,7 +63,7 @@ erDiagram
         integer total_listings
         timestamptz updated_at
     }
-    
+
     aggregate_offer_performance {
         text offer_type PK
         text model_family PK
@@ -73,7 +75,7 @@ erDiagram
         integer total_offers
         timestamptz updated_at
     }
-    
+
     %% Dealer-Scoped Tables
     dealers {
         uuid id PK
@@ -82,7 +84,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     dealer_sites {
         uuid id PK
         uuid dealer_id FK
@@ -93,7 +95,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     inventory_listings {
         uuid id PK
         uuid dealer_id FK
@@ -112,7 +114,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     offers {
         uuid id PK
         uuid dealer_id FK
@@ -133,7 +135,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     sales_leads {
         uuid id PK
         uuid dealer_id FK
@@ -142,7 +144,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     sales_activity_history {
         uuid id PK
         uuid dealer_id FK
@@ -153,7 +155,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     recommendation_logs {
         uuid id PK
         uuid dealer_id FK
@@ -225,21 +227,24 @@ erDiagram
 ## 5. Indexing Strategy & Performance Considerations
 
 ### Dealer-Scoped Tables
+
 - **Index on `dealer_id`** for all dealer-scoped tables to optimize RLS-filtered queries.
 - **Unique constraints** on `(dealer_id, vin)` in `inventory_listings` to prevent duplicates.
 - **Covering indexes** on frequently queried columns such as `model_family`, `offer_type`, and `expiry` in `offers`.
 - **Timestamps indexing** for efficient incremental data retrieval and synchronization.
 
 ### Aggregate Tables
+
 - **Composite primary keys** on `(model_family, day)` or `(offer_type, model_family, day)` for partitioning and fast lookups.
 - **Indexes on date columns** to support time-series analytics.
 - **Materialized views** or summary tables to pre-aggregate data for dashboard performance.
 - Indexes on region and cohort_id to support cohort and geography filters.
 - Consider partial indexes per region for hot markets.
 
-### Benchmark & Snapshot Tables  
-- Partition by `day` for fast time-series queries.  
-- Index on `cohort_id` or `region` where applicable.  
+### Benchmark & Snapshot Tables
+
+- Partition by `day` for fast time-series queries.
+- Index on `cohort_id` or `region` where applicable.
 - Refresh materialized views nightly or more frequently if SLA requires.
 - Use BRIN indexes on `day` for large partitions.
 
@@ -298,4 +303,5 @@ CREATE INDEX idx_reco_logs_snapshots_dealer_day ON recommendation_logs_snapshots
 This updated data model supports HRAFN's pivot towards dealer intelligence, enabling secure, scalable, and performant dealer data management alongside robust aggregate analytics for market benchmarking and recommendation execution.
 
 ## Change Log
+
 - v0.1: Initial draft with comprehensive dealer-scoped and aggregate table definitions, RLS policies, and indexing strategy

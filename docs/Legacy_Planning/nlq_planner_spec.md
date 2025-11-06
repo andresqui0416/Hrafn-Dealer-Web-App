@@ -9,6 +9,7 @@ This document defines the natural-language-to-query (NLQ) planning layer used by
 ---
 
 ## 1) Purpose and Scope
+
 - Convert dealer/operator questions into safe, auditable data queries.
 - Enforce privacy: never bypass RLS; cross‑dealer questions must hit aggregate/benchmark tables only.
 - Produce stable queries for parity over time and reproducible analytics.
@@ -38,6 +39,7 @@ sequenceDiagram
 ```
 
 **Legend:**
+
 - **User Agent**: User or automated agent making the query
 - **NLQ Planner**: Natural language query planning engine
 - **Guardrails Policy Allowlist**: Policy enforcement and query allowlist validation
@@ -47,17 +49,24 @@ sequenceDiagram
 ---
 
 ## 3) Inputs and Outputs
+
 **Input JSON**
+
 ```json
 {
   "utterance": "text",
-  "actor": {"role":"dealer_user|oem_user|system_agent", "dealer_id":"uuid|null", "region":"string|null"},
-  "context": {"now":"ISO8601", "timezone":"America/New_York", "locale":"en-US"},
-  "constraints": {"privacy":"strict", "max_latency_ms": 1500}
+  "actor": {
+    "role": "dealer_user|oem_user|system_agent",
+    "dealer_id": "uuid|null",
+    "region": "string|null"
+  },
+  "context": { "now": "ISO8601", "timezone": "America/New_York", "locale": "en-US" },
+  "constraints": { "privacy": "strict", "max_latency_ms": 1500 }
 }
 ```
 
 **Output JSON**
+
 ```json
 {
   "plan_id": "ulid",
@@ -72,9 +81,10 @@ sequenceDiagram
 ---
 
 ## 4) Planner Stages
+
 1. **Intent Parse**: classify task (trend, compare, rank, lookup, explain).
 2. **Entity Resolve**: resolve time window, region, cohort, vehicle filters; map synonyms to canonical terms (see `metrics_catalog.md` for metric names).
-3. **Privacy Gate**: 
+3. **Privacy Gate**:
    - If request involves other dealers → route to aggregate domain.
    - If actor lacks `dealer_id` → block dealer‑scoped facts.
 4. **Template Selection**: choose from allow‑listed catalog:
@@ -88,6 +98,7 @@ sequenceDiagram
 ---
 
 ## 5) SQL Template & Proc Catalog (excerpt)
+
 > Full list lives in `docs/stored_procs_catalog.md`. Below shows required signatures.
 
 - `sp_aggregate_sales_trend(region text, segment text, start date, end date) RETURNS TABLE(day date, sales int)`
@@ -95,6 +106,7 @@ sequenceDiagram
 - `sp_my_sales_by_model(dealer uuid, start date, end date) RETURNS TABLE(model text, sales int)`
 
 **Template Grammar**
+
 ```
 -- tpl_sales_trend_v1
 SELECT day, SUM(sales_volume) AS sales
@@ -103,11 +115,13 @@ WHERE region = $1 AND vehicle_segment = $2 AND day BETWEEN $3 AND $4
 GROUP BY day
 ORDER BY day;
 ```
+
 Rules: positional parameters only; no string concatenation; reference only tables in the allowlist.
 
 ---
 
 ## 6) Security & Guardrails
+
 - Execute with **least‑privilege roles** (`authenticated` for dealer facts, `analytics` for aggregates).
 - Enforce **RLS** at the DB; agents never receive elevated tokens.
 - **No cross‑dealer joins** on dealer‑scoped tables.
@@ -118,6 +132,7 @@ Rules: positional parameters only; no string concatenation; reference only table
 ---
 
 ## 7) Error Handling & Fallbacks
+
 - **Ambiguous intent** → ask for one clarifying field or fallback to a safe default window (last 30 days).
 - **No data after privacy clamp** → return explanation and a suggested aggregate query.
 - **Timeout** → degrade to cached materialized view where available.
@@ -126,6 +141,7 @@ Rules: positional parameters only; no string concatenation; reference only table
 ---
 
 ## 8) Caching & Determinism
+
 - Cache compiled plans for identical `(actor, intent, params)` keys for 15 minutes.
 - Prefer materialized views when available (`etl_schedule.md`).
 - Include `plan_id` and `template_version` so repeat runs are identical.
@@ -133,6 +149,7 @@ Rules: positional parameters only; no string concatenation; reference only table
 ---
 
 ## 9) Testing
+
 - **Unit**: intent classification, entity resolution, parameter binding.
 - **Policy**: simulate JWTs; assert RLS blocks cross‑dealer access.
 - **Golden Queries**: snapshot expected SQL and result shapes per template version.
@@ -140,6 +157,7 @@ Rules: positional parameters only; no string concatenation; reference only table
 - **Security**: fuzz inputs to verify no template injection.
 
 Acceptance criteria:
+
 - 100% of planner outputs are parameterized.
 - 0 incidents of cross‑dealer leakage in test suite.
 - Provenance includes metric doc links for all outputs.
@@ -147,6 +165,7 @@ Acceptance criteria:
 ---
 
 ## 10) Telemetry
+
 - Log `plan_id`, actor role, template/proc, version, latency, and row counts.
 - Emit counters for privacy re‑routes and k‑anonymity suppressions.
 - Alert on unusual query fan‑out or sustained cache misses.
@@ -156,18 +175,22 @@ Acceptance criteria:
 ## 11) Examples
 
 **A. Dealer‑only question**
+
 - Utterance: "Show my F‑150 sales by model last week."
 - Route: dealer facts → `sp_my_sales_by_model(dealer_id, start, end)`
 
 **B. Cross‑dealer trend**
+
 - Utterance: "Are SUV sales up in my region?"
 - Route: aggregate → `sp_aggregate_sales_trend(region, 'SUV', start, end)`
 
 **C. Benchmark position**
+
 - Utterance: "Where am I vs peers on days‑on‑lot?"
 - Route: benchmarks → `sp_benchmark_percentiles(cohort_id, 'avg_days_on_lot', start, end)`
 
 ---
 
 ## 12) Change Log
+
 - v0.1: Initial draft. Defines planner flow, guardrails, templates, and testing requirements.

@@ -57,12 +57,14 @@ The sections below are reference design and specifications used to inform the cu
 All changes must go through PR review with Security and Data Engineering sign-off.
 
 ### Review Requirements
+
 - **Schema Changes**: Require Data Engineering and Security review
 - **RLS Policy Changes**: Require Security team approval
 - **Stored Procedure Changes**: Require Data Engineering sign-off
 - **Documentation Updates**: Maintain cross-links and change logs
 
 ### Style Guide
+
 - Use "HRAFN" in all caps consistently
 - Define abbreviations on first use
 - Keep prose concise and bulleted where possible

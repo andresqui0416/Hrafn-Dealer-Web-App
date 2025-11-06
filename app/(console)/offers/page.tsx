@@ -8,5 +8,3 @@ export default function OffersPage() {
     </div>
   );
 }
-
-

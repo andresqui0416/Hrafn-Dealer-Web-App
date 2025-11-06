@@ -45,4 +45,3 @@ export async function authMiddleware(request: NextRequest): Promise<NextResponse
 
   return null; // Continue to next middleware
 }
-
