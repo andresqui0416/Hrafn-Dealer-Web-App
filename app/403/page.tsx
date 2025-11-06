@@ -13,8 +13,8 @@ export default function ForbiddenPage() {
       <Image src="/logo.png" alt="Hrafn AI" width={48} height={48} />
       <h1 className="text-3xl font-semibold tracking-tight">Access denied</h1>
       <p className="max-w-prose text-zinc-600 dark:text-zinc-400">
-        You don’t have permission to view this page. If you believe this is an error, please
-        contact your administrator.
+        You don’t have permission to view this page. If you believe this is an error, please contact
+        your administrator.
       </p>
       <div className="flex items-center gap-3">
         <Button asChild>
@@ -27,5 +27,3 @@ export default function ForbiddenPage() {
     </main>
   );
 }
-
-

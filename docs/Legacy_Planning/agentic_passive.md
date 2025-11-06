@@ -87,6 +87,7 @@ flowchart LR
 ```
 
 **Legend:**
+
 - **Cron Temporal Cloud scheduler**: Scheduled job orchestration (Cron, Temporal, or cloud scheduler)
 - **Website Comps**: Website and competitor analysis
 - **Web Comps Agent**: Agent for web scraping and competitive intelligence
@@ -100,4 +101,5 @@ flowchart LR
 - **Action Queue**: Queue for pending actions
 
 ## Change Log
+
 - v0.1: Initial draft defining core agentic architecture with specialist agents and orchestration flow
