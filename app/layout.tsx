@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-
+import { AuthProvider } from "@/contexts/auth-context";
+import { Footer } from "@/components/footer";
 import "./globals.css";
-
+import { Header } from "@/components/header";   
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -28,62 +26,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head> 
+      <head>
         <link rel="icon" href="/logo.png" />
       </head>
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
-
-        <div className="min-h-screen bg-background font-sans text-foreground">
-          {/* Header */}
-          <header
-            className="sticky top-0 z-10 border-b border-white/15 backdrop-blur"
-            style={{ background: "color-mix(in oklab, var(--background) 50%, #ffffff21)" }}
-          >
-            <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
-              <div className="flex items-center gap-3">
-                <Link href="/">
-                  <Image src="/logo.png" alt="Hrafn AI" width={32} height={32} />
-                </Link>
-                <span className="text-lg font-semibold text-foreground">Hrafn AI</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button asChild>
-                  <Link href="/login">
-                    Login
-                  </Link>
-                </Button>
-              </div>
+        <AuthProvider>
+          <div className="min-h-screen bg-background font-sans text-foreground">
+            <Header />
+            <div className="min-h-[calc(100vh-65px)]">
+              <main className="mx-auto w-full">
+                {children}
+              </main>
             </div>
-          </header>
-          {children}
-          {/* Footer */}
-          <footer className="border-t border-zinc-200 py-6 text-sm dark:border-zinc-800">
-            <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4">
-              <span>© {new Date().getFullYear()} Hrafn AI</span>
-              <div className="flex items-center gap-4">
-                <a href="/docs" className="hover:underline">
-                  Docs
-                </a>
-                <a
-                  href="https://www.hrafn.ai/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                >
-                  Website
-                </a>
-                <a
-                  href="https://github.com/HRAFNAI/dealer_webapp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                >
-                  GitHub
-                </a>
-              </div>
-            </div>
-          </footer>
-        </div>
+            <Footer />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

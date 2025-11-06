@@ -16,29 +16,29 @@ graph TB
     subgraph Frontend["Frontend (Next.js 14 App Router)"]
         NEXTUI[React + TypeScript + shadcn/ui]
     end
-
+    
     subgraph API["Backend (Next.js API Routes - Server Only)"]
         APIR[API Routes and Server Actions]
         AUTH[Auth and JWT Middleware]
         RATE[Rate Limiting and Validation]
     end
-
+    
     subgraph External["External Systems"]
         TEKION[Tekion DMS]
         CDK[CDK Global]
         WEB[Competitor Websites]
     end
-
+    
     subgraph AI["AI Layer"]
         OPENAI[OpenAI Dev to Llama Prod]
         DRAGIN[DRAGIN Retrieval pgvector]
         AGENTS[Specialist Agents Inventory first]
     end
-
+    
     subgraph Storage["Storage and Security"]
         SUPABASE[(Supabase Postgres RLS)]
     end
-
+    
     NEXTUI -->|HTTP| APIR
     APIR -->|Service Role| SUPABASE
     APIR -->|OAuth/API Keys| TEKION
