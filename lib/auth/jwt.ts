@@ -1,6 +1,8 @@
 import { SignJWT, jwtVerify } from "jose";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret-change-in-production");
+const secret = new TextEncoder().encode(
+  process.env.JWT_SECRET || "dev-secret-change-in-production",
+);
 
 export interface JWTPayload {
   userId: string;
@@ -26,4 +28,3 @@ export async function verifyJWT(token: string): Promise<JWTPayload | null> {
     return null;
   }
 }
-

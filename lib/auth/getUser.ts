@@ -18,4 +18,3 @@ export function getUserFromRequest(request: NextRequest): JWTPayload | null {
     role,
   };
 }
-

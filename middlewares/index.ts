@@ -21,4 +21,3 @@ export async function composeMiddlewares(
   }
   return NextResponse.next();
 }
-

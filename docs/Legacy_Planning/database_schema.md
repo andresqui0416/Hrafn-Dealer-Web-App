@@ -1,7 +1,9 @@
 # Dealer Intelligence Database Schema — V0.0 (Alpha)
 
 ## Overview
+
 Secure, high‑performance schema for dealer‑scoped intelligence, recommendations, and execution. Design goals:
+
 - **Strict dealer isolation** via RLS on all dealer‑scoped tables.
 - **Aggregate‑safe benchmarking** via sanitized cross‑dealer tables with no `dealer_id`.
 - **Operational efficiency** for ingestion, retrieval, and agent execution logging.
@@ -11,6 +13,7 @@ Secure, high‑performance schema for dealer‑scoped intelligence, recommendati
 > Assumes an existing `dealers` table with `id UUID PRIMARY KEY`.
 
 ### Dealer Sites
+
 ```sql
 CREATE TABLE IF NOT EXISTS dealer_sites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -26,6 +29,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_dealer_sites_dealer_site_url ON dealer_site
 ```
 
 ### Inventory Listings
+
 ```sql
 CREATE TABLE IF NOT EXISTS inventory_listings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -49,6 +53,7 @@ CREATE TABLE IF NOT EXISTS inventory_listings (
 ```
 
 ### Price History (per‑listing)
+
 ```sql
 CREATE TABLE IF NOT EXISTS price_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -62,6 +67,7 @@ CREATE TABLE IF NOT EXISTS price_history (
 ```
 
 ### Offers
+
 ```sql
 CREATE TABLE IF NOT EXISTS offers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -87,6 +93,7 @@ CREATE INDEX IF NOT EXISTS idx_offers_dealer_model_expiry ON offers(dealer_id, m
 ```
 
 ### Sales Leads
+
 ```sql
 CREATE TABLE IF NOT EXISTS sales_leads (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -99,6 +106,7 @@ CREATE TABLE IF NOT EXISTS sales_leads (
 ```
 
 ### Sales Activity History
+
 ```sql
 CREATE TABLE IF NOT EXISTS sales_activity_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -114,6 +122,7 @@ CREATE INDEX IF NOT EXISTS idx_sales_activity_lead_time ON sales_activity_histor
 ```
 
 ### Recommendation Logs
+
 ```sql
 CREATE TABLE IF NOT EXISTS recommendation_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -131,6 +140,7 @@ CREATE INDEX IF NOT EXISTS idx_reco_logs_dealer_type_time ON recommendation_logs
 ## Cross‑Dealer Aggregate Intelligence (No dealer identifiers)
 
 ### Aggregate Inventory Metrics
+
 ```sql
 CREATE TABLE IF NOT EXISTS aggregate_inventory_metrics (
   model_family TEXT NOT NULL,
@@ -145,6 +155,7 @@ CREATE TABLE IF NOT EXISTS aggregate_inventory_metrics (
 ```
 
 ### Aggregate Offer Performance
+
 ```sql
 CREATE TABLE IF NOT EXISTS aggregate_offer_performance (
   offer_type TEXT NOT NULL,
@@ -161,6 +172,7 @@ CREATE TABLE IF NOT EXISTS aggregate_offer_performance (
 ## Crawl Ops & Change Detection (System‑scoped)
 
 ### Scrape Jobs
+
 ```sql
 CREATE TABLE IF NOT EXISTS scrape_jobs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -180,6 +192,7 @@ CREATE TABLE IF NOT EXISTS scrape_jobs (
 ```
 
 ### Page Snapshots
+
 ```sql
 CREATE TABLE IF NOT EXISTS page_snapshots (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -196,6 +209,7 @@ CREATE TABLE IF NOT EXISTS page_snapshots (
 ```
 
 ### Change Events
+
 ```sql
 CREATE TABLE IF NOT EXISTS change_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -210,6 +224,7 @@ CREATE TABLE IF NOT EXISTS change_events (
 ```
 
 ## Indexes
+
 ```sql
 -- Inventory
 CREATE INDEX IF NOT EXISTS idx_inventory_listings_dealer_id ON inventory_listings(dealer_id);
@@ -244,6 +259,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_agg_offer_type_model_day ON aggregate_offer
 ```
 
 ## `updated_at` Trigger
+
 ```sql
 CREATE OR REPLACE FUNCTION set_updated_at() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
@@ -265,7 +281,9 @@ END $$;
 ```
 
 ## Row Level Security (RLS)
+
 > Enable RLS only on dealer‑scoped tables. Aggregates and crawl ops remain without RLS.
+
 ```sql
 -- Enable
 ALTER TABLE dealer_sites ENABLE ROW LEVEL SECURITY;
@@ -314,18 +332,21 @@ CREATE POLICY dealer_read_recommendation_logs ON recommendation_logs FOR SELECT 
 ```
 
 ## Views
+
 ```sql
 CREATE OR REPLACE VIEW offers_active AS
 SELECT * FROM offers WHERE expiry IS NULL OR expiry >= CURRENT_DATE;
 ```
 
 ## Migration Notes
+
 - All PKs are UUID for distributed ingestion.
 - JSONB used where structure may evolve (`comparability_flags`, `parameters`, `ocr_json`).
 - Aggregates contain no dealer identifiers and are safe for benchmarking.
 - Add write policies later if you expose inserts from the UI; for now rely on service role in Edge Functions.
 
 ## Next Steps
+
 1. Apply migrations to Supabase.
 2. Configure JWT to include `dealer_id` claim.
 3. Ingest dealer data via Edge Functions, then backfill aggregates.

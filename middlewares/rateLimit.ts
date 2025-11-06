@@ -42,4 +42,3 @@ export function rateLimitMiddleware(request: NextRequest): NextResponse | null {
   record.count++;
   return null; // Continue
 }
-
