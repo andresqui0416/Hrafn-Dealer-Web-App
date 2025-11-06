@@ -4,8 +4,13 @@ import { verifyJWT } from "@/lib/auth/jwt";
 export async function authMiddleware(request: NextRequest): Promise<NextResponse | null> {
   const { pathname } = request.nextUrl;
 
-  // Skip auth for login endpoint and public routes
-  if (pathname.startsWith("/api/auth/login") || pathname.startsWith("/api/auth/")) {
+  // Skip auth for auth endpoints (login, me, logout)
+  if (
+    pathname.startsWith("/api/auth/login") ||
+    pathname.startsWith("/api/auth/me") ||
+    pathname.startsWith("/api/auth/logout") ||
+    pathname.startsWith("/api/auth/")
+  ) {
     return null; // Let other middlewares handle or pass through
   }
 
