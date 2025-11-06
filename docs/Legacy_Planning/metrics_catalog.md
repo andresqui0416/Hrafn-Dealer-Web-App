@@ -5,12 +5,14 @@
 This document defines the canonical metrics available across dealer and aggregate domains. All metric definitions must be consistent and reused in aggregates, benchmarks, and dashboards.
 
 ## 1. Principles
+
 - **Single Source of Truth**: Every metric defined here is authoritative.
 - **Consistency**: Metrics used in dealer dashboards and aggregate benchmarks must match.
 - **Grain**: Metrics specify grain (dealer/day/region).
 - **Governance**: Changes require PR review.
 
 ## 2. Dealer-Scoped Metrics
+
 - **sales_volume**
   - Definition: Count of vehicles sold.
   - Grain: dealer_id + day
@@ -32,6 +34,7 @@ This document defines the canonical metrics available across dealer and aggregat
   - Source: `sales_leads`, `sales_activity_history`
 
 ## 3. Aggregate Metrics
+
 - **avg_days_on_lot**
   - Definition: Average time a vehicle spends in inventory before sale.
   - Grain: region + day
@@ -53,6 +56,7 @@ This document defines the canonical metrics available across dealer and aggregat
   - Source: `aggregate_offer_performance`
 
 ## 4. Benchmark Metrics
+
 - **percentiles (p10, p25, p50, p75, p90)**
   - Definition: Distributional values for key metrics (e.g., sales_volume, gross_profit).
   - Grain: cohort_id + day
@@ -69,11 +73,13 @@ This document defines the canonical metrics available across dealer and aggregat
   - Source: `benchmarks_scores`
 
 ## 5. Future Metrics (Planned)
+
 - Service/parts gross
 - F&I penetration rate
 - Digital lead response time
 
 ## Change Log
+
 - v0.1: Initial draft defining dealer-scoped, aggregate, and benchmark metrics with consistent grain specifications
 
 ---

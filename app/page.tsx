@@ -21,7 +21,10 @@ export default function Home() {
         </p>
       </div>
       <div className="flex justify-center">
-        <Button asChild className={buttonVariants({ variant: "default", size: "lg", className: "text-lg" })}>
+        <Button
+          asChild
+          className={buttonVariants({ variant: "default", size: "lg", className: "text-lg" })}
+        >
           <Link href={user ? "/dashboard" : "/login"}>
             Get Started
             <FontAwesomeIcon icon={faArrowRight} className="w-5 h-5" />

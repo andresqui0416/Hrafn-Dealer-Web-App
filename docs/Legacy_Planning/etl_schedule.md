@@ -5,11 +5,13 @@
 This document defines the batch and streaming ETL jobs that populate dealer tables, aggregate tables, and benchmark baselines.
 
 ## 1. Goals
+
 - Maintain fresh, consistent dealer and aggregate data.
 - Support daily benchmarking and anomaly detection.
 - Provide deterministic refresh times for dashboards and AI agents.
 
 ## 2. Job Categories
+
 - **Dealer Ingest Jobs**
   - Source: CDK, CRM, Inventory feeds, OEM incentive scrapers.
   - Frequency: Near-real-time or hourly.
@@ -41,6 +43,7 @@ This document defines the batch and streaming ETL jobs that populate dealer tabl
   - Notes: Cached for dashboards.
 
 ## 3. Orchestration
+
 - Scheduler: Temporal or Supabase cron.
 - Ordering:
   1. Dealer ingest jobs
@@ -51,16 +54,19 @@ This document defines the batch and streaming ETL jobs that populate dealer tabl
 - Backfill: Supported for historical dates.
 
 ## 4. Monitoring
+
 - Logs stored with dealer_id or aggregate_id.
 - Metrics: job success rate, runtime, data freshness lag.
 - Alerts: Slack + email on job failure or data drift.
 
 ## 5. Governance
+
 - Ownership: Data Engineering.
 - Changes to schedule require PR + sign-off.
 - Aligns with `docs/aggregates_benchmarks_spec.md` and `docs/security_rls.md`.
 
 ## Change Log
+
 - v0.1: Initial draft defining ETL job categories, orchestration, and monitoring strategy
 
 ---

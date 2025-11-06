@@ -27,6 +27,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 ```
 
 **Data Flow:**
+
 1. **Frontend (React/Next.js):** User interface, dashboard views, real-time updates
 2. **Backend (Next.js API Routes):** All secure operations happen here:
    - Authentication with Tekion, CDK Global APIs (credentials stored in environment variables)
@@ -38,6 +39,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 3. **Database (Supabase):** Central data store with RLS enforcement, authentication, real-time capabilities
 
 ### Security Benefits
+
 - **No Credential Exposure:** API keys, tokens, and Supabase service keys stored in server-side environment variables (never in browser)
 - **Secure External Integrations:** Tekion and CDK API calls happen exclusively in Next.js API routes, not from browser
 - **No Direct Database Access:** Frontend never connects directly to Supabase; all access through Next.js API layer
@@ -46,6 +48,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 - **API Gateway Pattern:** Centralized authentication, rate limiting, and security controls
 
 ### ETL & Integration Capabilities
+
 - **Secure API Integrations:** Next.js API routes handle all Tekion/CDK authentication and data fetching
 - **ETL Orchestration:** Server-side scheduling, retry logic, and monitoring for data sync jobs
 - **Data Transformation:** Normalize and validate data server-side before writing to Supabase
@@ -54,6 +57,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 - **Error Handling & Logging:** Centralized server-side error tracking and audit logs
 
 ### Scalability & Performance
+
 - **Server-Side Rendering (SSR):** Faster initial page loads and better SEO
 - **API Route Caching:** Built-in caching strategies for frequently accessed data
 - **Middleware Layer:** Ability to add caching, rate limiting, and request transformation
@@ -61,6 +65,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 - **High-Volume Data Pulls:** Server-side execution handles large data volumes from Tekion/CDK
 
 ### Future-Proof Architecture
+
 - **Single Codebase:** Frontend and backend in one Next.js project (simplifies deployment and maintenance)
 - **Easy Integration:** Simple to add microservices, queues, or additional external APIs
 - **Deployment Flexibility:** Can deploy to Vercel, AWS, or any Node.js hosting
@@ -68,6 +73,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 - **Developer Experience:** Better tooling, debugging, and development workflow
 
 ### Technology Stack
+
 - **Full-Stack Framework:** Next.js 14+ (App Router) - Frontend (React 18, TypeScript, shadcn/ui) + Backend (API Routes/Server Actions)
 - **Backend Layer:** Next.js API Routes handle all secure operations:
   - External API integrations (Tekion, CDK Global) with secure credential storage
@@ -85,16 +91,19 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 ## LLM Strategy: OpenAI → Llama Migration
 
 **Development Phase (Demo):** Use **OpenAI API** for NLP tasks
+
 - **Rationale:** Faster development, reliable API, good for prototyping
 - **Use Cases:** NLQ parsing, recommendation generation, semantic search
 - **Cost:** Pay-per-use API calls during development
 
 **Production Phase:** Migrate to **Llama** (self-hosted or cloud)
+
 - **Rationale:** Cost control, data privacy, no vendor lock-in
 - **Benefits:** Lower long-term costs, full data control, customizable models
 - **Migration Strategy:** Abstract LLM interface to enable easy switching
 
 ### Implementation Approach
+
 - **LLM Abstraction Layer:** Create a unified interface/abstraction for LLM calls
 - **Provider-Agnostic:** Design code to support multiple LLM providers
 - **Easy Migration:** Switch providers by changing configuration, not code
@@ -181,6 +190,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
    - **Use Case:** Handle all incentive-related user requirements
 
 #### Key Requirements:
+
 - **Database schema documentation** and metadata for all models
 - **Training datasets** for each model type (100-200+ examples per model minimum)
 - **Domain-specific vocabulary** and business logic documentation for each agent
@@ -240,6 +250,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
    - **Defer:** Full CRUD operations, real-time subscriptions (can use polling for demo), advanced error handling
 
 ### Success Criteria
+
 - ✅ Dealers can authenticate and view only their own data
 - ✅ At least one dealer system can ingest inventory/offers data successfully
 - ✅ Data is stored securely with RLS enforced server-side
@@ -247,6 +258,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 - ✅ All database access happens server-side (no direct client connections)
 
 ### Dependencies
+
 - Supabase account and project setup (Day 1)
 - Access to at least one dealer system for testing (Week 1)
 - Basic design mockups/wireframes (Week 1)
@@ -364,6 +376,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
    - **Defer:** Multiple adapters, advanced retry logic, complex error handling, full ETL orchestration platform
 
 ### Success Criteria
+
 - ✅ Inventory Agent can retrieve dealer data using DRAGIN
 - ✅ Recommendations are generated and logged for inventory domain
 - ✅ Aggregate inventory metrics table is populated (k-anonymity enforced)
@@ -371,6 +384,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 - ✅ At least 2 dealer system adapters are functional (inventory feed + one more)
 
 ### Dependencies
+
 - Step 1 completed
 - OpenAI API access and API key (for development/demo) - Week 5
 - **OpenAI Fine-Tuning API access** (for model customization) - Week 7
@@ -441,6 +455,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
    - **Defer:** Full production hardening, load testing, disaster recovery, CI/CD automation
 
 ### Success Criteria
+
 - ✅ Basic discount flow works (NLQ → recommendation → display → approval UI)
 - ✅ Benchmarking comparisons are available and functional for demo
 - ✅ Dashboard is polished and demo-ready
@@ -449,6 +464,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 - ✅ Demo can be presented to client successfully
 
 ### Dependencies
+
 - Step 2 completed
 - Demo data prepared (Week 10)
 - Client demo date confirmed (Week 12)
@@ -459,6 +475,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 ## Risk Mitigation & Considerations
 
 ### Technical Risks
+
 - **RLS Performance:** Monitor query performance with RLS enabled; may need query optimization (server-side)
 - **OpenAI API Costs:** Implement caching and rate limiting in Next.js API routes to control OpenAI API costs during development
 - **Fine-Tuning Quality:** 12 fine-tuned models may need iterations; ensure sufficient training data (100-200+ examples per model)
@@ -474,13 +491,15 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 - **Next.js Learning Curve:** Team familiarity with Next.js App Router and Server Components (mitigate with training/resources)
 
 ### Business Risks
+
 - **Dealer Onboarding:** Ensure smooth onboarding process for dealers to connect their systems
 - **Data Privacy:** Maintain strict compliance with data privacy regulations
 - **Scalability:** Plan for horizontal scaling as dealer count grows
 
 ### Dependencies Management
+
 - **External Systems:** Ensure reliable access to dealer systems (DMS, CRM, etc.)
-- **LLM Providers:** 
+- **LLM Providers:**
   - **Development:** OpenAI API access and budget allocation (including fine-tuning costs for 12 models)
   - **Fine-Tuning Data:** Access to domain experts to create accurate training examples:
     - NLQ Pipeline models (intent, entity extraction, query planning, SQL, recommendations, response formatting)
@@ -495,14 +514,15 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 
 ## Timeline Summary
 
-| Step | Duration | Key Milestones | Weeks |
-|------|----------|----------------|-------|
-| **Step 1: Foundation** | 3-4 weeks | RLS working, Data ingestion, Basic dashboard | 1-4 |
-| **Step 2: Intelligence** | 4-5 weeks | Agents active, NLQ working, Aggregates populated | 5-9 |
-| **Step 3: Demo Polish** | 3-4 weeks | Discount flow, Benchmarking, Demo-ready | 10-12 |
-| **Total** | **10-13 weeks** | **Demo-ready HRAFN platform** | **3 months** |
+| Step                     | Duration        | Key Milestones                                   | Weeks        |
+| ------------------------ | --------------- | ------------------------------------------------ | ------------ |
+| **Step 1: Foundation**   | 3-4 weeks       | RLS working, Data ingestion, Basic dashboard     | 1-4          |
+| **Step 2: Intelligence** | 4-5 weeks       | Agents active, NLQ working, Aggregates populated | 5-9          |
+| **Step 3: Demo Polish**  | 3-4 weeks       | Discount flow, Benchmarking, Demo-ready          | 10-12        |
+| **Total**                | **10-13 weeks** | **Demo-ready HRAFN platform**                    | **3 months** |
 
 ### Key Timeline Notes
+
 - **Week 4:** Internal milestone - Foundation complete, data flowing
 - **Week 9:** Internal milestone - Intelligence layer operational
 - **Week 12:** **Demo delivery** - Client presentation ready
@@ -516,7 +536,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 3. **Dealer Systems:** Which dealer system should we prioritize for the first adapter? (We'll focus on 1-2 for demo)
 4. **Demo Date:** Is there a specific date for the demo presentation? (This will help us plan Week 12)
 5. **Demo Data:** Can you provide sample dealer data for the demo, or should we use synthetic data?
-6. **Budget Considerations:** 
+6. **Budget Considerations:**
    - OpenAI API costs during development/demo (pay-per-use)
    - OpenAI Fine-Tuning costs for multiple models (12 models × one-time training cost, typically $0.008-$0.03 per 1K tokens per model)
    - Budget for Llama infrastructure in production (self-hosted or cloud service)
@@ -533,6 +553,7 @@ React (Next.js Frontend) → Next.js API Routes (Secure Backend) → External AP
 After the demo, the following features can be prioritized based on client feedback:
 
 ### Priority 1: Production Migration
+
 - **Llama Integration:** Migrate from OpenAI to Llama for production
   - Set up Llama infrastructure (self-hosted or cloud)
   - Fine-tune Llama model using the same training dataset (reuse from development)
@@ -553,6 +574,7 @@ After the demo, the following features can be prioritized based on client feedba
   - Optimize model pipeline and agent orchestration for performance and cost (caching, model selection strategies, agent routing)
 
 ### Priority 2: Platform Enhancement
+
 - **Full Production Hardening:** Load testing, disaster recovery, CI/CD
 - **Additional Agents:** Sales Agent, CRM Agent, VM Agent, etc.
 - **Advanced NLQ:** Multi-intent support, complex queries
@@ -560,8 +582,8 @@ After the demo, the following features can be prioritized based on client feedba
 - **Advanced Benchmarking:** Cohort analytics, anomaly detection
 
 ### Priority 3: Security & Operations
+
 - **Full Security:** Complete security risk model, PII scrubbing, KMS
 - **Sales & Leads:** Sales leads and activity history tables
 - **Mobile Optimization:** Full responsive design
 - **Monitoring & Observability:** Comprehensive logging, alerting, tracing
-

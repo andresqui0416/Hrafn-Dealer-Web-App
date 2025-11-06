@@ -81,12 +81,8 @@ export default function ChatPage() {
           {messages.map((m) => (
             <div
               key={m.id}
-              className={
-                m.role === "user"
-                  ? "flex justify-end"
-                  : "flex justify-start"
-              }
-           >
+              className={m.role === "user" ? "flex justify-end" : "flex justify-start"}
+            >
               <div
                 className={
                   m.role === "user"
@@ -119,5 +115,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-

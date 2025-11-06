@@ -138,6 +138,7 @@ flowchart LR
 ```
 
 **Legend:**
+
 - **Dealer Systems**: CDK, Reynolds, Tekion (DMS providers)
 - **Website E-comm**: Dealer websites and e-commerce platforms
 - **OEM Incentives Feeds**: OEM incentive data feeds
@@ -310,6 +311,7 @@ flowchart LR
 ```
 
 **Legend:**
+
 - **Dealer Copilot NLQ UI**: Natural language query interface for dealers
 - **Website E-comm**: Dealer websites and e-commerce platforms
 - **MCP Adapters**: Model Context Protocol adapters for system integration
@@ -330,4 +332,5 @@ flowchart LR
 **Access Paths:** Dealer-scoped queries hit Postgres under RLS. Cross-dealer questions and benchmarking read from Aggregate Tables and Benchmarks via SELECT-only roles. Schedulers drive nightly rollups and baseline refreshes.
 
 ## Change Log
+
 - v0.1: Initial draft with comprehensive architecture diagrams for AI-native platform
