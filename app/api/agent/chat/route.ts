@@ -279,7 +279,7 @@ export async function POST(req: NextRequest) {
       });
 
       const inventoryCountResult = await prisma.$queryRawUnsafe<[{ count: bigint }]>(
-        `SELECT COUNT(*)::int as count FROM inventory_listings WHERE dealer_id = '${user.dealerId}'::uuid`,
+        `SELECT COUNT(*)::int as count FROM inventory_listings WHERE "dealerId" = '${user.dealerId}'::uuid`,
       );
       const inventoryCount = inventoryCountResult[0] ? Number(inventoryCountResult[0].count) : 0;
 
