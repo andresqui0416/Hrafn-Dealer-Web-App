@@ -11,10 +11,7 @@
     "format": "prettier --write .",
     "test": "echo \"No tests yet\" && exit 0",
     "prepare": "husky",
-    "postinstall": "prisma generate",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev --name init",
-    "db:seed": "ts-node --project tsconfig.seed.json prisma/seed.ts"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
@@ -27,6 +24,7 @@
     "class-variance-authority": "^0.7.0",
     "jose": "^5.9.6",
     "next": "^14.2.5",
+    "openai": "^6.8.1",
     "prisma": "^6.19.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -53,5 +51,11 @@
       "prettier --write",
       "eslint --fix --max-warnings=0"
     ]
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma",
+    "seed": "ts-node --project tsconfig.seed.json prisma/seed.ts",
+    "migrate": "prisma migrate dev --name init",
+    "generate": "prisma generate"
   }
 }
