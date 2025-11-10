@@ -1,8 +1,4 @@
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { openai } from ".";
 
 const SQL_GENERATION_PROMPT = `You are a SQL query generator for a PostgreSQL database. Your task is to convert natural language questions into valid SQL queries.
 
@@ -19,12 +15,15 @@ Rules:
 6. For text searches, use ILIKE for case-insensitive matching
 7. Always use proper SQL formatting
 8. Use quoted identifiers for "dealerId" column (it's camelCase in the database)
+9. IMPORTANT: For SELECT queries that return multiple rows, ALWAYS add LIMIT clause (default LIMIT 100)
+10. IMPORTANT: Only select necessary columns, avoid SELECT * when possible (use specific column names)
+11. Use indexes: "dealerId" is indexed, "make" and "model" are indexed together
 
 Examples:
-- "Show me all Toyota vehicles" -> SELECT * FROM inventory_listings WHERE "dealerId" = :dealerId AND make ILIKE '%Toyota%';
+- "Show me all Toyota vehicles" -> SELECT id, vin, year, make, model, price, mileage, status FROM inventory_listings WHERE "dealerId" = :dealerId AND make ILIKE '%Toyota%' LIMIT 100;
 - "How many cars do we have?" -> SELECT COUNT(*) as count FROM inventory_listings WHERE "dealerId" = :dealerId;
 - "What's the average price?" -> SELECT AVG(price) as avg_price FROM inventory_listings WHERE "dealerId" = :dealerId AND price IS NOT NULL;
-- "List vehicles under $30000" -> SELECT * FROM inventory_listings WHERE "dealerId" = :dealerId AND price < 30000 ORDER BY price ASC;
+- "List vehicles under $30000" -> SELECT id, vin, year, make, model, price, mileage FROM inventory_listings WHERE "dealerId" = :dealerId AND price < 30000 ORDER BY price ASC LIMIT 100;
 
 Now convert this question to SQL:`;
 
