@@ -90,7 +90,27 @@ export default function ChatPage() {
                     : "max-w-[80%] rounded-lg bg-white/5 px-3 py-2"
                 }
               >
-                <p className="whitespace-pre-wrap text-sm leading-6">{m.content}</p>
+                <div className="text-sm leading-6">
+                  {m.content.split(/```(\w+)?\n?/).map((part, idx) => {
+                    if (idx % 2 === 1) {
+                      // Code block
+                      return (
+                        <pre
+                          key={idx}
+                          className="my-2 overflow-x-auto rounded bg-black/30 p-2 text-xs font-mono"
+                        >
+                          {part}
+                        </pre>
+                      );
+                    }
+                    // Regular text
+                    return (
+                      <p key={idx} className="whitespace-pre-wrap">
+                        {part}
+                      </p>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ))}

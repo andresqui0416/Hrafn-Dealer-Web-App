@@ -7,15 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Dealer {
-  id        String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name      String
-  createdAt DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
-  sessions  Session[]
-  users     UserDealerRole[]
-}
-
 model User {
   id           String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   email        String           @unique
@@ -52,6 +43,41 @@ model Session {
 
   @@index([dealerId], map: "idx_sess_dealer")
   @@index([userId], map: "idx_sess_user")
+}
+
+model InventoryListing {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  dealerId   String   @db.Uuid
+  vin        String
+  year       Int
+  make       String
+  model      String
+  trim       String?
+  bodyStyle  String?  @map("body_style")
+  drivetrain String?
+  msrp       Decimal? @db.Decimal(10, 2)
+  price      Decimal? @db.Decimal(10, 2)
+  mileage    Int      @default(0)
+  status     String   @default("available")
+  scrapedAt  DateTime @default(now()) @map("scraped_at") @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  dealer     Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_dealer")
+
+  @@unique([dealerId, vin], map: "u_inv_dealer_vin")
+  @@index([dealerId], map: "idx_inv_dealer")
+  @@index([make, model], map: "idx_inv_make_model")
+  @@map("inventory_listings")
+}
+
+model Dealer {
+  id        String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name      String
+  createdAt DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
+  sessions  Session[]
+  users     UserDealerRole[]
+  inventory InventoryListing[]
 }
 
 enum Role {
