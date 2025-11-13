@@ -1,8 +1,10 @@
 import { PrismaClient, $Enums } from "@prisma/client";
 import crypto from "crypto";
 import { hashPassword } from "../lib/auth/password";
+import { generateInventoryItem } from "../lib/prisma/generateInventory";
 
 const prisma = new PrismaClient();
+
 
 async function main() {
   const dealer = await prisma.dealer.upsert({
@@ -47,7 +49,26 @@ async function main() {
     },
   });
 
-  console.log("Seeded:", { dealer, user, session });
+  // Delete existing inventory for this dealer (for re-seeding)
+  await prisma.inventoryListing.deleteMany({
+    where: { dealerId: dealer.id },
+  });
+
+  // Create 500 inventory listings for each dealer
+  console.log("Creating inventory listings...");
+  for (let i = 0; i < 10; i++) {
+    const inventoryItems = Array.from({ length: 50 }, (_, i) => generateInventoryItem(dealer.id, i));
+    await prisma.inventoryListing.createMany({
+      data: inventoryItems,
+    });
+  }
+
+  console.log("Seeded:", {
+    dealer: dealer.name,
+    user: user.email,
+    session: session.id,
+    inventoryCount: 500,
+  });
 }
 
 main()
