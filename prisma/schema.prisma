@@ -71,13 +71,15 @@ model InventoryListing {
 }
 
 model Dealer {
-  id        String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name      String
-  createdAt DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
-  sessions  Session[]
-  users     UserDealerRole[]
-  inventory InventoryListing[]
+  id                    String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                  String
+  fortellisClientId     String?          @map("fortellis_client_id")
+  fortellisClientSecret String?          @map("fortellis_client_secret")
+  createdAt             DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
+  sessions              Session[]
+  users                 UserDealerRole[]
+  inventory             InventoryListing[]
 }
 
 enum Role {
