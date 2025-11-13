@@ -14,6 +14,11 @@ export async function authMiddleware(request: NextRequest): Promise<NextResponse
     return null; // Let other middlewares handle or pass through
   }
 
+  // Skip auth for inventory sync endpoint (uses API key authentication)
+  if (pathname.startsWith("/api/inventory/sync")) {
+    return null; // Let the route handle API key authentication
+  }
+
   // Protect all /api/* routes except auth
   if (pathname.startsWith("/api/")) {
     const token =
