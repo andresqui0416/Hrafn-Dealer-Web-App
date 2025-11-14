@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFISalesData } from "@/lib/cdk/CDK Drive Get FI Sales";
+import { getFISalesData } from "@/lib/cdk/cdkDriveGetFISale";
 
 export const dynamic = "force-dynamic";
 
