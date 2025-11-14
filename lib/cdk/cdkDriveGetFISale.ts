@@ -115,11 +115,18 @@ export async function pollOperationStatus(
 }
 
 /**
- * Fetch inventory data from CDK/Fortellis API
+ * Generic function to fetch FI Sales data from CDK/Fortellis API
  * Handles OAuth, subscription discovery, and async bulk operations
+ * @param endpointPath - The endpoint path (e.g., "bulk", "open", "open/delta", "closed", "closed/delta")
+ * @param departmentId - Optional department ID
+ * @param startDate - Optional start date (ISO 8601 format: yyyy-mm-ddThh:mm:ss)
+ * @param endDate - Optional end date (ISO 8601 format: yyyy-mm-ddThh:mm:ss)
  */
-export async function getFISalesBulkData(
+export async function getFISalesData(
+  endpointPath: string,
   departmentId?: string,
+  startDate?: string,
+  endDate?: string,
 ): Promise<any[]> {
   // Get access token
   const accessToken = await getFortellisAccessToken();
@@ -150,10 +157,21 @@ export async function getFISalesBulkData(
   }
 
   try {
-    const inventoryEndpoint = "https://api.fortellis.io/cdk/drive/fisales/v3/bulk";
+    // Build the endpoint URL
+    const baseUrl = "https://api.fortellis.io/cdk/drive/fisales/v3";
+    const endpoint = `${baseUrl}/${endpointPath}`;
 
+    // Build query parameters
+    const queryParams = new URLSearchParams();
+    if (startDate) {
+      queryParams.append("startDate", startDate);
+    }
+    if (endDate) {
+      queryParams.append("endDate", endDate);
+    }
+    const url = queryParams.toString() ? `${endpoint}?${queryParams.toString()}` : endpoint;
 
-    const response = await fetch(inventoryEndpoint, {
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -197,4 +215,118 @@ export async function getFISalesBulkData(
     console.error("Error fetching from CDK API:", error);
     throw error;
   }
+}
+
+/**
+ * Fetch historical FI Sales data from CDK/Fortellis API (older than 31 days)
+ * Handles OAuth, subscription discovery, and async bulk operations
+ * @param departmentId - Optional department ID
+ * @param startDate - Required start date (ISO 8601 format: yyyy-mm-ddThh:mm:ss)
+ * @param endDate - Optional end date (ISO 8601 format: yyyy-mm-ddThh:mm:ss). Defaults to current date - 31 days
+ * @returns Array of historical vehicle sale records with status 'F' (finalized)
+ */
+export async function getFISalesHistoryData(
+  departmentId?: string,
+  startDate?: string,
+  endDate?: string,
+): Promise<any[]> {
+  // Get access token
+  const accessToken = await getFortellisAccessToken();
+
+  // Get subscription and department info
+  // Priority: 1) Provided departmentId parameter, 2) Environment variables, 3) Fetch from API
+  let subscriptionId = process.env.FORTELLIS_SUBSCRIPTION_ID;
+  let deptId = departmentId || process.env.FORTELLIS_DEPARTMENT_ID;
+
+  // If subscription ID or department ID not provided, fetch from API
+  if (!subscriptionId || !deptId) {
+    console.log("Fetching subscription and department info from Fortellis API...");
+    const subscriptionInfo = await getFortellisSubscriptionInfo(accessToken);
+    subscriptionId = subscriptionId || subscriptionInfo.subscriptionId;
+    deptId = deptId || subscriptionInfo.departmentId;
+  }
+
+  if (!subscriptionId) {
+    throw new Error(
+      "Subscription ID is required. Set FORTELLIS_SUBSCRIPTION_ID or ensure API returns subscriptions.",
+    );
+  }
+
+  if (!deptId) {
+    throw new Error(
+      "Department ID is required. Set FORTELLIS_DEPARTMENT_ID, provide as parameter, or ensure API returns departments.",
+    );
+  }
+
+  if (!startDate) {
+    throw new Error("Start date is required for historical data retrieval.");
+  }
+
+  try {
+    // Build the endpoint URL - History Setup uses different base path
+    const baseUrl = "https://api.fortellis.io/cdk/drive/fisalessetup/v3";
+    const endpoint = `${baseUrl}/history`;
+
+    // Build query parameters
+    const queryParams = new URLSearchParams();
+    queryParams.append("startDate", startDate);
+    if (endDate) {
+      queryParams.append("endDate", endDate);
+    }
+    const url = `${endpoint}?${queryParams.toString()}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Subscription-Id": subscriptionId,
+        "Department-Id": deptId,
+        "Request-Id": generateUniqueRequestId(), // Generate unique request ID
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`CDK API returned ${response.status}: ${response.statusText} - ${errorText}`);
+    }
+
+    const operationResponse = await response.json();
+
+    // Check if this is an async operation response
+    if (operationResponse.operationId && operationResponse._links?.status?.href) {
+      console.log(
+        `Received async operation ID: ${operationResponse.operationId}, status: ${operationResponse.status}`,
+      );
+
+      // Poll the status endpoint until operation completes
+      const statusUrl = operationResponse._links.status.href;
+      const checkAfterSeconds = operationResponse.checkStatusAfterSeconds || 30;
+
+      console.log(`Polling operation status at: ${statusUrl}`);
+      return await pollOperationStatus(statusUrl, accessToken, subscriptionId, checkAfterSeconds);
+    } else {
+      // Direct response (shouldn't happen based on the example, but handle it)
+      return Array.isArray(operationResponse)
+        ? operationResponse
+        : operationResponse.items ||
+            operationResponse.inventory ||
+            operationResponse.data ||
+            operationResponse.vehicles ||
+            [];
+    }
+  } catch (error) {
+    console.error("Error fetching historical data from CDK API:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch inventory data from CDK/Fortellis API (backward compatibility)
+ * Handles OAuth, subscription discovery, and async bulk operations
+ */
+export async function getFISalesBulkData(
+  departmentId?: string,
+): Promise<any[]> {
+  return getFISalesData("bulk", departmentId);
 }
