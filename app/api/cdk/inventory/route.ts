@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
-import { getFISalesBulkData } from "@/lib/cdk/CDK Drive Get FI Sales";
+import { getFISalesBulkData } from "@/lib/cdk/cdkDriveGetFISale";
 
 const prisma = new PrismaClient();
 
