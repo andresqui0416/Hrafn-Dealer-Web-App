@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
 import { AuthProvider } from "@/contexts/auth-context";
+import { AppProvider } from "@/contexts/app-context";
 import { Footer } from "@/components/footer";
 import "./globals.css";
 import { Header } from "@/components/header";
+import { FontAwesomeConfig } from "@/components/fontawesome-config";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -31,14 +33,17 @@ export default function RootLayout({
         <link rel="icon" href="/logo.png" />
       </head>
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
+        <FontAwesomeConfig />
         <AuthProvider>
-          <div className="min-h-screen bg-background font-sans text-foreground">
-            <Header />
-            <div className="min-h-[calc(100vh-65px)]">
-              <main className="mx-auto w-full">{children}</main>
+          <AppProvider>
+            <div className="min-h-screen bg-background font-sans text-foreground">
+              <Header />
+              <div className="min-h-[calc(100vh-65px)]">
+                <main className="mx-auto w-full">{children}</main>
+              </div>
+              <Footer />
             </div>
-            <Footer />
-          </div>
+          </AppProvider>
         </AuthProvider>
       </body>
     </html>

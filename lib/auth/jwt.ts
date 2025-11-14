@@ -6,9 +6,8 @@ const secret = new TextEncoder().encode(
 
 export interface JWTPayload {
   userId: string;
-  dealerId: string;
   email: string;
-  role: string;
+  name: string;
   [key: string]: unknown;
 }
 

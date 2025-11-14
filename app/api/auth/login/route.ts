@@ -18,13 +18,6 @@ export async function POST(request: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { email },
-      include: {
-        roles: {
-          include: {
-            dealer: true,
-          },
-        },
-      },
     });
 
     if (!user) {
@@ -36,16 +29,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    const userRole = user.roles[0];
-    if (!userRole) {
-      return NextResponse.json({ error: "User has no dealer role" }, { status: 403 });
-    }
-
     const token = await signJWT({
       userId: user.id,
-      dealerId: userRole.dealerId,
       email: user.email,
-      role: userRole.role,
+      name: user.name,
     });
 
     const response = NextResponse.json({
@@ -53,8 +40,7 @@ export async function POST(request: NextRequest) {
       user: {
         id: user.id,
         email: user.email,
-        dealerId: userRole.dealerId,
-        role: userRole.role,
+        name: user.name,
       },
     });
 
