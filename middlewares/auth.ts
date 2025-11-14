@@ -4,10 +4,9 @@ import { verifyJWT } from "@/lib/auth/jwt";
 export async function authMiddleware(request: NextRequest): Promise<NextResponse | null> {
   const { pathname } = request.nextUrl;
 
-  // Skip auth for auth endpoints (login, me, logout)
+  // Skip auth for auth endpoints (login, logout)
   if (
     pathname.startsWith("/api/auth/login") ||
-    pathname.startsWith("/api/auth/me") ||
     pathname.startsWith("/api/auth/logout") ||
     pathname.startsWith("/api/auth/")
   ) {
@@ -37,9 +36,8 @@ export async function authMiddleware(request: NextRequest): Promise<NextResponse
     // Attach user info to request headers for API routes
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-user-id", payload.userId);
-    requestHeaders.set("x-dealer-id", payload.dealerId);
-    requestHeaders.set("x-user-role", payload.role);
     requestHeaders.set("x-user-email", payload.email);
+    requestHeaders.set("x-user-name", payload.name || "");
 
     return NextResponse.next({
       request: {

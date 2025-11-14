@@ -46,7 +46,8 @@ export async function classifyIntentMicroserver(
 
 export async function generateSQLMicroserver(
   question: string,
-  dealerId: string
+  userId: string,
+  appId?: string
 ): Promise<string> {
   try {
     const response = await fetch(`${MICROSERVER_URL}/generate-sql`, {
@@ -64,21 +65,38 @@ export async function generateSQLMicroserver(
     const data: SQLResponse = await response.json();
     let sql = data.sql;
 
-    // Replace :dealerId placeholder or add WHERE clause if missing
-    if (sql.includes(":dealerId")) {
-      sql = sql.replace(/:dealerId/g, `'${dealerId}'`);
+    // Build WHERE conditions
+    const conditions: string[] = [`"userId" = '${userId}'`];
+    if (appId) {
+      conditions.push(`"appId" = '${appId}'`);
+    }
+    const whereClause = conditions.join(" AND ");
+
+    // Replace :userId placeholder or add WHERE clause if missing
+    if (sql.includes(":userId")) {
+      sql = sql.replace(/:userId/g, `'${userId}'`);
+      if (appId && sql.includes("from inventory_listings")) {
+        // Add appId filter if not already present
+        if (!sql.includes(`"appId"`)) {
+          sql = sql.replace(/where\s+/i, `WHERE ${whereClause} AND `);
+        }
+      }
     } else if (sql.toLowerCase().includes("from inventory_listings")) {
-      // Add dealerId filter if missing
+      // Add userId and appId filters if missing
       const whereMatch = sql.match(/where\s+/i);
       if (!whereMatch) {
         // Add WHERE clause
         sql = sql.replace(
           /from\s+inventory_listings/i,
-          `FROM inventory_listings WHERE "dealerId" = '${dealerId}'`
+          `FROM inventory_listings WHERE ${whereClause}`
         );
       } else {
-        // Add dealerId to existing WHERE clause
-        sql = sql.replace(/where\s+/i, `WHERE "dealerId" = '${dealerId}' AND `);
+        // Add userId and appId to existing WHERE clause if not already present
+        if (!sql.includes(`"userId"`)) {
+          sql = sql.replace(/where\s+/i, `WHERE ${whereClause} AND `);
+        } else if (appId && !sql.includes(`"appId"`)) {
+          sql = sql.replace(/where\s+/i, `WHERE ${whereClause} AND `);
+        }
       }
     }
 

@@ -10,44 +10,31 @@ datasource db {
 model User {
   id           String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   email        String           @unique
+  name         String
   passwordHash String
+  avatar       String?
   createdAt    DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
   sessions     Session[]
-  roles        UserDealerRole[]
-}
-
-model UserDealerRole {
-  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  userId    String   @db.Uuid
-  dealerId  String   @db.Uuid
-  role      Role
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  dealer    Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_udr_dealer")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_udr_user")
-
-  @@unique([userId, dealerId, role], map: "u_udr")
-  @@index([dealerId], map: "idx_udr_dealer")
-  @@index([userId], map: "idx_udr_user")
+  inventory    InventoryListing[]
+  apps         UserApp[]
 }
 
 model Session {
   id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   userId    String   @db.Uuid
-  dealerId  String   @db.Uuid
   jwtId     String   @unique
   expiresAt DateTime @db.Timestamptz(6)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
-  dealer    Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sess_dealer")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sess_user")
 
-  @@index([dealerId], map: "idx_sess_dealer")
   @@index([userId], map: "idx_sess_user")
 }
 
 model InventoryListing {
   id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  dealerId   String   @db.Uuid
+  userId     String   @db.Uuid
+  appId      String   @db.Uuid
   vin        String
   year       Int
   make       String
@@ -62,26 +49,28 @@ model InventoryListing {
   scrapedAt  DateTime @default(now()) @map("scraped_at") @db.Timestamptz(6)
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  dealer     Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_dealer")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_user")
+  app        UserApp  @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_app")
 
-  @@unique([dealerId, vin], map: "u_inv_dealer_vin")
-  @@index([dealerId], map: "idx_inv_dealer")
+  @@unique([userId, vin], map: "u_inv_user_vin")
+  @@index([userId], map: "idx_inv_user")
+  @@index([appId], map: "idx_inv_app")
   @@index([make, model], map: "idx_inv_make_model")
   @@map("inventory_listings")
 }
 
-model Dealer {
-  id        String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name      String
-  createdAt DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
-  sessions  Session[]
-  users     UserDealerRole[]
-  inventory InventoryListing[]
-}
+model UserApp {
+  id                    String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId                String             @db.Uuid
+  name                  String
+  description           String?
+  fortellisClientId     String             @map("fortellis_client_id")
+  fortellisClientSecret String?            @map("fortellis_client_secret")
+  createdAt             DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime           @default(now()) @updatedAt @db.Timestamptz(6)
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_app_user")
+  inventory             InventoryListing[]
 
-enum Role {
-  admin
-  manager
-  viewer
+  @@index([userId], map: "idx_app_user")
+  @@map("user_apps")
 }
