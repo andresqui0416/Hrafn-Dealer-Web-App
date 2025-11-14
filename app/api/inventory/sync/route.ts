@@ -28,13 +28,14 @@ function verifyApiKey(request: NextRequest): boolean {
  * Based on CDK Drive FI Sales API YAML specification
  * Response structure: { data: [{ vehicle: {...}, deal: {...}, ... }] }
  */
-function transformCDKInventoryItem(cdkItem: any, dealerId: string) {
+function transformCDKInventoryItem(cdkItem: any, userId: string, appId: string) {
   // Extract vehicle data - CDK FI Sales response has vehicle nested in each item
   const vehicle = cdkItem.vehicle || cdkItem;
   const deal = cdkItem.deal || cdkItem;
 
   return {
-    dealerId,
+    userId,
+    appId,
     // Vehicle identification - from vehicle.vin
     vin: vehicle.vin || "",
     // Vehicle year - from vehicle.year (integer)
@@ -67,7 +68,7 @@ function transformCDKInventoryItem(cdkItem: any, dealerId: string) {
 }
 
 // Upsert inventory items
-async function upsertInventoryItems(items: any[], dealerId: string) {
+async function upsertInventoryItems(items: any[], userId: string, appId: string) {
   const results = {
     created: 0,
     updated: 0,
@@ -76,7 +77,7 @@ async function upsertInventoryItems(items: any[], dealerId: string) {
 
   for (const item of items) {
     try {
-      const transformed = transformCDKInventoryItem(item, dealerId);
+      const transformed = transformCDKInventoryItem(item, userId, appId);
 
       // Validate required fields
       if (!transformed.vin || !transformed.year || !transformed.make || !transformed.model) {
@@ -88,8 +89,8 @@ async function upsertInventoryItems(items: any[], dealerId: string) {
       // Check if item exists before upserting
       const existing = await prisma.inventoryListing.findUnique({
         where: {
-          dealerId_vin: {
-            dealerId: transformed.dealerId,
+          userId_vin: {
+            userId: transformed.userId,
             vin: transformed.vin,
           },
         },
@@ -97,8 +98,8 @@ async function upsertInventoryItems(items: any[], dealerId: string) {
 
       await prisma.inventoryListing.upsert({
         where: {
-          dealerId_vin: {
-            dealerId: transformed.dealerId,
+          userId_vin: {
+            userId: transformed.userId,
             vin: transformed.vin,
           },
         },
@@ -141,25 +142,60 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const dealerId = body.dealerId || request.headers.get("x-dealer-id");
+    // Support both dealerId (backward compatibility) and userId
+    const userId = body.userId || body.dealerId || request.headers.get("x-user-id") || request.headers.get("x-dealer-id");
+    const appId = body.appId || request.headers.get("x-app-id");
 
-    if (!dealerId) {
+    if (!userId) {
       return NextResponse.json(
-        { error: "dealerId is required in body or x-dealer-id header" },
+        { error: "userId (or dealerId for backward compatibility) is required in body or x-user-id/x-dealer-id header" },
         { status: 400 }
       );
     }
 
-    // Verify dealer exists
-    const dealer = await prisma.dealer.findUnique({
-      where: { id: dealerId },
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
     });
 
-    if (!dealer) {
-      return NextResponse.json({ error: "Dealer not found" }, { status: 404 });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    console.log(`Starting inventory sync for dealer: ${dealer.name} (${dealerId})`);
+    // Get or create app for the user
+    let app;
+    if (appId) {
+      app = await prisma.userApp.findFirst({
+        where: {
+          id: appId,
+          userId: userId,
+        },
+      });
+      if (!app) {
+        return NextResponse.json({ error: "App not found or does not belong to user" }, { status: 404 });
+      }
+    } else {
+      // Use first app or create a default app
+      app = await prisma.userApp.findFirst({
+        where: { userId: userId },
+        orderBy: { createdAt: "asc" },
+      });
+      
+      if (!app) {
+        // Create a default app for the user
+        app = await prisma.userApp.create({
+          data: {
+            userId: userId,
+            name: "Default App",
+            description: "Default app created for inventory sync",
+            fortellisClientId: "default-client-id",
+          },
+        });
+        console.log(`Created default app for user: ${app.id}`);
+      }
+    }
+
+    console.log(`Starting inventory sync for user: ${user.name} (${userId}), app: ${app.name} (${app.id})`);
 
     // Get department ID from request if provided
     const departmentId = body.departmentId || request.headers.get("x-dept-id");
@@ -168,7 +204,7 @@ export async function POST(request: NextRequest) {
     const cdkInventory = await getFISalesBulkData(departmentId || undefined);
 
     if (!Array.isArray(cdkInventory) || cdkInventory.length === 0) {
-      console.warn(`No inventory items returned from CDK for dealer ${dealerId}`);
+      console.warn(`No inventory items returned from CDK for user ${userId}`);
       return NextResponse.json({
         success: true,
         message: "No inventory items to sync",
@@ -184,7 +220,7 @@ export async function POST(request: NextRequest) {
     console.log(`Fetched ${cdkInventory.length} items from CDK`);
 
     // Upsert inventory items
-    const results = await upsertInventoryItems(cdkInventory, dealerId);
+    const results = await upsertInventoryItems(cdkInventory, userId, app.id);
 
     console.log(
       `Inventory sync completed: ${results.created} created, ${results.updated} updated, ${results.errors} errors`
@@ -221,25 +257,63 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const dealerId = request.nextUrl.searchParams.get("dealerId") || request.headers.get("x-dealer-id");
+    // Support both dealerId (backward compatibility) and userId
+    const userId = request.nextUrl.searchParams.get("userId") || 
+                   request.nextUrl.searchParams.get("dealerId") || 
+                   request.headers.get("x-user-id") || 
+                   request.headers.get("x-dealer-id");
+    const appId = request.nextUrl.searchParams.get("appId") || request.headers.get("x-app-id");
 
-    if (!dealerId) {
+    if (!userId) {
       return NextResponse.json(
-        { error: "dealerId is required as query parameter or x-dealer-id header" },
+        { error: "userId (or dealerId for backward compatibility) is required as query parameter or x-user-id/x-dealer-id header" },
         { status: 400 }
       );
     }
 
-    // Verify dealer exists
-    const dealer = await prisma.dealer.findUnique({
-      where: { id: dealerId },
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
     });
 
-    if (!dealer) {
-      return NextResponse.json({ error: "Dealer not found" }, { status: 404 });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    console.log(`Starting inventory sync for dealer: ${dealer.name} (${dealerId})`);
+    // Get or create app for the user
+    let app;
+    if (appId) {
+      app = await prisma.userApp.findFirst({
+        where: {
+          id: appId,
+          userId: userId,
+        },
+      });
+      if (!app) {
+        return NextResponse.json({ error: "App not found or does not belong to user" }, { status: 404 });
+      }
+    } else {
+      // Use first app or create a default app
+      app = await prisma.userApp.findFirst({
+        where: { userId: userId },
+        orderBy: { createdAt: "asc" },
+      });
+      
+      if (!app) {
+        // Create a default app for the user
+        app = await prisma.userApp.create({
+          data: {
+            userId: userId,
+            name: "Default App",
+            description: "Default app created for inventory sync",
+            fortellisClientId: "default-client-id",
+          },
+        });
+        console.log(`Created default app for user: ${app.id}`);
+      }
+    }
+
+    console.log(`Starting inventory sync for user: ${user.name} (${userId}), app: ${app.name} (${app.id})`);
 
     // Get department ID from request if provided (for GET requests)
     const departmentId = request.nextUrl.searchParams.get("departmentId") || request.headers.get("x-dept-id");
@@ -248,7 +322,7 @@ export async function GET(request: NextRequest) {
     const cdkInventory = await getFISalesBulkData(departmentId || undefined);
 
     if (!Array.isArray(cdkInventory) || cdkInventory.length === 0) {
-      console.warn(`No inventory items returned from CDK for dealer ${dealerId}`);
+      console.warn(`No inventory items returned from CDK for user ${userId}`);
       return NextResponse.json({
         success: true,
         message: "No inventory items to sync",
@@ -264,7 +338,7 @@ export async function GET(request: NextRequest) {
     console.log(`Fetched ${cdkInventory.length} items from CDK`);
 
     // Upsert inventory items
-    const results = await upsertInventoryItems(cdkInventory, dealerId);
+    const results = await upsertInventoryItems(cdkInventory, userId, app.id);
 
     console.log(
       `Inventory sync completed: ${results.created} created, ${results.updated} updated, ${results.errors} errors`
