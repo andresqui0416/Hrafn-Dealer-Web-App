@@ -65,15 +65,16 @@ export async function POST(req: NextRequest) {
     const user = getUserFromRequest(req);
     const userTime = performance.now() - userStart;
     console.log(
-      `[getUser] ${userTime.toFixed(2)}ms - userId: ${user?.userId}, dealerId: ${user?.dealerId}`,
+      `[getUser] ${userTime.toFixed(2)}ms - userId: ${user?.userId}`,
     );
 
-    if (!user || !user.dealerId) {
+    if (!user || !user.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { message } = await req.json();
+    const { message, appId } = await req.json();
     const safeMessage = typeof message === "string" ? message.trim() : "";
+    const safeAppId = typeof appId === "string" ? appId.trim() : undefined;
 
     if (!safeMessage) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
       try {
         // Generate SQL
         const sqlStart = performance.now();
-        const sql = await generateSQLFromNaturalLanguage(safeMessage, user.dealerId);
+        const sql = await generateSQLFromNaturalLanguage(safeMessage, user.userId, safeAppId);
         const sqlTime = performance.now() - sqlStart;
         console.log(`[generateSQL] ${sqlTime.toFixed(2)}ms - sql: ${sql}`);
 
@@ -124,20 +125,25 @@ export async function POST(req: NextRequest) {
       }
     } else {
       // Handle general questions with AI
-      // Get dealer context
-      const dealerStart = performance.now();
-      const dealer = await prisma.dealer.findUnique({
-        where: { id: user.dealerId },
+      // Get user context
+      const userDataStart = performance.now();
+      const userData = await prisma.user.findUnique({
+        where: { id: user.userId },
+        select: { name: true },
       });
-      const dealerTime = performance.now() - dealerStart;
+      const userDataTime = performance.now() - userDataStart;
       console.log(
-        `[getDealer] ${dealerTime.toFixed(2)}ms - dealer: ${dealer?.name || "not found"}`,
+        `[getUserData] ${userDataTime.toFixed(2)}ms - user: ${userData?.name || "not found"}`,
       );
 
-      // Get inventory count
+      // Get inventory count (filter by appId if provided)
       const countStart = performance.now();
+      let inventoryCountQuery = `SELECT COUNT(*)::int as count FROM inventory_listings WHERE "userId" = '${user.userId}'::uuid`;
+      if (safeAppId) {
+        inventoryCountQuery += ` AND "appId" = '${safeAppId}'::uuid`;
+      }
       const inventoryCountResult = await prisma.$queryRawUnsafe<[{ count: bigint }]>(
-        `SELECT COUNT(*)::int as count FROM inventory_listings WHERE "dealerId" = '${user.dealerId}'::uuid`,
+        inventoryCountQuery,
       );
       const inventoryCount = inventoryCountResult[0] ? Number(inventoryCountResult[0].count) : 0;
       const countTime = performance.now() - countStart;
@@ -145,7 +151,7 @@ export async function POST(req: NextRequest) {
 
       // Generate general response
       const context = {
-        dealerName: dealer?.name || "your dealership",
+        userName: userData?.name || "your account",
         inventoryCount,
       };
 

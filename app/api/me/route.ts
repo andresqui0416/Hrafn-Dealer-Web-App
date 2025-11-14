@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
 
+// GET current user information
 export async function GET(request: NextRequest) {
   try {
     const user = getUserFromRequest(request);
@@ -19,6 +20,8 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         email: true,
+        name: true,
+        avatar: true,
       },
     });
 
@@ -26,15 +29,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ user: userData });
+    return NextResponse.json({
+      user: userData,
+    });
   } catch (error) {
-    console.error("Get user settings error:", error);
+    console.error("Get user info error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
 }
 
+// PUT update current user information
 export async function PUT(request: NextRequest) {
   try {
     const user = getUserFromRequest(request);
@@ -43,7 +49,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, currentPassword, newPassword } = body;
+    const { email, currentPassword, newPassword, avatar } = body;
 
     // Get current user data
     const currentUser = await prisma.user.findUnique({
@@ -54,7 +60,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const updateData: { email?: string; passwordHash?: string } = {};
+    const updateData: { email?: string; passwordHash?: string; avatar?: string | null } = {};
 
     // Update email if provided
     if (email && email !== currentUser.email) {
@@ -71,7 +77,10 @@ export async function PUT(request: NextRequest) {
     // Update password if provided
     if (newPassword) {
       if (!currentPassword) {
-        return NextResponse.json({ error: "Current password is required to change password" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Current password is required to change password" },
+          { status: 400 },
+        );
       }
 
       // Verify current password
@@ -82,6 +91,11 @@ export async function PUT(request: NextRequest) {
 
       // Hash new password
       updateData.passwordHash = await hashPassword(newPassword);
+    }
+
+    // Update avatar if provided
+    if (avatar !== undefined) {
+      updateData.avatar = avatar || null;
     }
 
     // If no updates, return success
@@ -96,12 +110,17 @@ export async function PUT(request: NextRequest) {
       select: {
         id: true,
         email: true,
+        name: true,
+        avatar: true,
       },
     });
 
-    return NextResponse.json({ user: updatedUser, message: "Settings updated successfully" });
+    return NextResponse.json({
+      user: updatedUser,
+      message: "Settings updated successfully",
+    });
   } catch (error) {
-    console.error("Update user settings error:", error);
+    console.error("Update user info error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   } finally {
     await prisma.$disconnect();

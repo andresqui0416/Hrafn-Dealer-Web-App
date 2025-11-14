@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
+import { useApp } from "@/contexts/app-context";
 
 type ChatMessage = {
   id: string;
@@ -12,11 +13,12 @@ type ChatMessage = {
 
 export default function ChatPage() {
   const { user } = useAuth();
+  const { selectedApp } = useApp();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: crypto.randomUUID(),
       role: "assistant",
-      content: "Hi! I’m your Hrafn AI Agent. How can I help today?",
+      content: "Hi! I'm your Hrafn AI Agent. How can I help today?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -44,7 +46,10 @@ export default function ChatPage() {
       const res = await fetch("/api/agent/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({ 
+          message: trimmed,
+          appId: selectedApp?.id,
+        }),
       });
       const data = await res.json();
       const assistantMsg: ChatMessage = {

@@ -1,3 +1,6 @@
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
@@ -19,6 +22,14 @@ export default function DashboardPage() {
       <section className="rounded-lg border border-white/10 p-4">
         <div className="text-sm text-muted-foreground">Recommendations</div>
         <div className="mt-2 text-sm">Your AI recommendations will appear here.</div>
+      </section>
+
+      <section className="rounded-lg border border-white/10 p-4">
+        <div className="mt-2 d-flex justfy-center">
+          <Link href="/apps">
+          <Button className = "mx-auto">My APPs</Button>
+          </Link>
+        </div>
       </section>
     </div>
   );

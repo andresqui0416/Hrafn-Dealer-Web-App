@@ -1,21 +1,11 @@
-import { PrismaClient, $Enums } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { hashPassword } from "../lib/auth/password";
 import { generateInventoryItem } from "../lib/prisma/generateInventory";
 
 const prisma = new PrismaClient();
 
-
 async function main() {
-  const dealer = await prisma.dealer.upsert({
-    where: { id: "00000000-0000-0000-0000-000000000001" },
-    update: {},
-    create: {
-      id: "00000000-0000-0000-0000-000000000001",
-      name: "Dev Dealer",
-    },
-  });
-
   const password = "devpassword";
   const passwordHash = await hashPassword(password);
 
@@ -24,49 +14,43 @@ async function main() {
     update: {},
     create: {
       email: "dev@dealer.test",
+      name: "Dev User",
       passwordHash,
     },
   });
 
-  await prisma.userDealerRole.upsert({
-    where: {
-      userId_dealerId_role: { userId: user.id, dealerId: dealer.id, role: $Enums.Role.admin },
-    },
-    update: {},
-    create: {
-      userId: user.id,
-      dealerId: dealer.id,
-      role: $Enums.Role.admin,
-    },
-  });
-
-  const session = await prisma.session.create({
+  await prisma.userApp.deleteMany();
+  // Create or get the default app
+  const app = await prisma.userApp.create({
     data: {
       userId: user.id,
-      dealerId: dealer.id,
-      jwtId: crypto.randomUUID(),
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days
+      name: "Default App",
+      description: "Default app created for existing inventory",
+      fortellisClientId: "dev-client-id",
+      fortellisClientSecret: "dev-client-secret",
     },
   });
 
-  // Delete existing inventory for this dealer (for re-seeding)
+  // Delete existing inventory for this user (for re-seeding)
   await prisma.inventoryListing.deleteMany({
-    where: { dealerId: dealer.id },
+    where: { userId: user.id },
   });
 
-  // Create 500 inventory listings for each dealer
+  // Create 500 inventory listings
   console.log("Creating inventory listings...");
   for (let i = 0; i < 10; i++) {
-    const inventoryItems = Array.from({ length: 50 }, (_, i) => generateInventoryItem(dealer.id, i));
+    const inventoryItems = Array.from({ length: 50 }, (_, index) =>
+      generateInventoryItem(user.id, app.id, i * 50 + index),
+    );
     await prisma.inventoryListing.createMany({
       data: inventoryItems,
     });
   }
 
   console.log("Seeded:", {
-    dealer: dealer.name,
     user: user.email,
-    session: session.id,
+    userName: user.name,
+    app: app.name,
     inventoryCount: 500,
   });
 }

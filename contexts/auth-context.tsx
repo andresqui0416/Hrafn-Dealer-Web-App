@@ -2,13 +2,14 @@
 
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 export interface User {
   id: string;
   email: string;
-  dealerId: string;
-  role: string;
-  name?: string;
+  name: string;
+  avatar?: string | null;
 }
 
 interface AuthContextType {
@@ -35,7 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     fetchingRef.current = true;
     try {
-      const res = await fetch("/api/auth/me");
+      setLoading(true);
+      const res = await fetch("/api/me");
       if (res.ok) {
         const data = await res.json();
         if (data?.user) {
@@ -59,19 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser();
   }, []);
 
-  // Refetch when pathname changes (e.g., after login redirect)
-  useEffect(() => {
-    if (lastPathnameRef.current !== null && lastPathnameRef.current !== pathname) {
-      const timeoutId = setTimeout(() => {
-        fetchUser();
-      }, 100);
-      lastPathnameRef.current = pathname;
-      return () => clearTimeout(timeoutId);
-    }
-    lastPathnameRef.current = pathname;
-  }, [pathname]);
-
-  // Listen for custom auth events
   useEffect(() => {
     const handleAuthChange = () => {
       fetchUser();
@@ -85,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("auth:login", handleAuthChange);
       window.removeEventListener("auth:logout", handleAuthChange);
     };
-  }, [pathname]);
+  }, []);
 
   const logout = async () => {
     try {
@@ -99,7 +88,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, loading, refetch: fetchUser, logout }}>
-      {children}
+      {loading ? (
+        <div className="flex justify-center items-center py-10 h-screen">
+          <FontAwesomeIcon icon={faSpinner} size="2x" className="animate-spin" />
+          <p className="text-sm text-muted-foreground ml-2">Loading...</p>
+        </div>
+      ) : 
+        children
+      }
     </AuthContext.Provider>
   );
 }
