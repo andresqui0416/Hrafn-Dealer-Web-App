@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faUser, faGear, faSignOut } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faUser, faGear, faSignOut, faMobileScreen, faChartLine } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -57,12 +57,17 @@ export function UserAvatar() {
           variant="ghost"
           className="relative flex items-center gap-2 h-auto p-1 focus-visible:outline-none active:outline-none active:ring-0 active:ring-offset-0 data-[state=closed]:outline-none data-[state=closed]:ring-0 data-[state=closed]:ring-offset-0"
         >
-          <div className="flex items-center justify-center bg-primary rounded-full h-8 w-8">
-            <FontAwesomeIcon icon={faUser} className="h-3 w-3 text-muted-foreground" />
-          </div>
-          <div className="flex h-8 w-8 items-center justify-center  text-primary-foreground text-sm font-medium">
-            {initials}
-          </div>
+          {user.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user.name || "User avatar"}
+              className="h-8 w-8 rounded-full object-cover border-2 border-white/10"
+            />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center bg-primary rounded-full text-primary-foreground text-sm font-medium">
+              {initials}
+            </div>
+          )}
           <FontAwesomeIcon icon={faChevronDown} className="h-3 w-3 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
@@ -73,12 +78,21 @@ export function UserAvatar() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-white/10" />
         <DropdownMenuItem
-          onClick={() => router.push("/profile")}
+          onClick={() => router.push("/dashboard")}
           className="py-2 hover:bg-white/10"
         >
-          <FontAwesomeIcon icon={faUser} className="h-3 w-3 text-muted-foreground" />
-          <div className="text-sm font-medium ml-2">Profile</div>
+          <FontAwesomeIcon icon={faChartLine} className="h-3 w-3 text-muted-foreground" />
+          <div className="text-sm font-medium ml-2">Dashboard</div>
         </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => router.push("/apps")}
+          className="py-2 hover:bg-white/10"
+        >
+          <FontAwesomeIcon icon={faMobileScreen} className="h-3 w-3 text-muted-foreground" />
+          <div className="text-sm font-medium ml-2">App Management</div>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-white/10" />
+
         <DropdownMenuItem
           onClick={() => router.push("/settings")}
           className="py-2 hover:bg-white/10"

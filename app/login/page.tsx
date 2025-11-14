@@ -40,8 +40,8 @@ export default function LoginPage() {
       // Dispatch auth event to update UI
       window.dispatchEvent(new Event("auth:login"));
 
-      // Redirect to dashboard on success
-      router.push("/dashboard");
+      // Redirect to app management page on success
+      router.push("/apps");
       router.refresh();
     } catch (err) {
       setError("Network error. Please try again.");
