@@ -45,13 +45,16 @@ export default function InventoryPage() {
 
 
   useEffect(() => {
-    const loadInventory = async () => {
-      if (!appId) return;
+    if (!appId) return;
 
+    const abortController = new AbortController();
+
+    const loadInventory = async () => {
       try {
         setInventoryLoading(true);
         const response = await fetch(
-          `/api/apps/${appId}/inventory?page=${currentPage}&limit=${itemsPerPage}`
+          `/api/apps/${appId}/inventory?page=${currentPage}&limit=${itemsPerPage}`,
+          { signal: abortController.signal }
         );
         if (response.ok) {
           const data = await response.json();
@@ -63,14 +66,25 @@ export default function InventoryPage() {
           }
         }
       } catch (error) {
+        // Ignore abort errors
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
         console.error("Error loading inventory:", error);
       } finally {
-        setInventoryLoading(false);
+        if (!abortController.signal.aborted) {
+          setInventoryLoading(false);
+        }
       }
     };
 
-      loadInventory();
-  }, [currentPage, itemsPerPage]);
+    loadInventory();
+
+    // Cleanup function to cancel the request if component unmounts or dependencies change
+    return () => {
+      abortController.abort();
+    };
+  }, [appId, currentPage, itemsPerPage]);
 
   return (
     <div className="space-y-6">

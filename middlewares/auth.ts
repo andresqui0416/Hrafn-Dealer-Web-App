@@ -7,6 +7,7 @@ export async function authMiddleware(request: NextRequest): Promise<NextResponse
   // Skip auth for auth endpoints (login, logout)
   if (
     pathname.startsWith("/api/auth/login") ||
+    pathname.startsWith("/api/auth/signup") ||
     pathname.startsWith("/api/auth/logout") ||
     pathname.startsWith("/api/auth/")
   ) {

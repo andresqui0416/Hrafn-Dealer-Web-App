@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getUserFromRequest } from "@/lib/auth/getUser";
+import { getUserDealer } from "@/lib/auth/getUserDealer";
 
 const prisma = new PrismaClient();
 
@@ -16,17 +17,23 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get user's dealer
+    const dealerId = await getUserDealer(user.userId);
+    if (!dealerId) {
+      return NextResponse.json({ error: "No dealer found for user" }, { status: 404 });
+    }
+
     const appId = params.id;
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const skip = (page - 1) * limit;
 
-    // Verify the app belongs to the user
-    const app = await prisma.userApp.findFirst({
+    // Verify the app belongs to the dealer
+    const app = await prisma.dealerApp.findFirst({
       where: {
         id: appId,
-        userId: user.userId,
+        dealerId,
       },
     });
 
@@ -37,12 +44,12 @@ export async function GET(
     // Fetch inventory for this app with pagination
     const [inventory, totalCount] = await Promise.all([
       prisma.inventoryListing.findMany({
-        where: {
-          appId: appId,
-          userId: user.userId,
-        },
-        orderBy: {
-          createdAt: "desc",
+      where: {
+        appId: appId,
+        dealerId,
+      },
+      orderBy: {
+        createdAt: "desc",
         },
         skip,
         take: limit,
@@ -50,7 +57,7 @@ export async function GET(
       prisma.inventoryListing.count({
         where: {
           appId: appId,
-          userId: user.userId,
+          dealerId,
         },
       }),
     ]);
@@ -74,6 +81,8 @@ export async function GET(
       { error: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 

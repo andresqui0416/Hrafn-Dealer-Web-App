@@ -7,17 +7,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  admin
+  manager
+  viewer
+}
+
+enum CrmType {
+  CDK
+  Tekion
+}
+
+model Dealer {
+  id        String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name      String           @unique
+  address   String
+  createdAt DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
+  userRoles UserDealerRole[]
+  apps      DealerApp[]
+  inventory InventoryListing[]
+
+  @@map("Dealer")
+}
+
 model User {
   id           String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   email        String           @unique
   name         String
   passwordHash String
+  phone        String
   avatar       String?
   createdAt    DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
   sessions     Session[]
-  inventory    InventoryListing[]
-  apps         UserApp[]
+  dealerRoles  UserDealerRole[]
+
+  @@map("User")
 }
 
 model Session {
@@ -29,48 +55,65 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sess_user")
 
   @@index([userId], map: "idx_sess_user")
+  @@map("Session")
 }
 
 model InventoryListing {
-  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  userId     String   @db.Uuid
-  appId      String   @db.Uuid
+  id         String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  dealerId   String     @db.Uuid
+  appId      String     @db.Uuid
   vin        String
   year       Int
   make       String
   model      String
   trim       String?
-  bodyStyle  String?  @map("body_style")
+  bodyStyle  String?    @map("body_style")
   drivetrain String?
-  msrp       Decimal? @db.Decimal(10, 2)
-  price      Decimal? @db.Decimal(10, 2)
-  mileage    Int      @default(0)
-  status     String   @default("available")
-  scrapedAt  DateTime @default(now()) @map("scraped_at") @db.Timestamptz(6)
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_user")
-  app        UserApp  @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_app")
+  msrp       Decimal?   @db.Decimal(10, 2)
+  price      Decimal?   @db.Decimal(10, 2)
+  mileage    Int        @default(0)
+  status     String     @default("available")
+  scrapedAt  DateTime   @default(now()) @map("scraped_at") @db.Timestamptz(6)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  dealer     Dealer     @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_dealer")
+  app        DealerApp  @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_app")
 
-  @@unique([userId, vin], map: "u_inv_user_vin")
-  @@index([userId], map: "idx_inv_user")
+  @@unique([dealerId, vin], map: "u_inv_dealer_vin")
+  @@index([dealerId], map: "idx_inv_dealer")
   @@index([appId], map: "idx_inv_app")
   @@index([make, model], map: "idx_inv_make_model")
-  @@map("inventory_listings")
+  @@map("Inventory")
 }
 
-model UserApp {
-  id                    String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  userId                String             @db.Uuid
-  name                  String
-  description           String?
-  fortellisClientId     String             @map("fortellis_client_id")
-  fortellisClientSecret String?            @map("fortellis_client_secret")
-  createdAt             DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt             DateTime           @default(now()) @updatedAt @db.Timestamptz(6)
-  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_app_user")
-  inventory             InventoryListing[]
+model DealerApp {
+  id          String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  dealerId    String            @db.Uuid
+  name        String
+  description String?
+  crmType     CrmType           @map("crm_type")
+  clientId    String            @map("client_id")
+  clientSecret String           @map("client_secret")
+  createdAt   DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
+  dealer      Dealer            @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_app_dealer")
+  inventory   InventoryListing[]
 
-  @@index([userId], map: "idx_app_user")
-  @@map("user_apps")
+  @@index([dealerId], map: "idx_app_dealer")
+  @@map("DealerApp")
+}
+
+model UserDealerRole {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String   @db.Uuid
+  dealerId String    @db.Uuid
+  role      Role
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_udr_user")
+  dealer    Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_udr_dealer")
+
+  @@unique([userId, dealerId, role], map: "u_udr")
+  @@index([userId], map: "idx_udr_user")
+  @@index([dealerId], map: "idx_udr_dealer")
+  @@map("UserDealerRole")
 }

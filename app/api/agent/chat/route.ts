@@ -88,9 +88,20 @@ export async function POST(req: NextRequest) {
 
     if (intent === "data_query") {
       try {
+        // Get user's dealer
+        const userDealerRole = await prisma.userDealerRole.findFirst({
+          where: { userId: user.userId },
+          select: { dealerId: true },
+          orderBy: { createdAt: "asc" },
+        });
+
+        if (!userDealerRole) {
+          return NextResponse.json({ error: "No dealer found for user" }, { status: 404 });
+        }
+
         // Generate SQL
         const sqlStart = performance.now();
-        const sql = await generateSQLFromNaturalLanguage(safeMessage, user.userId, safeAppId);
+        const sql = await generateSQLFromNaturalLanguage(safeMessage, userDealerRole.dealerId, safeAppId);
         const sqlTime = performance.now() - sqlStart;
         console.log(`[generateSQL] ${sqlTime.toFixed(2)}ms - sql: ${sql}`);
 
@@ -136,9 +147,16 @@ export async function POST(req: NextRequest) {
         `[getUserData] ${userDataTime.toFixed(2)}ms - user: ${userData?.name || "not found"}`,
       );
 
+      // Get user's dealer
+      const userDealerRole = await prisma.userDealerRole.findFirst({
+        where: { userId: user.userId },
+        select: { dealerId: true },
+        orderBy: { createdAt: "asc" },
+      });
+
       // Get inventory count (filter by appId if provided)
       const countStart = performance.now();
-      let inventoryCountQuery = `SELECT COUNT(*)::int as count FROM inventory_listings WHERE "userId" = '${user.userId}'::uuid`;
+      let inventoryCountQuery = `SELECT COUNT(*)::int as count FROM "Inventory" WHERE "dealerId" = '${userDealerRole?.dealerId || user.userId}'::uuid`;
       if (safeAppId) {
         inventoryCountQuery += ` AND "appId" = '${safeAppId}'::uuid`;
       }
