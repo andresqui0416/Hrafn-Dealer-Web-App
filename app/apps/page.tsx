@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +13,9 @@ type App = {
   id: string;
   name: string;
   description: string | null;
-  fortellisClientId: string;
-  hasFortellisSecret: boolean;
+  crmType: "CDK" | "Tekion";
+  clientId: string;
+  hasSecret: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -33,33 +34,65 @@ export default function AppsPage() {
   // Form state
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [fortellisClientId, setFortellisClientId] = useState("");
-  const [fortellisClientSecret, setFortellisClientSecret] = useState("");
-
-  useEffect(() => {
-    loadApps();
-  }, []);
+  const [crmType, setCrmType] = useState<"CDK" | "Tekion">("CDK");
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const loadApps = async () => {
+    // Cancel any existing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new abort controller for this request
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     try {
       setAppsFetchLoading(true);
-      const response = await fetch("/api/apps");
+      const response = await fetch("/api/apps", {
+        signal: abortController.signal,
+      });
       if (response.ok) {
         const data = await response.json();
         setApps(data.apps || []);
       }
     } catch (err) {
+      // Ignore abort errors
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       console.error("Failed to load apps:", err);
     } finally {
-      setAppsFetchLoading(false);
+      if (!abortController.signal.aborted) {
+        setAppsFetchLoading(false);
+      }
+      // Clear the ref if this was the active request
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null;
+      }
     }
   };
+
+  useEffect(() => {
+    loadApps();
+
+    // Cleanup function to cancel the request if component unmounts
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
 
   const resetForm = () => {
     setName("");
     setDescription("");
-    setFortellisClientId("");
-    setFortellisClientSecret("");
+    setCrmType("CDK");
+    setClientId("");
+    setClientSecret("");
     setEditingApp(null);
     setShowForm(false);
     setError(null);
@@ -70,8 +103,9 @@ export default function AppsPage() {
     setEditingApp(app);
     setName(app.name);
     setDescription(app.description || "");
-    setFortellisClientId(app.fortellisClientId);
-    setFortellisClientSecret("");
+    setCrmType(app.crmType);
+    setClientId(app.clientId);
+    setClientSecret("");
     setShowForm(true);
     setError(null);
     setSuccess(null);
@@ -117,8 +151,8 @@ export default function AppsPage() {
     setSuccess(null);
     setLoading(true);
 
-    if (!name || !fortellisClientId) {
-      setError("Name and Fortellis Client ID are required");
+    if (!name || !clientId || !crmType) {
+      setError("Name, CRM Type, and Client ID are required");
       setLoading(false);
       return;
     }
@@ -130,13 +164,14 @@ export default function AppsPage() {
       const body: any = {
         name,
         description: description || undefined,
-        fortellisClientId,
+        crmType,
+        clientId,
       };
 
       // Only include secret if it's being updated (new app or editing with new value)
-      if (fortellisClientSecret) {
-        body.fortellisClientSecret = fortellisClientSecret;
-      } else if (editingApp && !fortellisClientSecret) {
+      if (clientSecret) {
+        body.clientSecret = clientSecret;
+      } else if (editingApp && !clientSecret) {
         // When editing, if secret is empty, don't send it (keep existing)
         // We need to explicitly not update it
       }
@@ -238,15 +273,32 @@ export default function AppsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="fortellisClientId" className="text-sm font-medium">
-                      Fortellis Client ID *
+                    <label htmlFor="crmType" className="text-sm font-medium">
+                      CRM Type *
+                    </label>
+                    <select
+                      id="crmType"
+                      value={crmType}
+                      onChange={(e) => setCrmType(e.target.value as "CDK" | "Tekion")}
+                      required
+                      disabled={loading}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="CDK">CDK</option>
+                      <option value="Tekion">Tekion</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="clientId" className="text-sm font-medium">
+                      Client ID *
                     </label>
                     <Input
-                      id="fortellisClientId"
+                      id="clientId"
                       type="text"
-                      value={fortellisClientId}
-                      onChange={(e) => setFortellisClientId(e.target.value)}
-                      placeholder="Enter your Fortellis Client ID"
+                      value={clientId}
+                      onChange={(e) => setClientId(e.target.value)}
+                      placeholder="Enter your Client ID"
                       required
                       disabled={loading}
                       autoComplete="off"
@@ -254,23 +306,23 @@ export default function AppsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="fortellisClientSecret" className="text-sm font-medium">
-                      Fortellis Client Secret
+                    <label htmlFor="clientSecret" className="text-sm font-medium">
+                      Client Secret
                     </label>
                     <Input
-                      id="fortellisClientSecret"
+                      id="clientSecret"
                       type="password"
-                      value={fortellisClientSecret}
-                      onChange={(e) => setFortellisClientSecret(e.target.value)}
+                      value={clientSecret}
+                      onChange={(e) => setClientSecret(e.target.value)}
                       placeholder={
                         editingApp
                           ? "Enter new secret to update, or leave blank to keep current"
-                          : "Enter your Fortellis Client Secret"
+                          : "Enter your Client Secret"
                       }
                       disabled={loading}
                       autoComplete="new-password"
                     />
-                    {editingApp && editingApp.hasFortellisSecret && (
+                    {editingApp && editingApp.hasSecret && (
                       <p className="text-xs text-muted-foreground">
                         A secret is already configured. Enter a new value to update it.
                       </p>
@@ -326,13 +378,17 @@ export default function AppsPage() {
                       <CardContent>
                         <div className="space-y-3">
                           <div>
+                            <p className="text-xs font-medium text-muted-foreground">CRM Type</p>
+                            <p className="mt-1 text-sm font-medium">{app.crmType}</p>
+                          </div>
+                          <div>
                             <p className="text-xs font-medium text-muted-foreground">Client ID</p>
-                            <p className="mt-1 font-mono text-sm">{app.fortellisClientId}</p>
+                            <p className="mt-1 font-mono text-sm">{app.clientId}</p>
                           </div>
                           <div>
                             <p className="text-xs font-medium text-muted-foreground">Secret Status</p>
                             <p className="mt-1 text-sm">
-                              {app.hasFortellisSecret ? (
+                              {app.hasSecret ? (
                                 <span className="text-green-600 dark:text-green-400">Configured</span>
                               ) : (
                                 <span className="text-muted-foreground">Not configured</span>

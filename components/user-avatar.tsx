@@ -21,8 +21,6 @@ export function UserAvatar() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
-    router.refresh();
   };
 
   if (loading) {
@@ -92,6 +90,14 @@ export function UserAvatar() {
           <div className="text-sm font-medium ml-2">App Management</div>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-white/10" />
+
+        <DropdownMenuItem
+          onClick={() => router.push("/profile")}
+          className="py-2 hover:bg-white/10"
+        >
+          <FontAwesomeIcon icon={faUser} className="h-3 w-3 text-muted-foreground" />
+          <div className="text-sm font-medium ml-2">Profile</div>
+        </DropdownMenuItem>
 
         <DropdownMenuItem
           onClick={() => router.push("/settings")}

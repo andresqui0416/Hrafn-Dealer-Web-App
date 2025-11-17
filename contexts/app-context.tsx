@@ -6,8 +6,9 @@ type App = {
   id: string;
   name: string;
   description: string | null;
-  fortellisClientId: string;
-  hasFortellisSecret: boolean;
+  crmType: "CDK" | "Tekion";
+  clientId: string;
+  hasSecret: boolean;
   createdAt: string;
   updatedAt: string;
 };

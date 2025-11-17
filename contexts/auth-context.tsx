@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
@@ -23,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const fetchingRef = useRef(false);
@@ -61,20 +62,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser();
   }, []);
 
+  // Protect routes - redirect unauthenticated users to login
+  useEffect(() => {
+    // Don't redirect while loading
+    if (loading) {
+      return;
+    }
+
+    // Public routes that don't require authentication
+    const publicRoutes = ["/", "/login", "/signup"];
+    const isPublicRoute = publicRoutes.includes(pathname);
+
+    // If user is not authenticated and trying to access a protected route
+    if (!user && !isPublicRoute) {
+      router.push("/login");
+      router.refresh();
+    }
+  }, [user, loading, pathname, router]);
+
   useEffect(() => {
     const handleAuthChange = () => {
       fetchUser();
       lastPathnameRef.current = pathname;
     };
 
+    const handleAuthLogout = () => {
+      setUser(null);
+      router.push("/");
+      router.refresh();
+    };
+
     window.addEventListener("auth:login", handleAuthChange);
-    window.addEventListener("auth:logout", handleAuthChange);
+    window.addEventListener("auth:logout", handleAuthLogout);
 
     return () => {
       window.removeEventListener("auth:login", handleAuthChange);
-      window.removeEventListener("auth:logout", handleAuthChange);
+      window.removeEventListener("auth:logout", handleAuthLogout);
     };
-  }, []);
+  }, [pathname, router]);
 
   const logout = async () => {
     try {
@@ -83,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.dispatchEvent(new Event("auth:logout"));
     } catch (error) {
       console.error("Logout error:", error);
+      // Still redirect even if API call fails
     }
   };
 

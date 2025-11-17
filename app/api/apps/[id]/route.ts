@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getUserFromRequest } from "@/lib/auth/getUser";
+import { getUserDealer } from "@/lib/auth/getUserDealer";
 
 const prisma = new PrismaClient();
 
@@ -17,19 +18,26 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get user's dealer
+    const dealerId = await getUserDealer(user.userId);
+    if (!dealerId) {
+      return NextResponse.json({ error: "No dealer found for user" }, { status: 404 });
+    }
+
     const appId = params.id;
 
-    const app = await prisma.userApp.findFirst({
+    const app = await prisma.dealerApp.findFirst({
       where: {
         id: appId,
-        userId: user.userId,
+        dealerId,
       },
       select: {
         id: true,
         name: true,
         description: true,
-        fortellisClientId: true,
-        fortellisClientSecret: true,
+        crmType: true,
+        clientId: true,
+        clientSecret: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -44,8 +52,9 @@ export async function GET(
         id: app.id,
         name: app.name,
         description: app.description,
-        fortellisClientId: app.fortellisClientId,
-        hasFortellisSecret: !!app.fortellisClientSecret,
+        crmType: app.crmType,
+        clientId: app.clientId,
+        hasSecret: !!app.clientSecret,
         createdAt: app.createdAt,
         updatedAt: app.updatedAt,
       },
@@ -69,15 +78,21 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get user's dealer
+    const dealerId = await getUserDealer(user.userId);
+    if (!dealerId) {
+      return NextResponse.json({ error: "No dealer found for user" }, { status: 404 });
+    }
+
     const appId = params.id;
     const body = await request.json();
-    const { name, description, fortellisClientId, fortellisClientSecret } = body;
+    const { name, description, crmType, clientId, clientSecret } = body;
 
-    // Verify app belongs to user
-    const existingApp = await prisma.userApp.findFirst({
+    // Verify app belongs to dealer
+    const existingApp = await prisma.dealerApp.findFirst({
       where: {
         id: appId,
-        userId: user.userId,
+        dealerId,
       },
     });
 
@@ -89,26 +104,38 @@ export async function PUT(
     const updateData: {
       name?: string;
       description?: string | null;
-      fortellisClientId?: string;
-      fortellisClientSecret?: string | null;
+      crmType?: "CDK" | "Tekion";
+      clientId?: string;
+      clientSecret?: string;
     } = {};
 
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description || null;
-    if (fortellisClientId !== undefined) updateData.fortellisClientId = fortellisClientId;
-    if (fortellisClientSecret !== undefined) {
-      updateData.fortellisClientSecret = fortellisClientSecret || null;
+    if (crmType !== undefined) {
+      if (!["CDK", "Tekion"].includes(crmType)) {
+        return NextResponse.json(
+          { error: "CRM Type must be either CDK or Tekion" },
+          { status: 400 },
+        );
+      }
+      updateData.crmType = crmType;
+    }
+    if (clientId !== undefined) updateData.clientId = clientId;
+    // Only update clientSecret if a new value is provided (it's required, so we can't set it to null)
+    if (clientSecret !== undefined && clientSecret !== null && clientSecret !== "") {
+      updateData.clientSecret = clientSecret;
     }
 
-    const app = await prisma.userApp.update({
+    const app = await prisma.dealerApp.update({
       where: { id: appId },
       data: updateData,
       select: {
         id: true,
         name: true,
         description: true,
-        fortellisClientId: true,
-        fortellisClientSecret: true,
+        crmType: true,
+        clientId: true,
+        clientSecret: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -119,8 +146,9 @@ export async function PUT(
         id: app.id,
         name: app.name,
         description: app.description,
-        fortellisClientId: app.fortellisClientId,
-        hasFortellisSecret: !!app.fortellisClientSecret,
+        crmType: app.crmType,
+        clientId: app.clientId,
+        hasSecret: !!app.clientSecret,
         createdAt: app.createdAt,
         updatedAt: app.updatedAt,
       },
@@ -145,13 +173,19 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get user's dealer
+    const dealerId = await getUserDealer(user.userId);
+    if (!dealerId) {
+      return NextResponse.json({ error: "No dealer found for user" }, { status: 404 });
+    }
+
     const appId = params.id;
 
-    // Verify app belongs to user
-    const app = await prisma.userApp.findFirst({
+    // Verify app belongs to dealer
+    const app = await prisma.dealerApp.findFirst({
       where: {
         id: appId,
-        userId: user.userId,
+        dealerId,
       },
     });
 
@@ -159,7 +193,7 @@ export async function DELETE(
       return NextResponse.json({ error: "App not found" }, { status: 404 });
     }
 
-    await prisma.userApp.delete({
+    await prisma.dealerApp.delete({
       where: { id: appId },
     });
 
