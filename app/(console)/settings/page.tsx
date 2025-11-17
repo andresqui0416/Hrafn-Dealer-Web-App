@@ -161,6 +161,7 @@ export default function SettingsPage() {
               </label>
               <Input
                 id="dealerName"
+                name="dealerName"
                 type="text"
                 placeholder="ABC Auto Dealership"
                 value={dealerName}
@@ -180,6 +181,7 @@ export default function SettingsPage() {
               </label>
               <Input
                 id="dealerAddress"
+                name="dealerAddress"
                 type="text"
                 placeholder="123 Main St, City, State ZIP"
                 value={dealerAddress}

@@ -104,6 +104,7 @@ export default function SignupPage() {
               </label>
               <Input
                 id="dealerName"
+                name="dealerName"
                 type="text"
                 placeholder="ABC Auto Dealership"
                 value={dealerName}
@@ -120,6 +121,7 @@ export default function SignupPage() {
               </label>
               <Input
                 id="contactName"
+                name="contactName"
                 type="text"
                 placeholder="John Doe"
                 value={contactName}
@@ -136,6 +138,7 @@ export default function SignupPage() {
               </label>
               <Input
                 id="contactEmail"
+                name="contactEmail"
                 type="email"
                 placeholder="contact@dealership.com"
                 value={contactEmail}
@@ -152,6 +155,7 @@ export default function SignupPage() {
               </label>
               <Input
                 id="contactPhone"
+                name="contactPhone"
                 type="tel"
                 placeholder="(555) 123-4567"
                 value={contactPhone}
@@ -168,6 +172,7 @@ export default function SignupPage() {
               </label>
               <Input
                 id="dealerAddress"
+                name="dealerAddress"
                 type="text"
                 placeholder="123 Main St, City, State ZIP"
                 value={dealerAddress}
@@ -184,6 +189,7 @@ export default function SignupPage() {
               </label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="Enter your password (min. 8 characters)"
                 value={password}
@@ -200,6 +206,7 @@ export default function SignupPage() {
               </label>
               <Input
                 id="confirmPassword"
+                name="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
                 value={confirmPassword}
