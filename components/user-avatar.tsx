@@ -73,31 +73,31 @@ export function UserAvatar() {
           <FontAwesomeIcon icon={faChevronDown} className="h-3 w-3 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 bg-background" align="end">
-        <DropdownMenuLabel className="py-2">
+      <DropdownMenuContent className="w-56 bg-background py-1" align="end">
+        <DropdownMenuLabel className="px-2 py-1.5">
           <p className="text-sm font-medium">{user.email}</p>
           {/* <p className="text-xs text-muted-foreground">{user.role}</p> */}
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuSeparator className="bg-white/10 my-0.5" />
         <DropdownMenuItem
           onClick={() => router.push("/dashboard")}
-          className="py-2 hover:bg-white/10"
+          className="py-1.5 hover:bg-white/10"
         >
           <FontAwesomeIcon icon={faChartLine} className="h-3 w-3 text-muted-foreground" />
           <div className="text-sm font-medium ml-2">Dashboard</div>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => router.push("/apps")}
-          className="py-2 hover:bg-white/10"
+          className="py-1.5 hover:bg-white/10"
         >
           <FontAwesomeIcon icon={faMobileScreen} className="h-3 w-3 text-muted-foreground" />
           <div className="text-sm font-medium ml-2">App Management</div>
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuSeparator className="bg-white/10 my-0.5" />
 
         <DropdownMenuItem
           onClick={() => router.push("/profile")}
-          className="py-2 hover:bg-white/10"
+          className="py-1.5 hover:bg-white/10"
         >
           <FontAwesomeIcon icon={faUser} className="h-3 w-3 text-muted-foreground" />
           <div className="text-sm font-medium ml-2">Profile</div>
@@ -105,15 +105,15 @@ export function UserAvatar() {
 
         <DropdownMenuItem
           onClick={() => router.push("/settings")}
-          className="py-2 hover:bg-white/10"
+          className="py-1.5 hover:bg-white/10"
         >
           <FontAwesomeIcon icon={faGear} className="h-3 w-3 text-muted-foreground" />
           <div className="text-sm font-medium ml-2">Settings</div>
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuSeparator className="bg-white/10 my-0.5" />
         <DropdownMenuItem
           onClick={handleLogout}
-          className="text-destructive py-2 hover:bg-white/10"
+          className="text-destructive py-1.5 hover:bg-white/10"
         >
           <FontAwesomeIcon icon={faSignOut} className="h-3 w-3 text-muted-foreground" />
           <div className="text-sm font-medium ml-2">Log out</div>
