@@ -125,6 +125,8 @@ export default function ChatPage() {
 
       <div className="mt-3 flex items-end gap-2">
         <textarea
+          id="chatMessage"
+          name="chatMessage"
           className="min-h-[44px] w-full resize-none rounded-md border border-white/10 bg-transparent p-3 text-sm outline-none focus:ring-1 focus:ring-white/20"
           placeholder={user ? "Type your message..." : "Please login to chat"}
           disabled={!user || sending}

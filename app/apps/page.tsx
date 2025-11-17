@@ -247,6 +247,7 @@ export default function AppsPage() {
                     </label>
                     <Input
                       id="name"
+                      name="name"
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -263,6 +264,7 @@ export default function AppsPage() {
                     </label>
                     <Input
                       id="description"
+                      name="description"
                       type="text"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
@@ -278,6 +280,7 @@ export default function AppsPage() {
                     </label>
                     <select
                       id="crmType"
+                      name="crmType"
                       value={crmType}
                       onChange={(e) => setCrmType(e.target.value as "CDK" | "Tekion")}
                       required
@@ -295,6 +298,7 @@ export default function AppsPage() {
                     </label>
                     <Input
                       id="clientId"
+                      name="clientId"
                       type="text"
                       value={clientId}
                       onChange={(e) => setClientId(e.target.value)}
@@ -311,6 +315,7 @@ export default function AppsPage() {
                     </label>
                     <Input
                       id="clientSecret"
+                      name="clientSecret"
                       type="password"
                       value={clientSecret}
                       onChange={(e) => setClientSecret(e.target.value)}
