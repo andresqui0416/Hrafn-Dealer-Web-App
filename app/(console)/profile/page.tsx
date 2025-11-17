@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -445,10 +446,13 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     {avatarPreview ? (
-                      <img
+                      <Image
                         src={avatarPreview}
                         alt="Avatar preview"
+                        width={96}
+                        height={96}
                         className="h-24 w-24 rounded-full object-cover border-2 border-white/10"
+                        unoptimized
                       />
                     ) : (
                       <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center border-2 border-white/10">

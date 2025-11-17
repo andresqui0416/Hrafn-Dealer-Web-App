@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faUser, faGear, faSignOut, faMobileScreen, faChartLine } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
@@ -56,10 +57,13 @@ export function UserAvatar() {
           className="relative flex items-center gap-2 h-auto p-1 focus-visible:outline-none active:outline-none active:ring-0 active:ring-offset-0 data-[state=closed]:outline-none data-[state=closed]:ring-0 data-[state=closed]:ring-offset-0"
         >
           {user.avatar ? (
-            <img
+            <Image
               src={user.avatar}
               alt={user.name || "User avatar"}
+              width={32}
+              height={32}
               className="h-8 w-8 rounded-full object-cover border-2 border-white/10"
+              unoptimized
             />
           ) : (
             <div className="flex h-8 w-8 items-center justify-center bg-primary rounded-full text-primary-foreground text-sm font-medium">
