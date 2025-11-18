@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useApp } from "@/contexts/app-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,13 +13,9 @@ type InventoryItem = {
   make: string;
   model: string;
   trim: string | null;
-  bodyStyle: string | null;
-  drivetrain: string | null;
-  msrp: number | null;
   price: number | null;
   mileage: number;
   status: string;
-  createdAt: string;
 };
 
 type PaginationInfo = {
@@ -33,9 +29,8 @@ type PaginationInfo = {
 
 export default function InventoryPage() {
   const params = useParams();
-  const appId = params.appId as string;
+  const appId = params?.appId as string;
   const { selectedApp } = useApp();
-  const [loading, setLoading] = useState(true);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(true);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -213,6 +208,8 @@ export default function InventoryPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-xs">Page</span>
                   <Input
+                    id="pageNumber"
+                    name="pageNumber"
                     type="number"
                     min="1"
                     max={pagination.totalPages}
