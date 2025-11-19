@@ -34,7 +34,7 @@ const bodyStyles = ["Sedan", "SUV", "Truck", "Coupe", "Hatchback", "Wagon"];
 const drivetrains = ["FWD", "RWD", "AWD", "4WD"];
 const statuses = ["available", "sold", "pending", "unavailable"];
 
-export function generateInventoryItem(dealerId: string, appId: string, index: number) {
+export function generateInventoryItem(dealerId: string, index: number) {
   const make = vehicleMakes[Math.floor(Math.random() * vehicleMakes.length)];
   const models = vehicleModels[make];
   const model = models[Math.floor(Math.random() * models.length)];
@@ -45,7 +45,6 @@ export function generateInventoryItem(dealerId: string, appId: string, index: nu
 
   return {
     dealerId,
-    appId,
     vin: generateVIN(),
     year,
     make,

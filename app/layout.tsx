@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
 import { AuthProvider } from "@/contexts/auth-context";
 import { AppProvider } from "@/contexts/app-context";
-import { Footer } from "@/components/footer";
+import { ThemeProvider } from "@/contexts/theme-context";
 import "./globals.css";
-import { Header } from "@/components/header";
 import { FontAwesomeConfig } from "@/components/fontawesome-config";
+import { ConditionalLayout } from "@/components/conditional-layout";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -36,13 +36,11 @@ export default function RootLayout({
         <FontAwesomeConfig />
         <AuthProvider>
           <AppProvider>
-            <div className="min-h-screen bg-background font-sans text-foreground">
-              <Header />
-              <div className="min-h-[calc(100vh-65px)]">
-                <main className="mx-auto w-full">{children}</main>
+            <ThemeProvider>
+              <div className="min-h-screen bg-background font-sans text-foreground">
+                <ConditionalLayout>{children}</ConditionalLayout>
               </div>
-              <Footer />
-            </div>
+            </ThemeProvider>
           </AppProvider>
         </AuthProvider>
       </body>

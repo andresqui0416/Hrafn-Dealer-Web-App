@@ -46,8 +46,7 @@ export async function classifyIntentMicroserver(
 
 export async function generateSQLMicroserver(
   question: string,
-  dealerId: string,
-  appId?: string
+  dealerId: string
 ): Promise<string> {
   try {
     const response = await fetch(`${MICROSERVER_URL}/generate-sql`, {
@@ -65,24 +64,13 @@ export async function generateSQLMicroserver(
     const data: SQLResponse = await response.json();
     let sql = data.sql;
 
-    // Build WHERE conditions
-    const conditions: string[] = [`"dealerId" = '${dealerId}'`];
-    if (appId) {
-      conditions.push(`"appId" = '${appId}'`);
-    }
-    const whereClause = conditions.join(" AND ");
+    const whereClause = `"dealerId" = '${dealerId}'`;
 
     // Replace :dealerId placeholder or add WHERE clause if missing
     if (sql.includes(":dealerId")) {
       sql = sql.replace(/:dealerId/g, `'${dealerId}'`);
-      if (appId && (sql.toLowerCase().includes('from "Inventory"') || sql.toLowerCase().includes('from Inventory'))) {
-        // Add appId filter if not already present
-        if (!sql.includes(`"appId"`)) {
-          sql = sql.replace(/where\s+/i, `WHERE ${whereClause} AND `);
-        }
-      }
     } else if (sql.toLowerCase().includes('from "Inventory"') || sql.toLowerCase().includes('from Inventory')) {
-      // Add dealerId and appId filters if missing
+      // Add dealerId filter if missing
       const whereMatch = sql.match(/where\s+/i);
       if (!whereMatch) {
         // Add WHERE clause
@@ -91,10 +79,8 @@ export async function generateSQLMicroserver(
           `FROM "Inventory" WHERE ${whereClause}`
         );
       } else {
-        // Add dealerId and appId to existing WHERE clause if not already present
+        // Add dealerId to existing WHERE clause if not already present
         if (!sql.includes(`"dealerId"`)) {
-          sql = sql.replace(/where\s+/i, `WHERE ${whereClause} AND `);
-        } else if (appId && !sql.includes(`"appId"`)) {
           sql = sql.replace(/where\s+/i, `WHERE ${whereClause} AND `);
         }
       }

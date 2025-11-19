@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div>
       <div className="my-10  px-4 py-8">
-        <p className="text-6xl font-bold text-center text-foreground mb-10">
+        <p className="lg:text-6xl text-4xl font-bold text-center text-foreground mb-10">
           Automotive&apos;s
           <br />
           AI-Native OS
@@ -25,7 +25,7 @@ export default function Home() {
           asChild
           className={buttonVariants({ variant: "default", size: "lg", className: "text-lg" })}
         >
-          <Link href={user ? "/dashboard" : "/login"}>
+          <Link href={user ? "/overview" : "/login"}>
             Get Started
             <FontAwesomeIcon icon={faArrowRight} className="w-5 h-5" />
           </Link>

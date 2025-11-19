@@ -4,25 +4,26 @@ import { verifyJWT } from "@/lib/auth/jwt";
 export async function authMiddleware(request: NextRequest): Promise<NextResponse | null> {
   const { pathname } = request.nextUrl;
 
-  // Skip auth for auth endpoints (login, logout)
   if (
+    pathname.startsWith("/api/cdk/") ||
     pathname.startsWith("/api/auth/login") ||
     pathname.startsWith("/api/auth/signup") ||
     pathname.startsWith("/api/auth/logout") ||
-    pathname.startsWith("/api/auth/")
+    pathname.startsWith("/api/auth/") ||
+    pathname === "/api/admin/auth/login" ||
+    pathname === "/api/admin/auth/logout"
   ) {
-    return null; // Let other middlewares handle or pass through
+    return null;
   }
 
-  // Skip auth for inventory sync endpoint (uses API key authentication)
   if (pathname.startsWith("/api/inventory/sync")) {
-    return null; // Let the route handle API key authentication
+    return null;
   }
 
-  // Protect all /api/* routes except auth
-  if (pathname.startsWith("/api/")) {
+  if (pathname.startsWith("/api/admin/")) {
+
     const token =
-      request.cookies.get("token")?.value ||
+      request.cookies.get("admin_token")?.value ||
       request.headers.get("authorization")?.replace("Bearer ", "");
 
     if (!token) {
@@ -34,10 +35,36 @@ export async function authMiddleware(request: NextRequest): Promise<NextResponse
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    // Attach user info to request headers for API routes
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-admin-id", payload.adminId as string);
+    requestHeaders.set("x-admin-email", payload.email as string);
+    requestHeaders.set("x-admin-name", payload.name as string);
+    requestHeaders.set("x-admin-role", payload.adminRole as string);
+
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  }
+
+  if (pathname.startsWith("/api/")) {
+    const token =
+      request.cookies.get("token")?.value ||
+      request.headers.get("authorization")?.replace("Bearer ", "");
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const payload = await verifyJWT(token);
+    if (!payload || !payload.userId) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-user-id", payload.userId);
-    requestHeaders.set("x-user-email", payload.email);
+    requestHeaders.set("x-user-email", payload.email || "");
     requestHeaders.set("x-user-name", payload.name || "");
 
     return NextResponse.next({

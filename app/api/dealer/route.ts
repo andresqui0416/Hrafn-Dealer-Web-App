@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { getUserFromRequest } from "@/lib/auth/getUser";
 import { getUserDealer } from "@/lib/auth/getUserDealer";
 
 const prisma = new PrismaClient();
@@ -10,13 +9,14 @@ export const dynamic = "force-dynamic";
 // GET dealer information
 export async function GET(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request);
-    if (!user || !user.userId) {
+    // Get userId from middleware-set header
+    const userId = request.headers.get("x-user-id");
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get user's dealer
-    const dealerId = await getUserDealer(user.userId);
+    const dealerId = await getUserDealer(userId);
     if (!dealerId) {
       return NextResponse.json({ error: "No dealer found for user" }, { status: 404 });
     }
@@ -48,13 +48,14 @@ export async function GET(request: NextRequest) {
 // PUT update dealer information
 export async function PUT(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request);
-    if (!user || !user.userId) {
+    // Get userId from middleware-set header
+    const userId = request.headers.get("x-user-id");
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get user's dealer
-    const dealerId = await getUserDealer(user.userId);
+    const dealerId = await getUserDealer(userId);
     if (!dealerId) {
       return NextResponse.json({ error: "No dealer found for user" }, { status: 404 });
     }

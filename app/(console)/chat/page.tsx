@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
-import { useApp } from "@/contexts/app-context";
 
 type ChatMessage = {
   id: string;
@@ -13,7 +12,6 @@ type ChatMessage = {
 
 export default function ChatPage() {
   const { user } = useAuth();
-  const { selectedApp } = useApp();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: crypto.randomUUID(),
@@ -48,7 +46,6 @@ export default function ChatPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           message: trimmed,
-          appId: selectedApp?.id,
         }),
       });
       const data = await res.json();

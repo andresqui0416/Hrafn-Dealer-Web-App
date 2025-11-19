@@ -1,64 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { getUserFromRequest } from "@/lib/auth/getUser";
 import { getUserDealer } from "@/lib/auth/getUserDealer";
 
 const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request);
-    if (!user) {
+    // Get userId from middleware-set header
+    const userId = request.headers.get("x-user-id");
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get user's dealer
-    const dealerId = await getUserDealer(user.userId);
+    const dealerId = await getUserDealer(userId);
     if (!dealerId) {
       return NextResponse.json({ error: "No dealer found for user" }, { status: 404 });
     }
 
-    const appId = params.id;
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const skip = (page - 1) * limit;
+    
+    // Get all status values from query params (can be multiple)
+    const statusValues = searchParams.getAll("status");
 
-    // Verify the app belongs to the dealer
-    const app = await prisma.dealerApp.findFirst({
-      where: {
-        id: appId,
-        dealerId,
-      },
-    });
+    // Build where clause
+    const where: any = {
+      dealerId,
+    };
 
-    if (!app) {
-      return NextResponse.json({ error: "App not found" }, { status: 404 });
+    // Add status filter if provided (support multiple statuses)
+    if (statusValues.length > 0) {
+      where.status = {
+        in: statusValues,
+      };
     }
 
-    // Fetch inventory for this app with pagination
     const [inventory, totalCount] = await Promise.all([
       prisma.inventoryListing.findMany({
-      where: {
-        appId: appId,
-        dealerId,
-      },
-      orderBy: {
-        createdAt: "desc",
+        where,
+        orderBy: {
+          createdAt: "desc",
         },
         skip,
         take: limit,
       }),
       prisma.inventoryListing.count({
-        where: {
-          appId: appId,
-          dealerId,
-        },
+        where,
       }),
     ]);
 

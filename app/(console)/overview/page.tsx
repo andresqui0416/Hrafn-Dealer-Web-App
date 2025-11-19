@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useApp } from "@/contexts/app-context";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faDollarSign,
@@ -16,47 +14,6 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function OverviewPage() {
-  const router = useRouter();
-  const params = useParams();
-  const appId = params.appId as string;
-  const { selectedApp, setSelectedApp } = useApp();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadApp = async () => {
-      // If app is already selected and matches, we're good
-      if (selectedApp && selectedApp.id === appId) {
-        setLoading(false);
-        return;
-      }
-
-      // Try to load the app from API
-      try {
-        const response = await fetch("/api/apps");
-        if (response.ok) {
-          const data = await response.json();
-          const app = data.apps?.find((a: any) => a.id === appId);
-          if (app) {
-            setSelectedApp(app);
-            setLoading(false);
-          } else {
-            router.push("/apps");
-          }
-        } else {
-          router.push("/apps");
-        }
-      } catch {
-        router.push("/apps");
-      }
-    };
-
-    loadApp();
-  }, [appId, selectedApp, setSelectedApp, router]);
-
-  if (loading || !selectedApp || selectedApp.id !== appId) {
-    return null;
-  }
-
   // Sample data
   const sampleData = {
     salesToday: {

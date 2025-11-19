@@ -28,14 +28,13 @@ function verifyApiKey(request: NextRequest): boolean {
  * Based on CDK Drive FI Sales API YAML specification
  * Response structure: { data: [{ vehicle: {...}, deal: {...}, ... }] }
  */
-function transformCDKInventoryItem(cdkItem: any, dealerId: string, appId: string) {
+function transformCDKInventoryItem(cdkItem: any, dealerId: string) {
   // Extract vehicle data - CDK FI Sales response has vehicle nested in each item
   const vehicle = cdkItem.vehicle || cdkItem;
   const deal = cdkItem.deal || cdkItem;
 
   return {
     dealerId,
-    appId,
     // Vehicle identification - from vehicle.vin
     vin: vehicle.vin || "",
     // Vehicle year - from vehicle.year (integer)
@@ -68,7 +67,7 @@ function transformCDKInventoryItem(cdkItem: any, dealerId: string, appId: string
 }
 
 // Upsert inventory items
-async function upsertInventoryItems(items: any[], dealerId: string, appId: string) {
+async function upsertInventoryItems(items: any[], dealerId: string) {
   const results = {
     created: 0,
     updated: 0,
@@ -77,7 +76,7 @@ async function upsertInventoryItems(items: any[], dealerId: string, appId: strin
 
   for (const item of items) {
     try {
-      const transformed = transformCDKInventoryItem(item, dealerId, appId);
+      const transformed = transformCDKInventoryItem(item, dealerId);
 
       // Validate required fields
       if (!transformed.vin || !transformed.year || !transformed.make || !transformed.model) {
@@ -145,7 +144,6 @@ export async function POST(request: NextRequest) {
     // Support both dealerId directly or userId (get dealer from user)
     const dealerIdParam = body.dealerId || request.headers.get("x-dealer-id");
     const userIdParam = body.userId || request.headers.get("x-user-id");
-    const appId = body.appId || request.headers.get("x-app-id");
 
     let dealerId: string;
 
@@ -190,42 +188,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Dealer not found" }, { status: 404 });
     }
 
-    // Get or create app for the dealer
-    let app;
-    if (appId) {
-      app = await prisma.dealerApp.findFirst({
-        where: {
-          id: appId,
-          dealerId,
-        },
-      });
-      if (!app) {
-        return NextResponse.json({ error: "App not found or does not belong to dealer" }, { status: 404 });
-      }
-    } else {
-      // Use first app or create a default app
-      app = await prisma.dealerApp.findFirst({
-        where: { dealerId },
-        orderBy: { createdAt: "asc" },
-      });
-      
-      if (!app) {
-        // Create a default app for the dealer
-        app = await prisma.dealerApp.create({
-          data: {
-            dealerId,
-            name: "Default App",
-            description: "Default app created for inventory sync",
-            crmType: "CDK",
-            clientId: "default-client-id",
-            clientSecret: "default-client-secret",
-          },
-        });
-        console.log(`Created default app for dealer: ${app.id}`);
-      }
-    }
-
-    console.log(`Starting inventory sync for dealer: ${dealer.name} (${dealerId}), app: ${app.name} (${app.id})`);
+    console.log(`Starting inventory sync for dealer: ${dealer.name} (${dealerId})`);
 
     // Get department ID from request if provided
     const departmentId = body.departmentId || request.headers.get("x-dept-id");
@@ -250,7 +213,7 @@ export async function POST(request: NextRequest) {
     console.log(`Fetched ${cdkInventory.length} items from CDK`);
 
     // Upsert inventory items
-    const results = await upsertInventoryItems(cdkInventory, dealerId, app.id);
+    const results = await upsertInventoryItems(cdkInventory, dealerId);
 
     console.log(
       `Inventory sync completed: ${results.created} created, ${results.updated} updated, ${results.errors} errors`
@@ -290,7 +253,6 @@ export async function GET(request: NextRequest) {
     // Support both dealerId directly or userId (get dealer from user)
     const dealerIdParam = request.nextUrl.searchParams.get("dealerId") || request.headers.get("x-dealer-id");
     const userIdParam = request.nextUrl.searchParams.get("userId") || request.headers.get("x-user-id");
-    const appId = request.nextUrl.searchParams.get("appId") || request.headers.get("x-app-id");
 
     let dealerId: string;
 
@@ -335,42 +297,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Dealer not found" }, { status: 404 });
     }
 
-    // Get or create app for the dealer
-    let app;
-    if (appId) {
-      app = await prisma.dealerApp.findFirst({
-        where: {
-          id: appId,
-          dealerId,
-        },
-      });
-      if (!app) {
-        return NextResponse.json({ error: "App not found or does not belong to dealer" }, { status: 404 });
-      }
-    } else {
-      // Use first app or create a default app
-      app = await prisma.dealerApp.findFirst({
-        where: { dealerId },
-        orderBy: { createdAt: "asc" },
-      });
-      
-      if (!app) {
-        // Create a default app for the dealer
-        app = await prisma.dealerApp.create({
-          data: {
-            dealerId,
-            name: "Default App",
-            description: "Default app created for inventory sync",
-            crmType: "CDK",
-            clientId: "default-client-id",
-            clientSecret: "default-client-secret",
-          },
-        });
-        console.log(`Created default app for dealer: ${app.id}`);
-      }
-    }
-
-    console.log(`Starting inventory sync for dealer: ${dealer.name} (${dealerId}), app: ${app.name} (${app.id})`);
+    console.log(`Starting inventory sync for dealer: ${dealer.name} (${dealerId})`);
 
     // Get department ID from request if provided (for GET requests)
     const departmentId = request.nextUrl.searchParams.get("departmentId") || request.headers.get("x-dept-id");
@@ -395,7 +322,7 @@ export async function GET(request: NextRequest) {
     console.log(`Fetched ${cdkInventory.length} items from CDK`);
 
     // Upsert inventory items
-    const results = await upsertInventoryItems(cdkInventory, dealerId, app.id);
+    const results = await upsertInventoryItems(cdkInventory, dealerId);
 
     console.log(
       `Inventory sync completed: ${results.created} created, ${results.updated} updated, ${results.errors} errors`

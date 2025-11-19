@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { useApp } from "@/contexts/app-context";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBoxOpen, faSpinner, faFilter } from "@fortawesome/free-solid-svg-icons";
 
 type InventoryItem = {
   id: string;
@@ -28,27 +36,33 @@ type PaginationInfo = {
 };
 
 export default function InventoryPage() {
-  const params = useParams();
-  const appId = params?.appId as string;
-  const { selectedApp } = useApp();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(true);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [pageInput, setPageInput] = useState("1");
-
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    if (!appId) return;
+    // Cancel any existing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
 
+    // Create new abort controller for this request
     const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     const loadInventory = async () => {
       try {
         setInventoryLoading(true);
+        const statusParam = statusFilter.length > 0 
+          ? `&${statusFilter.map(s => `status=${s}`).join("&")}` 
+          : "";
         const response = await fetch(
-          `/api/apps/${appId}/inventory?page=${currentPage}&limit=${itemsPerPage}`,
+          `/api/inventory?page=${currentPage}&limit=${itemsPerPage}${statusParam}`,
           { signal: abortController.signal }
         );
         if (response.ok) {
@@ -79,30 +93,42 @@ export default function InventoryPage() {
     return () => {
       abortController.abort();
     };
-  }, [appId, currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, statusFilter]);
+
+  const statusOptions = [
+    { value: "available", label: "Available" },
+    { value: "sold", label: "Sold" },
+    { value: "pending", label: "Pending" },
+    { value: "unavailable", label: "Unavailable" },
+  ];
+
+  const handleStatusToggle = (status: string) => {
+    setStatusFilter((prev) => {
+      if (prev.includes(status)) {
+        return prev.filter((s) => s !== status);
+      } else {
+        return [...prev, status];
+      }
+    });
+    setCurrentPage(1);
+    setPageInput("1");
+  };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold">Inventory</h2>
-        <p className="text-sm text-muted-foreground">
-          Manage inventory for {selectedApp?.name}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold">Inventory</h2>
+          <p className="text-sm text-muted-foreground">
+            Manage your inventory
+          </p>
+        </div>
       </div>
 
-      {inventoryLoading ? (
-        <div className="rounded-lg border border-white/10 p-4 text-sm text-muted-foreground">
-          Loading inventory...
-        </div>
-      ) : inventory.length === 0 ? (
-        <div className="rounded-lg border border-white/10 p-4 text-sm text-muted-foreground">
-          No inventory items found for this app.
-        </div>
-      ) : (
-        <div className="rounded-lg border border-white/10 overflow-hidden">
+      <div className="rounded-lg border border-white/10 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-white/5">
+              <thead className="bg-white/5 border-b border-white/10">
                 <tr>
                   <th className="px-4 py-3 text-left text-sm font-semibold">VIN</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Year</th>
@@ -111,9 +137,58 @@ export default function InventoryPage() {
                   <th className="px-4 py-3 text-left text-sm font-semibold">Trim</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Price</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Mileage</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">
+                    <div className="flex items-center gap-2 justify-between">
+                      <span>Status</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            className="h-4 w-4 flex items-center justify-center cursor-pointer hover:text-foreground transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <FontAwesomeIcon 
+                              icon={faFilter} 
+                              className="h-3 w-3 text-muted-foreground hover:text-foreground"
+                              title="Filter by status"
+                            />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48 bg-background text-foreground">
+                          <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {statusOptions.map((option) => (
+                            <DropdownMenuCheckboxItem
+                              key={option.value}
+                              checked={statusFilter.includes(option.value)}
+                              onCheckedChange={() => handleStatusToggle(option.value)}
+                              className="cursor-pointer"
+                            >
+                              {option.label}
+                            </DropdownMenuCheckboxItem>
+                          ))}
+                          {statusFilter.length > 0 && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuCheckboxItem
+                                checked={false}
+                                onCheckedChange={() => {
+                                  setStatusFilter([]);
+                                  setCurrentPage(1);
+                                  setPageInput("1");
+                                }}
+                                className="cursor-pointer text-muted-foreground"
+                              >
+                                Clear filters
+                              </DropdownMenuCheckboxItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </th>
                 </tr>
               </thead>
+              {!inventoryLoading && inventory.length !== 0 && (
               <tbody className="divide-y divide-white/10">
                 {inventory.map((item) => (
                   <tr key={item.id} className="hover:bg-white/5">
@@ -148,7 +223,19 @@ export default function InventoryPage() {
                   </tr>
                 ))}
               </tbody>
+              )}
             </table>
+            {inventoryLoading ? (
+                <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+                  <FontAwesomeIcon icon={faSpinner} className="fa-lg animate-spin" />
+                  <span>Loading inventory...</span>
+                </div>
+              ) : inventory.length === 0 && !inventoryLoading && (
+                <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+                  <FontAwesomeIcon icon={faBoxOpen} className="fa-lg" />
+                  <span>No inventory items found.</span>
+                </div>
+              )}
           </div>
           <div className="px-4 py-3 bg-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
@@ -171,6 +258,7 @@ export default function InventoryPage() {
                 </label>
                 <select
                   id="page-size"
+                  name="page-size"
                   value={itemsPerPage}
                   onChange={(e) => {
                     const newSize = parseInt(e.target.value, 10);
@@ -192,7 +280,7 @@ export default function InventoryPage() {
               </div>
             </div>
             {pagination && pagination.totalPages > 1 && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-max">
                 <Button
                   variant="outline"
                   size="sm"
@@ -205,7 +293,7 @@ export default function InventoryPage() {
                 >
                   Previous
                 </Button>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-row items-center gap-2">
                   <span className="text-xs">Page</span>
                   <Input
                     id="pageNumber"
@@ -245,9 +333,9 @@ export default function InventoryPage() {
                       }
                     }}
                     disabled={inventoryLoading}
-                    className="w-16 h-8 text-center text-xs"
+                    className="w-8 h-8 text-center text-xs"
                   />
-                  <span className="text-xs">of {pagination.totalPages}</span>
+                  <div className="text-xs w-16">{`of ${pagination.totalPages}`}</div>
                 </div>
                 <Button
                   variant="outline"
@@ -265,7 +353,6 @@ export default function InventoryPage() {
             )}
           </div>
         </div>
-      )}
     </div>
   );
 }
