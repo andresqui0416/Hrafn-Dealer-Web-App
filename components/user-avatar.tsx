@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faUser, faGear, faSignOut, faMobileScreen, faChartLine } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faUser, faGear, faSignOut, faChartLine } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -80,18 +80,11 @@ export function UserAvatar() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-white/10 my-0.5" />
         <DropdownMenuItem
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push("/overview")}
           className="py-1.5 hover:bg-white/10"
         >
           <FontAwesomeIcon icon={faChartLine} className="h-3 w-3 text-muted-foreground" />
-          <div className="text-sm font-medium ml-2">Dashboard</div>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => router.push("/apps")}
-          className="py-1.5 hover:bg-white/10"
-        >
-          <FontAwesomeIcon icon={faMobileScreen} className="h-3 w-3 text-muted-foreground" />
-          <div className="text-sm font-medium ml-2">App Management</div>
+          <div className="text-sm font-medium ml-2">Overview</div>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-white/10 my-0.5" />
 

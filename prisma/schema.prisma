@@ -13,20 +13,29 @@ enum Role {
   viewer
 }
 
-enum CrmType {
-  CDK
-  Tekion
+enum AdminRole {
+  super_admin
+  admin
+  moderator
 }
 
+enum ServiceStatus {
+  pending
+  reviewing
+  rejected
+  allowed
+}
+
+
 model Dealer {
-  id        String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name      String           @unique
-  address   String
-  createdAt DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
-  userRoles UserDealerRole[]
-  apps      DealerApp[]
-  inventory InventoryListing[]
+  id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name          String          @unique
+  address       String
+  createdAt     DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  userRoles     UserDealerRole[]
+  inventory     InventoryListing[]
+  dealerServices DealerService[]
 
   @@map("Dealer")
 }
@@ -46,6 +55,20 @@ model User {
   @@map("User")
 }
 
+model Admin {
+  id            String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email         String         @unique
+  name          String
+  passwordHash  String
+  role          AdminRole      @default(admin)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
+  adminSessions AdminSession[]
+
+  @@map("Admin")
+}
+
 model Session {
   id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   userId    String   @db.Uuid
@@ -58,55 +81,47 @@ model Session {
   @@map("Session")
 }
 
+model AdminSession {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  adminId   String   @db.Uuid
+  jwtId     String   @unique
+  expiresAt DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_adm_sess_admin")
+
+  @@index([adminId], map: "idx_adm_sess_admin")
+  @@map("AdminSession")
+}
+
 model InventoryListing {
-  id         String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  dealerId   String     @db.Uuid
-  appId      String     @db.Uuid
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  dealerId   String    @db.Uuid
   vin        String
   year       Int
   make       String
   model      String
   trim       String?
-  bodyStyle  String?    @map("body_style")
+  bodyStyle  String?   @map("body_style")
   drivetrain String?
-  msrp       Decimal?   @db.Decimal(10, 2)
-  price      Decimal?   @db.Decimal(10, 2)
-  mileage    Int        @default(0)
-  status     String     @default("available")
-  scrapedAt  DateTime   @default(now()) @map("scraped_at") @db.Timestamptz(6)
-  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  dealer     Dealer     @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_dealer")
-  app        DealerApp  @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_app")
+  msrp       Decimal?  @db.Decimal(10, 2)
+  price      Decimal?  @db.Decimal(10, 2)
+  mileage    Int       @default(0)
+  status     String    @default("available")
+  scrapedAt  DateTime  @default(now()) @map("scraped_at") @db.Timestamptz(6)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  dealer     Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_dealer")
 
   @@unique([dealerId, vin], map: "u_inv_dealer_vin")
   @@index([dealerId], map: "idx_inv_dealer")
-  @@index([appId], map: "idx_inv_app")
   @@index([make, model], map: "idx_inv_make_model")
   @@map("Inventory")
-}
-
-model DealerApp {
-  id          String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  dealerId    String            @db.Uuid
-  name        String
-  description String?
-  crmType     CrmType           @map("crm_type")
-  clientId    String            @map("client_id")
-  clientSecret String           @map("client_secret")
-  createdAt   DateTime          @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
-  dealer      Dealer            @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_app_dealer")
-  inventory   InventoryListing[]
-
-  @@index([dealerId], map: "idx_app_dealer")
-  @@map("DealerApp")
 }
 
 model UserDealerRole {
   id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   userId    String   @db.Uuid
-  dealerId String    @db.Uuid
+  dealerId  String   @db.Uuid
   role      Role
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_udr_user")
@@ -116,4 +131,33 @@ model UserDealerRole {
   @@index([userId], map: "idx_udr_user")
   @@index([dealerId], map: "idx_udr_dealer")
   @@map("UserDealerRole")
+}
+
+model ServiceKind {
+  id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name          String          @unique
+  description   String?
+  createdAt     DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  dealerServices DealerService[]
+
+  @@map("ServiceKind")
+}
+
+model DealerService {
+  id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  dealerId      String          @db.Uuid
+  serviceKindId String          @db.Uuid
+  orgName       String
+  status        ServiceStatus   @default(pending)
+  createdAt     DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  dealer        Dealer          @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ds_dealer")
+  serviceKind   ServiceKind     @relation(fields: [serviceKindId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ds_service_kind")
+
+  @@unique([dealerId, serviceKindId], map: "u_ds_dealer_service")
+  @@index([dealerId], map: "idx_ds_dealer")
+  @@index([serviceKindId], map: "idx_ds_service_kind")
+  @@index([status], map: "idx_ds_status")
+  @@map("DealerService")
 }

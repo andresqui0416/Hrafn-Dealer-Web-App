@@ -7,6 +7,21 @@ const prisma = new PrismaClient();
 async function main() {
   const password = "devpassword";
   const passwordHash = await hashPassword(password);
+  const adminPassword = "admin123";
+  const adminPasswordHash = await hashPassword(adminPassword);
+
+  // Create admin users
+  const superAdmin = await prisma.admin.upsert({
+    where: { email: "admin@hrafn.ai" },
+    update: {},
+    create: {
+      email: "admin@hrafn.ai",
+      name: "Super Admin",
+      passwordHash: adminPasswordHash,
+      role: "super_admin",
+      isActive: true,
+    },
+  });
 
   const user = await prisma.user.upsert({
     where: { email: "dev@dealer.test" },
@@ -45,18 +60,22 @@ async function main() {
     },
   });
 
-  await prisma.dealerApp.deleteMany({
-    where: { dealerId: dealer.id },
+  // Create service kinds
+  const cdkGlobal = await prisma.serviceKind.upsert({
+    where: { name: "CDK Global" },
+    update: {},
+    create: {
+      name: "CDK Global",
+      description: "CDK Global CRM integration service",
+    },
   });
-  // Create or get the default app
-  const app = await prisma.dealerApp.create({
-    data: {
-      dealerId: dealer.id,
-      name: "Default App",
-      description: "Default app created for existing inventory",
-      crmType: "CDK",
-      clientId: "dev-client-id",
-      clientSecret: "dev-client-secret",
+
+  const tekion = await prisma.serviceKind.upsert({
+    where: { name: "Tekion" },
+    update: {},
+    create: {
+      name: "Tekion",
+      description: "Tekion CRM integration service",
     },
   });
 
@@ -69,7 +88,7 @@ async function main() {
   console.log("Creating inventory listings...");
   for (let i = 0; i < 10; i++) {
     const inventoryItems = Array.from({ length: 50 }, (_, index) =>
-      generateInventoryItem(dealer.id, app.id, i * 50 + index),
+      generateInventoryItem(dealer.id, i * 50 + index),
     );
     await prisma.inventoryListing.createMany({
       data: inventoryItems,
@@ -77,12 +96,17 @@ async function main() {
   }
 
   console.log("Seeded:", {
+    superAdmin: superAdmin.email,
     user: user.email,
     userName: user.name,
     dealer: dealer.name,
-    app: app.name,
     inventoryCount: 500,
+    serviceKinds: [cdkGlobal.name, tekion.name],
   });
+  console.log("\n=== Admin Credentials ===");
+  console.log("Super Admin Email:", superAdmin.email);
+  console.log("Super Admin Password:", adminPassword);
+  console.log("========================\n");
 }
 
 main()

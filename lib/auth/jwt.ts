@@ -5,9 +5,12 @@ const secret = new TextEncoder().encode(
 );
 
 export interface JWTPayload {
-  userId: string;
+  userId?: string;
+  adminId?: string;
   email: string;
   name: string;
+  adminRole?: string;
+  isAdmin?: boolean;
   [key: string]: unknown;
 }
 

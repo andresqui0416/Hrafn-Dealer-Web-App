@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { getUserFromRequest } from "@/lib/auth/getUser";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 
 const prisma = new PrismaClient();
@@ -10,13 +9,14 @@ export const dynamic = "force-dynamic";
 // GET current user information
 export async function GET(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request);
-    if (!user) {
+    // Get userId from middleware-set header
+    const userId = request.headers.get("x-user-id");
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userData = await prisma.user.findUnique({
-      where: { id: user.userId },
+      where: { id: userId },
       select: {
         id: true,
         email: true,
@@ -43,8 +43,9 @@ export async function GET(request: NextRequest) {
 // PUT update current user information
 export async function PUT(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request);
-    if (!user) {
+    // Get userId from middleware-set header
+    const userId = request.headers.get("x-user-id");
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -53,7 +54,7 @@ export async function PUT(request: NextRequest) {
 
     // Get current user data
     const currentUser = await prisma.user.findUnique({
-      where: { id: user.userId },
+      where: { id: userId },
     });
 
     if (!currentUser) {
@@ -68,7 +69,7 @@ export async function PUT(request: NextRequest) {
       const existingUser = await prisma.user.findUnique({
         where: { email },
       });
-      if (existingUser && existingUser.id !== user.userId) {
+      if (existingUser && existingUser.id !== userId) {
         return NextResponse.json({ error: "Email already in use" }, { status: 400 });
       }
       updateData.email = email;
@@ -105,7 +106,7 @@ export async function PUT(request: NextRequest) {
 
     // Update user
     const updatedUser = await prisma.user.update({
-      where: { id: user.userId },
+      where: { id: userId },
       data: updateData,
       select: {
         id: true,

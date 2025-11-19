@@ -41,7 +41,7 @@ export default function LoginPage() {
       window.dispatchEvent(new Event("auth:login"));
 
       // Redirect to app management page on success
-      router.push("/apps");
+      router.push("/overview");
       router.refresh();
     } catch (err) {
       setError("Network error. Please try again.");

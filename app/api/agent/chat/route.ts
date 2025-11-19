@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserFromRequest } from "@/lib/auth/getUser";
 import {
   classifyIntent,
   generateSQLFromNaturalLanguage,
@@ -12,8 +11,6 @@ import { performance } from "perf_hooks";
 const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
-
-
 
 function validateSQL(sql: string): void {
   const trimmed = sql.trim().toUpperCase();
@@ -60,21 +57,14 @@ async function executeSQL(sql: string): Promise<any[]> {
 
 export async function POST(req: NextRequest) {
   try {
-    // Get authenticated user
-    const userStart = performance.now();
-    const user = getUserFromRequest(req);
-    const userTime = performance.now() - userStart;
-    console.log(
-      `[getUser] ${userTime.toFixed(2)}ms - userId: ${user?.userId}`,
-    );
-
-    if (!user || !user.userId) {
+    // Get userId from middleware-set header
+    const userId = req.headers.get("x-user-id");
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { message, appId } = await req.json();
+    const { message } = await req.json();
     const safeMessage = typeof message === "string" ? message.trim() : "";
-    const safeAppId = typeof appId === "string" ? appId.trim() : undefined;
 
     if (!safeMessage) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -90,7 +80,7 @@ export async function POST(req: NextRequest) {
       try {
         // Get user's dealer
         const userDealerRole = await prisma.userDealerRole.findFirst({
-          where: { userId: user.userId },
+          where: { userId },
           select: { dealerId: true },
           orderBy: { createdAt: "asc" },
         });
@@ -101,7 +91,7 @@ export async function POST(req: NextRequest) {
 
         // Generate SQL
         const sqlStart = performance.now();
-        const sql = await generateSQLFromNaturalLanguage(safeMessage, userDealerRole.dealerId, safeAppId);
+        const sql = await generateSQLFromNaturalLanguage(safeMessage, userDealerRole.dealerId);
         const sqlTime = performance.now() - sqlStart;
         console.log(`[generateSQL] ${sqlTime.toFixed(2)}ms - sql: ${sql}`);
 
@@ -139,7 +129,7 @@ export async function POST(req: NextRequest) {
       // Get user context
       const userDataStart = performance.now();
       const userData = await prisma.user.findUnique({
-        where: { id: user.userId },
+        where: { id: userId },
         select: { name: true },
       });
       const userDataTime = performance.now() - userDataStart;
@@ -149,17 +139,14 @@ export async function POST(req: NextRequest) {
 
       // Get user's dealer
       const userDealerRole = await prisma.userDealerRole.findFirst({
-        where: { userId: user.userId },
+        where: { userId },
         select: { dealerId: true },
         orderBy: { createdAt: "asc" },
       });
 
-      // Get inventory count (filter by appId if provided)
+      // Get inventory count
       const countStart = performance.now();
-      let inventoryCountQuery = `SELECT COUNT(*)::int as count FROM "Inventory" WHERE "dealerId" = '${userDealerRole?.dealerId || user.userId}'::uuid`;
-      if (safeAppId) {
-        inventoryCountQuery += ` AND "appId" = '${safeAppId}'::uuid`;
-      }
+      const inventoryCountQuery = `SELECT COUNT(*)::int as count FROM "Inventory" WHERE "dealerId" = '${userDealerRole?.dealerId || userId}'::uuid`;
       const inventoryCountResult = await prisma.$queryRawUnsafe<[{ count: bigint }]>(
         inventoryCountQuery,
       );
