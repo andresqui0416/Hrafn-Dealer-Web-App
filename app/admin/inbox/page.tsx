@@ -122,7 +122,7 @@ export default function AdminInboxPage() {
       setLoading(true);
       // Use separate routes for new and my chats
       const baseRoute = activeTab === "new" ? "/api/admin/inbox/new" : "/api/admin/inbox/my";
-      
+
       // Build query parameters
       const params = new URLSearchParams();
       if (activeTab === "my" && statusFilter !== "all") {
@@ -133,9 +133,9 @@ export default function AdminInboxPage() {
       }
       params.append("page", currentPage.toString());
       params.append("pageSize", pageSize.toString());
-      
+
       const route = `${baseRoute}?${params.toString()}`;
-      
+
       const response = await fetch(route, { signal });
       if (response.ok) {
         const data = await response.json();
@@ -297,7 +297,6 @@ export default function AdminInboxPage() {
     }
   };
 
-
   return (
     <div className="space-y-6">
       <div>
@@ -424,7 +423,7 @@ export default function AdminInboxPage() {
         </div>
       ) : chats.length === 0 ? (
         <Card>
-          <CardContent className="p-10 text-center">
+          <CardContent className="p-10 text-center pt-10">
             <FontAwesomeIcon icon={faEnvelope} size="3x" className="text-muted-foreground mb-4" />
             <p className="text-muted-foreground">
               {activeTab === "new"
@@ -499,7 +498,8 @@ export default function AdminInboxPage() {
       {!loading && chats.length > 0 && totalPages > 1 && (
         <div className="flex items-center justify-between border-t border-white/10 pt-4">
           <div className="text-sm text-muted-foreground">
-            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} chats
+            Showing {(currentPage - 1) * pageSize + 1} to{" "}
+            {Math.min(currentPage * pageSize, totalCount)} of {totalCount} chats
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -507,9 +507,7 @@ export default function AdminInboxPage() {
               size="sm"
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className={cn(
-                currentPage === 1 ? "cursor-not-allowed" : "cursor-pointer",
-              )}
+              className={cn(currentPage === 1 ? "cursor-not-allowed" : "cursor-pointer")}
             >
               <FontAwesomeIcon icon={faChevronLeft} className="h-4 w-4 mr-1" />
               Previous
@@ -544,9 +542,7 @@ export default function AdminInboxPage() {
               size="sm"
               onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className={cn(
-                currentPage === totalPages ? "cursor-not-allowed" : "cursor-pointer",
-              )}
+              className={cn(currentPage === totalPages ? "cursor-not-allowed" : "cursor-pointer")}
             >
               Next
               <FontAwesomeIcon icon={faChevronRight} className="h-4 w-4 ml-1" />
@@ -562,7 +558,7 @@ export default function AdminInboxPage() {
         className="lg:max-w-4xl! max-w-[95vw]!"
       >
         <DialogContent className="flex flex-col">
-          <DialogHeader className="px-0 border-b border-white/40">
+          <DialogHeader className="px-0 border-b border-white/40 sticky top-0 bg-background">
             <div className="flex items-center justify-between">
               <DialogTitle className="w-full text-2xl font-semibold">
                 {selectedChat?.subject}
@@ -576,17 +572,17 @@ export default function AdminInboxPage() {
                 <FontAwesomeIcon icon={faX} className="h-3 w-3" />
               </Button>
             </div>
-            <DialogDescription>
-              <div className="flex items-center gap-4 mt-2">
+            <div className="flex items-center gap-4 mt-2">
+              <DialogDescription>
                 <span>
                   <FontAwesomeIcon icon={faUser} className="h-3 w-3 mr-1" />
                   {selectedChat?.user.name} ({selectedChat?.user.email})
                 </span>
-                {selectedChat && getStatusBadge(selectedChat.status)}
-              </div>
-            </DialogDescription>
+              </DialogDescription>
+              {selectedChat && getStatusBadge(selectedChat.status)}
+            </div>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto space-y-4 py-4 min-h-[300px]">
+          <div className="flex-1 overflow-y-auto space-y-4 py-4 min-h-[300px] max-h-[350px] overflow-y-auto px-4">
             {getMessagesLoading ? (
               <div className="flex justify-center items-center gap-2 py-10">
                 <FontAwesomeIcon icon={faSpinner} size="lg" className="animate-spin" />
