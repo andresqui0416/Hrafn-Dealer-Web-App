@@ -57,11 +57,8 @@ async function executeSQL(sql: string): Promise<any[]> {
 
 export async function POST(req: NextRequest) {
   try {
-    // Get userId from middleware-set header
-    const userId = req.headers.get("x-user-id");
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Get userId from middleware-set header (guaranteed to exist by auth middleware)
+    const userId = req.headers.get("x-user-id")!;
 
     const { message } = await req.json();
     const safeMessage = typeof message === "string" ? message.trim() : "";

@@ -5,9 +5,10 @@ interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
+  className?: string;
 }
 
-const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
+const Dialog = ({ open, onOpenChange, children, className }: DialogProps) => {
   React.useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
@@ -29,7 +30,8 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
       <div className="fixed inset-0 bg-black/50" />
       <div
         className={cn(
-          "relative z-50 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-background rounded-lg shadow-lg border"
+          "relative z-50 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-background rounded-lg shadow-lg border",
+          className
         )}
         onClick={(e) => e.stopPropagation()}
       >

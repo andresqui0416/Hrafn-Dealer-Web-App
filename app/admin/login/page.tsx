@@ -54,7 +54,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <Image src="/logo.png" alt="Hrafn AI" width={48} height={48} />
+            <Image src="/logo.png" alt="Hrafn AI" width={48} height={48} style={{ height: "auto" }} />
           </div>
           <CardTitle className="text-2xl text-center">Admin Sign In</CardTitle>
           <CardDescription className="text-center">
