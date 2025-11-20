@@ -13,6 +13,7 @@ import {
   faChartGantt,
   faBars,
   faX,
+  faInbox,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/contexts/theme-context";
@@ -27,6 +28,7 @@ export default function ConsoleLayout({ children }: Readonly<{ children: ReactNo
     { href: "/inventory", label: "Inventory", icon: faCar },
     { href: "/offers", label: "Offers", icon: faChartGantt },
     { href: "/chat", label: "AI Agent", icon: faComments },
+    { href: "/inbox", label: "Inbox", icon: faInbox },
     { href: "/settings", label: "Settings", icon: faGear },
   ];
 
@@ -42,7 +44,7 @@ export default function ConsoleLayout({ children }: Readonly<{ children: ReactNo
         <div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10 h-[65px]">
           <Link href="/" onClick={() => setSidebarOpen(false)}>
             <div className="flex items-center gap-3">
-              <Image src="/logo.png" alt="Hrafn AI" width={32} height={32} />
+              <Image src="/logo.png" alt="Hrafn AI" width={32} height={32} style={{ height: "auto" }} />
               <span className="text-lg font-semibold text-foreground">Hrafn AI</span>
             </div>
           </Link>

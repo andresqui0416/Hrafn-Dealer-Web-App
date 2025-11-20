@@ -11,6 +11,7 @@ import {
   faBars,
   faX,
   faServer,
+  faInbox,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
@@ -29,6 +30,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         return "Dealer Management";
       case "/admin/services":
         return "Service Management";
+      case "/admin/inbox":
+        return "Inbox";
       default:
         return null;
     }
@@ -47,6 +50,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const navItems = [
     { href: "/admin/dealers", label: "Dealer Management", icon: faBuilding },
     { href: "/admin/services", label: "Service Management", icon: faServer },
+    { href: "/admin/inbox", label: "Inbox", icon: faInbox },
   ];
 
   // If on login page, render children directly without layout

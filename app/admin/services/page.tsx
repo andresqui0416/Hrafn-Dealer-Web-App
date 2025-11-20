@@ -10,8 +10,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner, faX, faRotateRight, faCheckCircle, faTimesCircle, faClock, faEye } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faX, faRotateRight, faCheckCircle, faTimesCircle, faClock, faEye, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 
 type DealerService = {
@@ -69,6 +77,9 @@ export default function ServicesPage() {
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
   const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+  const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
+  const [statusUpdateSuccess, setStatusUpdateSuccess] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -125,6 +136,59 @@ export default function ServicesPage() {
     // If it's CDK Global service, load subscription info
     if (service.serviceKind.name === "CDK Global") {
       loadSubscriptionInfo(service.orgName);
+    }
+  };
+
+  const handleStatusChange = async (serviceId: string, newStatus: "pending" | "reviewing" | "rejected" | "allowed") => {
+    setUpdatingStatusId(serviceId);
+    setStatusUpdateError(null);
+    setStatusUpdateSuccess(null);
+
+    try {
+      const response = await fetch(`/api/admin/services/${serviceId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setStatusUpdateError(data.error || "Failed to update status");
+        return;
+      }
+
+      setStatusUpdateSuccess("Status updated successfully");
+      
+      // Update the service in the local state
+      setDealerServices((prev) =>
+        prev.map((service) =>
+          service.id === serviceId
+            ? { ...service, status: newStatus, updatedAt: data.dealerService.updatedAt }
+            : service
+        )
+      );
+
+      // Update selectedService in modal if it's the one being updated
+      if (selectedService && selectedService.id === serviceId) {
+        setSelectedService({
+          ...selectedService,
+          status: newStatus,
+          updatedAt: data.dealerService.updatedAt,
+        });
+      }
+
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setStatusUpdateSuccess(null);
+      }, 3000);
+    } catch (err) {
+      console.error("Failed to update status:", err);
+      setStatusUpdateError("Network error. Please try again.");
+    } finally {
+      setUpdatingStatusId(null);
     }
   };
 
@@ -234,6 +298,34 @@ export default function ServicesPage() {
         </div>
       )}
 
+      {statusUpdateError && (
+        <div className="rounded-md bg-red-500/15 p-3 text-sm text-destructive flex items-center justify-between gap-2">
+          <span>{statusUpdateError}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setStatusUpdateError(null)}
+            className="h-6 w-6 p-0 cursor-pointer hover:bg-red-500/20"
+          >
+            <FontAwesomeIcon icon={faX} className="h-3 w-3" />
+          </Button>
+        </div>
+      )}
+
+      {statusUpdateSuccess && (
+        <div className="rounded-md bg-green-500/15 p-3 text-sm text-white flex items-center justify-between gap-2">
+          <span>{statusUpdateSuccess}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setStatusUpdateSuccess(null)}
+            className="h-6 w-6 p-0 cursor-pointer hover:bg-green-500/20"
+          >
+            <FontAwesomeIcon icon={faX} className="h-3 w-3" />
+          </Button>
+        </div>
+      )}
+
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -245,6 +337,7 @@ export default function ServicesPage() {
                   <th className="text-left p-4 text-sm font-semibold">Organization Name</th>
                   <th className="text-center p-4 text-sm font-semibold">Status</th>
                   <th className="text-left p-4 text-sm font-semibold">Requested</th>
+                  <th className="text-left p-4 text-sm font-semibold">Updated</th>
                 </tr>
               </thead>
               {!loading && dealerServices.length > 0 && (
@@ -278,6 +371,14 @@ export default function ServicesPage() {
                       <td className="p-4">
                         <div className="text-sm text-muted-foreground">
                           {new Date(service.createdAt).toLocaleDateString()}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="text-sm text-muted-foreground">
+                          {new Date(service.updatedAt).toLocaleDateString()}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {new Date(service.updatedAt).toLocaleTimeString()}
                         </div>
                       </td>
                     </tr>
@@ -343,12 +444,75 @@ export default function ServicesPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Status</label>
-                  <div className="mt-1">{getStatusBadge(selectedService.status)}</div>
+                  <div className="mt-2 flex items-center gap-3">
+                    {getStatusBadge(selectedService.status)}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={updatingStatusId === selectedService.id}
+                          className="cursor-pointer"
+                        >
+                          <FontAwesomeIcon
+                            icon={updatingStatusId === selectedService.id ? faSpinner : faChevronDown}
+                            className={cn(
+                              "h-4 w-4 mr-2",
+                              updatingStatusId === selectedService.id && "animate-spin"
+                            )}
+                          />
+                          Change Status
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="bg-background text-foreground">
+                        <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleStatusChange(selectedService.id, "pending")}
+                          disabled={selectedService.status === "pending" || updatingStatusId === selectedService.id}
+                          className="cursor-pointer"
+                        >
+                          <FontAwesomeIcon icon={faClock} className="h-3 w-3 mr-2 text-yellow-400" />
+                          Pending
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleStatusChange(selectedService.id, "reviewing")}
+                          disabled={selectedService.status === "reviewing" || updatingStatusId === selectedService.id}
+                          className="cursor-pointer"
+                        >
+                          <FontAwesomeIcon icon={faEye} className="h-3 w-3 mr-2 text-blue-400" />
+                          Reviewing
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleStatusChange(selectedService.id, "rejected")}
+                          disabled={selectedService.status === "rejected" || updatingStatusId === selectedService.id}
+                          className="cursor-pointer"
+                        >
+                          <FontAwesomeIcon icon={faTimesCircle} className="h-3 w-3 mr-2 text-red-400" />
+                          Rejected
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleStatusChange(selectedService.id, "allowed")}
+                          disabled={selectedService.status === "allowed" || updatingStatusId === selectedService.id}
+                          className="cursor-pointer"
+                        >
+                          <FontAwesomeIcon icon={faCheckCircle} className="h-3 w-3 mr-2 text-green-400" />
+                          Allowed
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Requested</label>
                   <p className="text-sm mt-1">
                     {new Date(selectedService.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Last Updated</label>
+                  <p className="text-sm mt-1">
+                    {new Date(selectedService.updatedAt).toLocaleString()}
                   </p>
                 </div>
               </div>

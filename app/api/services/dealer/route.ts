@@ -9,11 +9,8 @@ export const dynamic = "force-dynamic";
 // GET dealer services
 export async function GET(request: NextRequest) {
   try {
-    // Get userId from middleware-set header
-    const userId = request.headers.get("x-user-id");
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Get userId from middleware-set header (guaranteed to exist by auth middleware)
+    const userId = request.headers.get("x-user-id")!;
 
     // Get user's dealer
     const dealerId = await getUserDealer(userId);
@@ -47,11 +44,8 @@ export async function GET(request: NextRequest) {
 // POST create new service request
 export async function POST(request: NextRequest) {
   try {
-    // Get userId from middleware-set header
-    const userId = request.headers.get("x-user-id");
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Get userId from middleware-set header (guaranteed to exist by auth middleware)
+    const userId = request.headers.get("x-user-id")!;
 
     // Get user's dealer
     const dealerId = await getUserDealer(userId);

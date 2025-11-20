@@ -5,8 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner, faX, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faX, faTrash, faEdit } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type DealerData = {
   id: string;
@@ -60,6 +68,9 @@ export default function SettingsPage() {
   const [orgName, setOrgName] = useState("");
   const [submittingService, setSubmittingService] = useState(false);
   const [withdrawingServiceId, setWithdrawingServiceId] = useState<string | null>(null);
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [editOrgName, setEditOrgName] = useState("");
+  const [updatingServiceId, setUpdatingServiceId] = useState<string | null>(null);
 
   // Load dealer data
   useEffect(() => {
@@ -266,6 +277,64 @@ export default function SettingsPage() {
       setError("Network error. Please try again.");
     } finally {
       setSubmittingService(false);
+    }
+  };
+
+  const handleEditService = (service: DealerService) => {
+    setEditingServiceId(service.id);
+    setEditOrgName(service.orgName);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingServiceId(null);
+    setEditOrgName("");
+  };
+
+  const handleUpdateService = async () => {
+    if (!editingServiceId || !editOrgName.trim()) {
+      setError("Organization name is required");
+      return;
+    }
+
+    setUpdatingServiceId(editingServiceId);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch(`/api/services/dealer/${editingServiceId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orgName: editOrgName.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to update organization name");
+        setUpdatingServiceId(null);
+        return;
+      }
+
+      setSuccess("Organization name updated successfully");
+      setEditingServiceId(null);
+      setEditOrgName("");
+      
+      setServicesLoading(true);
+      // Reload services
+      const servicesResponse = await fetch("/api/services/dealer");
+      if (servicesResponse.ok) {
+        const servicesData = await servicesResponse.json();
+        setDealerServices(servicesData.dealerServices || []);
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
+      setServicesLoading(false);
+      setUpdatingServiceId(null);
     }
   };
 
@@ -539,9 +608,21 @@ export default function SettingsPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <h3 className="text-sm font-semibold">{service.serviceKind.name}</h3>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Organization: {service.orgName}
-                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-xs text-muted-foreground">
+                              Organization: {service.orgName}
+                            </p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditService(service)}
+                              disabled={withdrawingServiceId === service.id || updatingServiceId === service.id}
+                              className="h-6 w-6 p-0 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors duration-200"
+                              title="Edit organization name"
+                            >
+                              <FontAwesomeIcon icon={faEdit} className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <span
@@ -556,7 +637,7 @@ export default function SettingsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleWithdrawService(service.id)}
-                            disabled={withdrawingServiceId === service.id}
+                            disabled={withdrawingServiceId === service.id || updatingServiceId === service.id}
                             className="h-8 w-8 p-0 cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/20 transition-colors duration-200"
                             title="Withdraw service request"
                           >
@@ -581,6 +662,66 @@ export default function SettingsPage() {
           </Card>
         </div>
       )}
+
+      {/* Edit Organization Name Dialog */}
+      <Dialog open={editingServiceId !== null} onOpenChange={(open) => !open && handleCancelEdit()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Organization Name</DialogTitle>
+            <DialogDescription>
+              Update the organization name for this service request. This should match the name registered in the CRM system.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="editOrgName" className="text-sm font-medium">
+                Organization Name <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="editOrgName"
+                name="editOrgName"
+                type="text"
+                placeholder="Enter organization name as registered in CRM"
+                value={editOrgName}
+                onChange={(e) => setEditOrgName(e.target.value)}
+                required
+                disabled={updatingServiceId !== null}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleUpdateService();
+                  }
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                This should match the organization name registered in the CRM system
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleCancelEdit}
+              disabled={updatingServiceId !== null}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateService}
+              disabled={updatingServiceId !== null || !editOrgName.trim()}
+            >
+              {updatingServiceId !== null ? (
+                <>
+                  <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

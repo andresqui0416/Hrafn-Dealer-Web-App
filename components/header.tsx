@@ -30,7 +30,7 @@ export function Header() {
           <div className={`${pathname !=='/' ?'hidden': 'block'} lg:block`}>
             <Link href="/">
               <div className="flex items-center gap-3">
-                <Image src="/logo.png" alt="Hrafn AI" width={32} height={32} />
+                <Image src="/logo.png" alt="Hrafn AI" width={32} height={32} style={{ height: "auto" }} />
                 <span className="text-lg font-semibold text-foreground">Hrafn AI</span>
               </div>
             </Link>

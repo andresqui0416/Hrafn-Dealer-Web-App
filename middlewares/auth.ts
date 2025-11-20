@@ -21,7 +21,6 @@ export async function authMiddleware(request: NextRequest): Promise<NextResponse
   }
 
   if (pathname.startsWith("/api/admin/")) {
-
     const token =
       request.cookies.get("admin_token")?.value ||
       request.headers.get("authorization")?.replace("Bearer ", "");
@@ -31,15 +30,15 @@ export async function authMiddleware(request: NextRequest): Promise<NextResponse
     }
 
     const payload = await verifyJWT(token);
-    if (!payload) {
+    if (!payload || !payload.adminId || !payload.email || !payload.name || !payload.adminRole) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("x-admin-id", payload.adminId as string);
-    requestHeaders.set("x-admin-email", payload.email as string);
-    requestHeaders.set("x-admin-name", payload.name as string);
-    requestHeaders.set("x-admin-role", payload.adminRole as string);
+    requestHeaders.set("x-admin-id", payload.adminId);
+    requestHeaders.set("x-admin-email", payload.email);
+    requestHeaders.set("x-admin-name", payload.name);
+    requestHeaders.set("x-admin-role", payload.adminRole);
 
     return NextResponse.next({
       request: {
@@ -58,14 +57,14 @@ export async function authMiddleware(request: NextRequest): Promise<NextResponse
     }
 
     const payload = await verifyJWT(token);
-    if (!payload || !payload.userId) {
+    if (!payload || !payload.userId || !payload.email || !payload.name) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-user-id", payload.userId);
-    requestHeaders.set("x-user-email", payload.email || "");
-    requestHeaders.set("x-user-name", payload.name || "");
+    requestHeaders.set("x-user-email", payload.email);
+    requestHeaders.set("x-user-name", payload.name);
 
     return NextResponse.next({
       request: {
