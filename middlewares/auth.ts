@@ -3,7 +3,6 @@ import { verifyJWT } from "@/lib/auth/jwt";
 
 export async function authMiddleware(request: NextRequest): Promise<NextResponse | null> {
   const { pathname } = request.nextUrl;
-
   if (
     pathname.startsWith("/api/cdk/") ||
     pathname.startsWith("/api/auth/login") ||
@@ -45,6 +44,15 @@ export async function authMiddleware(request: NextRequest): Promise<NextResponse
         headers: requestHeaders,
       },
     });
+  }
+
+  if (pathname.startsWith("/api/cron/")) {
+    console.log("Checking cron authorization...", request.headers.get('Authorization'));
+    if (request.headers.get('Authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+      console.log("Unauthorized");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    return NextResponse.next();
   }
 
   if (pathname.startsWith("/api/")) {

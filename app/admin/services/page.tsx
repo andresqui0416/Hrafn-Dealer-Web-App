@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner, faX, faRotateRight, faCheckCircle, faTimesCircle, faClock, faEye, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSpinner,
+  faX,
+  faRotateRight,
+  faCheckCircle,
+  faTimesCircle,
+  faClock,
+  faEye,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 
 type DealerService = {
@@ -43,27 +52,25 @@ type DealerService = {
 };
 
 type SubscriptionInfo = {
-  subscriptions: Array<{
-    subscriptionId: string;
-    orgId: string;
-    orgName: string;
-    dealerCodes: Array<{
-      franchiseName: string;
-      manufacturerCode: string;
-      manufacturerParentCode: string;
-    }>;
-    status: string;
-    activationDate: string;
-    environment: string;
-    deactivationDate: string;
-    apiDmsInfo: Array<{
-      id: string;
+  subscriptionId: string;
+  orgId: string;
+  orgName: string;
+  dealerCodes: Array<{
+    franchiseName: string;
+    manufacturerCode: string;
+    manufacturerParentCode: string;
+  }>;
+  status: string;
+  activationDate: string;
+  environment: string;
+  deactivationDate: string;
+  apiDmsInfo: Array<{
+    id: string;
+    name: string;
+    departments: Array<{
       name: string;
-      departments: Array<{
-        name: string;
-        id: string;
-        dmsType: string;
-      }>;
+      id: string;
+      dmsType: string;
     }>;
   }>;
 };
@@ -114,7 +121,7 @@ export default function ServicesPage() {
         }
       }
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
+      if (err instanceof Error && err.name === "AbortError") {
         return;
       }
       if (!signal.aborted) {
@@ -139,18 +146,37 @@ export default function ServicesPage() {
     }
   };
 
-  const handleStatusChange = async (serviceId: string, newStatus: "pending" | "reviewing" | "rejected" | "allowed") => {
+  const handleStatusChange = async (
+    serviceId: string,
+    newStatus: "pending" | "reviewing" | "rejected" | "allowed",
+  ) => {
     setUpdatingStatusId(serviceId);
     setStatusUpdateError(null);
     setStatusUpdateSuccess(null);
 
     try {
+      const sendData = { status: newStatus } as any;
+
+      if (newStatus === "allowed") {
+        const departments: any[] = [];
+        subscriptionInfo?.apiDmsInfo.forEach((api: any) => {
+          api.departments.forEach((department: any) => {
+            departments.push({
+              id: department.id,
+              dmsType: department.dmsType,
+            });
+          });
+        });
+        sendData.departments = departments;
+        sendData.subscriptionId = subscriptionInfo?.subscriptionId;
+      }
+
       const response = await fetch(`/api/admin/services/${serviceId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify(sendData),
       });
 
       const data = await response.json();
@@ -161,14 +187,14 @@ export default function ServicesPage() {
       }
 
       setStatusUpdateSuccess("Status updated successfully");
-      
+
       // Update the service in the local state
       setDealerServices((prev) =>
         prev.map((service) =>
           service.id === serviceId
             ? { ...service, status: newStatus, updatedAt: data.dealerService.updatedAt }
-            : service
-        )
+            : service,
+        ),
       );
 
       // Update selectedService in modal if it's the one being updated
@@ -200,23 +226,18 @@ export default function ServicesPage() {
       // For now, we'll use a placeholder token. In production, this should come from the dealer's stored credentials
       // TODO: Store and retrieve CDK API tokens for each dealer
 
+      setSubscriptionInfo(null);
       const response = await fetch("/api/cdk/subscriptionInfo");
 
       if (response.ok) {
         const data = await response.json();
-        setSubscriptionInfo(data);
-
-        // Filter subscriptions by orgName if provided
         if (orgName && data.subscriptions) {
-          console.log('orgName', orgName);
-          const filtered = {
-            ...data,
-            subscriptions: data.subscriptions.filter(
-              (sub: any) => sub.orgName.toLowerCase().includes(orgName.toLowerCase()) ||
-                orgName.toLowerCase().includes(sub.orgName.toLowerCase())
-            ),
-          };
-          setSubscriptionInfo(filtered);
+          const filtered = data.subscriptions.find((sub: any) => {
+            return sub.orgName === orgName;
+          });
+
+          console.log(filtered);
+          setSubscriptionInfo({ ...filtered });
         }
       } else {
         const errorData = await response.json();
@@ -286,16 +307,14 @@ export default function ServicesPage() {
         >
           <FontAwesomeIcon
             icon={faRotateRight}
-            className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`}
+            className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
           />
           Refresh
         </Button>
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-500/15 p-3 text-sm text-destructive">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-500/15 p-3 text-sm text-destructive">{error}</div>
       )}
 
       {statusUpdateError && (
@@ -365,9 +384,7 @@ export default function ServicesPage() {
                       <td className="p-4">
                         <div className="text-sm">{service.orgName}</div>
                       </td>
-                      <td className="p-4 text-center">
-                        {getStatusBadge(service.status)}
-                      </td>
+                      <td className="p-4 text-center">{getStatusBadge(service.status)}</td>
                       <td className="p-4">
                         <div className="text-sm text-muted-foreground">
                           {new Date(service.createdAt).toLocaleDateString()}
@@ -429,14 +446,18 @@ export default function ServicesPage() {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Dealer</label>
                   <p className="text-base font-medium mt-1">{selectedService.dealer.name}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{selectedService.dealer.address}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {selectedService.dealer.address}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Service</label>
                   <p className="text-base font-medium mt-1">{selectedService.serviceKind.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Organization Name</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Organization Name
+                  </label>
                   <p className="text-base font-medium mt-1">{selectedService.orgName}</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     This should match the organization name registered in the CRM system
@@ -455,10 +476,12 @@ export default function ServicesPage() {
                           className="cursor-pointer"
                         >
                           <FontAwesomeIcon
-                            icon={updatingStatusId === selectedService.id ? faSpinner : faChevronDown}
+                            icon={
+                              updatingStatusId === selectedService.id ? faSpinner : faChevronDown
+                            }
                             className={cn(
                               "h-4 w-4 mr-2",
-                              updatingStatusId === selectedService.id && "animate-spin"
+                              updatingStatusId === selectedService.id && "animate-spin",
                             )}
                           />
                           Change Status
@@ -469,15 +492,24 @@ export default function ServicesPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => handleStatusChange(selectedService.id, "pending")}
-                          disabled={selectedService.status === "pending" || updatingStatusId === selectedService.id}
+                          disabled={
+                            selectedService.status === "pending" ||
+                            updatingStatusId === selectedService.id
+                          }
                           className="cursor-pointer"
                         >
-                          <FontAwesomeIcon icon={faClock} className="h-3 w-3 mr-2 text-yellow-400" />
+                          <FontAwesomeIcon
+                            icon={faClock}
+                            className="h-3 w-3 mr-2 text-yellow-400"
+                          />
                           Pending
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleStatusChange(selectedService.id, "reviewing")}
-                          disabled={selectedService.status === "reviewing" || updatingStatusId === selectedService.id}
+                          disabled={
+                            selectedService.status === "reviewing" ||
+                            updatingStatusId === selectedService.id
+                          }
                           className="cursor-pointer"
                         >
                           <FontAwesomeIcon icon={faEye} className="h-3 w-3 mr-2 text-blue-400" />
@@ -485,18 +517,30 @@ export default function ServicesPage() {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleStatusChange(selectedService.id, "rejected")}
-                          disabled={selectedService.status === "rejected" || updatingStatusId === selectedService.id}
+                          disabled={
+                            selectedService.status === "rejected" ||
+                            updatingStatusId === selectedService.id
+                          }
                           className="cursor-pointer"
                         >
-                          <FontAwesomeIcon icon={faTimesCircle} className="h-3 w-3 mr-2 text-red-400" />
+                          <FontAwesomeIcon
+                            icon={faTimesCircle}
+                            className="h-3 w-3 mr-2 text-red-400"
+                          />
                           Rejected
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleStatusChange(selectedService.id, "allowed")}
-                          disabled={selectedService.status === "allowed" || updatingStatusId === selectedService.id}
+                          disabled={
+                            selectedService.status === "allowed" ||
+                            updatingStatusId === selectedService.id
+                          }
                           className="cursor-pointer"
                         >
-                          <FontAwesomeIcon icon={faCheckCircle} className="h-3 w-3 mr-2 text-green-400" />
+                          <FontAwesomeIcon
+                            icon={faCheckCircle}
+                            className="h-3 w-3 mr-2 text-green-400"
+                          />
                           Allowed
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -536,7 +580,7 @@ export default function ServicesPage() {
                     >
                       <FontAwesomeIcon
                         icon={loadingSubscription ? faSpinner : faRotateRight}
-                        className={`h-4 w-4 mr-2 ${loadingSubscription ? 'animate-spin' : ''}`}
+                        className={`h-4 w-4 mr-2 ${loadingSubscription ? "animate-spin" : ""}`}
                       />
                       Refresh
                     </Button>
@@ -554,59 +598,57 @@ export default function ServicesPage() {
                     </div>
                   )}
 
-                  {!loadingSubscription && subscriptionInfo && subscriptionInfo.subscriptions && (
+                  {!loadingSubscription && subscriptionInfo && (
                     <div className="space-y-4">
-                      {subscriptionInfo.subscriptions.length === 0 ? (
+                      {!subscriptionInfo.subscriptionId ? (
                         <p className="text-sm text-muted-foreground text-center py-4">
                           No subscriptions found for this organization name.
                         </p>
                       ) : (
-                        subscriptionInfo.subscriptions.map((subscription, idx) => (
-                          <div
-                            key={subscription.subscriptionId}
-                            className="border border-white/10 rounded-lg p-4 space-y-3"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h4 className="font-semibold">{subscription.orgName}</h4>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  Subscription ID: {subscription.subscriptionId}
-                                </p>
-                              </div>
-                              <span
-                                className={cn(
-                                  "px-2 py-1 rounded-md text-xs font-medium",
-                                  subscription.status === "active"
-                                    ? "bg-green-500/20 text-green-600 dark:text-green-400"
-                                    : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
-                                )}
-                              >
-                                {subscription.status}
+                        <div className="border border-white/10 rounded-lg p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-semibold">{subscriptionInfo.orgName}</h4>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Subscription ID: {subscriptionInfo.subscriptionId}
+                              </p>
+                            </div>
+                            <span
+                              className={cn(
+                                "px-2 py-1 rounded-md text-xs font-medium",
+                                subscriptionInfo.status === "active"
+                                  ? "bg-green-500/20 text-green-600 dark:text-green-400"
+                                  : "bg-gray-500/20 text-gray-600 dark:text-gray-400",
+                              )}
+                            >
+                              {subscriptionInfo.status}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Environment:</span>
+                              <span className="ml-2 font-medium">
+                                {subscriptionInfo.environment}
                               </span>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Environment:</span>
-                                <span className="ml-2 font-medium">{subscription.environment}</span>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Activation Date:</span>
-                                <span className="ml-2 font-medium">{subscription.activationDate}</span>
-                              </div>
+                            <div>
+                              <span className="text-muted-foreground">Activation Date:</span>
+                              <span className="ml-2 font-medium">
+                                {subscriptionInfo.activationDate}
+                              </span>
                             </div>
+                          </div>
 
-                            {subscription.dealerCodes && subscription.dealerCodes.length > 0 && (
+                          {subscriptionInfo.dealerCodes &&
+                            subscriptionInfo.dealerCodes.length > 0 && (
                               <div>
                                 <label className="text-sm font-medium text-muted-foreground">
                                   Dealer Codes:
                                 </label>
                                 <div className="mt-2 space-y-1">
-                                  {subscription.dealerCodes.map((code, codeIdx) => (
-                                    <div
-                                      key={codeIdx}
-                                      className="text-sm bg-white/5 rounded p-2"
-                                    >
+                                  {subscriptionInfo.dealerCodes.map((code, codeIdx) => (
+                                    <div key={codeIdx} className="text-sm bg-white/5 rounded p-2">
                                       <div className="font-medium">{code.franchiseName}</div>
                                       <div className="text-xs text-muted-foreground">
                                         {code.manufacturerCode} / {code.manufacturerParentCode}
@@ -617,13 +659,14 @@ export default function ServicesPage() {
                               </div>
                             )}
 
-                            {subscription.apiDmsInfo && subscription.apiDmsInfo.length > 0 && (
+                          {subscriptionInfo.apiDmsInfo &&
+                            subscriptionInfo.apiDmsInfo.length > 0 && (
                               <div>
                                 <label className="text-sm font-medium text-muted-foreground">
-                                  Available APIs ({subscription.apiDmsInfo.length}):
+                                  Available APIs ({subscriptionInfo.apiDmsInfo.length}):
                                 </label>
                                 <div className="mt-2 space-y-2 max-h-64 overflow-y-auto">
-                                  {subscription.apiDmsInfo.map((api) => (
+                                  {subscriptionInfo.apiDmsInfo.map((api) => (
                                     <div
                                       key={api.id}
                                       className="border border-white/10 rounded p-3 bg-white/5"
@@ -650,8 +693,7 @@ export default function ServicesPage() {
                                 </div>
                               </div>
                             )}
-                          </div>
-                        ))
+                        </div>
                       )}
                     </div>
                   )}
@@ -664,4 +706,3 @@ export default function ServicesPage() {
     </div>
   );
 }
-
