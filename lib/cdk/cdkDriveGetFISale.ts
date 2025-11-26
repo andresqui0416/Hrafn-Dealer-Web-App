@@ -211,6 +211,7 @@ export async function getFISalesData(
       console.log("Token expired during initial request, refreshing token...");
       clearTokenCache();
       accessToken = await getFortellisAccessToken(true);
+      console.log("Retrying request with refreshed token...");
       response = await fetch(url, {
         method: "GET",
         headers: {
@@ -221,6 +222,12 @@ export async function getFISalesData(
           Accept: "application/json",
         },
       });
+      
+      // If still 401 after refresh, something is wrong with credentials
+      if (response.status === 401) {
+        const errorText = await response.text();
+        throw new Error(`CDK API returned 401 after token refresh: ${errorText}`);
+      }
     }
 
     if (!response.ok) {
@@ -328,6 +335,7 @@ export async function getFISalesHistoryData(
       console.log("Token expired during history request, refreshing token...");
       clearTokenCache();
       accessToken = await getFortellisAccessToken(true);
+      console.log("Retrying history request with refreshed token...");
       response = await fetch(url, {
         method: "GET",
         headers: {
@@ -338,6 +346,12 @@ export async function getFISalesHistoryData(
           Accept: "application/json",
         },
       });
+      
+      // If still 401 after refresh, something is wrong with credentials
+      if (response.status === 401) {
+        const errorText = await response.text();
+        throw new Error(`CDK API returned 401 after token refresh: ${errorText}`);
+      }
     }
 
     if (!response.ok) {

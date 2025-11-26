@@ -14,11 +14,22 @@ export function clearTokenCache(): void {
 /**
  * Get Fortellis OAuth2 access token
  * Uses client credentials flow and caches the token to avoid unnecessary requests
+ * Refreshes proactively if token expires within 5 minutes
  */
 export async function getFortellisAccessToken(forceRefresh: boolean = false): Promise<string> {
+  const now = Date.now();
+  const FIVE_MINUTES_MS = 5 * 60 * 1000;
+  
   // Check if we have a valid cached token (unless forcing refresh)
-  if (!forceRefresh && tokenCache && tokenCache.expiresAt > Date.now()) {
+  // Also refresh proactively if token expires within 5 minutes
+  if (!forceRefresh && tokenCache && tokenCache.expiresAt > now + FIVE_MINUTES_MS) {
     return tokenCache.accessToken;
+  }
+  
+  // If token exists but expires soon, clear it to force refresh
+  if (tokenCache && tokenCache.expiresAt <= now + FIVE_MINUTES_MS) {
+    console.log("Token expires soon, refreshing proactively...");
+    tokenCache = null;
   }
 
   const clientId = process.env.FORTELLIS_CLIENT_ID;
