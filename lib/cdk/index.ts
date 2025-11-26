@@ -5,12 +5,19 @@ let tokenCache: {
 } | null = null;
 
 /**
+ * Clear the token cache (useful when token expires during operations)
+ */
+export function clearTokenCache(): void {
+  tokenCache = null;
+}
+
+/**
  * Get Fortellis OAuth2 access token
  * Uses client credentials flow and caches the token to avoid unnecessary requests
  */
-export async function getFortellisAccessToken(): Promise<string> {
-  // Check if we have a valid cached token
-  if (tokenCache && tokenCache.expiresAt > Date.now()) {
+export async function getFortellisAccessToken(forceRefresh: boolean = false): Promise<string> {
+  // Check if we have a valid cached token (unless forcing refresh)
+  if (!forceRefresh && tokenCache && tokenCache.expiresAt > Date.now()) {
     return tokenCache.accessToken;
   }
 
