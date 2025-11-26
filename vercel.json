@@ -1,6 +1,8 @@
 {
-    "crons": [{
-      "path": "/api/cronJob/salesData",
+  "crons": [
+    {
+      "path": "/api/cron/salesData",
       "schedule": "*/5 * * * *"
-    }]
-  }
+    }
+  ]
+}
