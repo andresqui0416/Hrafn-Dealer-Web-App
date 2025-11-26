@@ -3,17 +3,16 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+type serviceData = {
+  status: "pending" | "reviewing" | "rejected" | "allowed";
+  subscriptionId?: string | null;
+};
+
 export const dynamic = "force-dynamic";
 
 // PUT update service request status
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // Get adminId from middleware-set header (guaranteed to exist by auth middleware)
-    const adminId = request.headers.get("x-admin-id")!;
-
     const body = await request.json();
     const { status } = body;
 
@@ -21,7 +20,7 @@ export async function PUT(
     if (!status || !validStatuses.includes(status)) {
       return NextResponse.json(
         { error: "Invalid status. Must be one of: pending, reviewing, rejected, allowed" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -33,11 +32,40 @@ export async function PUT(
     if (!dealerService) {
       return NextResponse.json({ error: "Service request not found" }, { status: 404 });
     }
-
+    // If the service request is allowed, create the departments
+    let data: serviceData = {status: status as "pending" | "reviewing" | "rejected" | "allowed"};
+    if (status === "allowed") {
+      const departments = Array.from(
+        new Set(body.departments.map((item: any) => JSON.stringify(item))),
+      )
+        .map((str: any) => JSON.parse(str as string))
+        .map((department: any) => {
+          return {
+            id: department.id,
+            dmsType: department.dmsType,
+            dealerId: dealerService.dealerId,
+            serviceId: params.id,
+          };
+        });
+      await prisma.dealerDepartment.createMany({
+        data: departments,
+      });
+      
+      if (body.subscriptionId) {
+        data.subscriptionId = body.subscriptionId;
+      }
+    } else {
+      await prisma.dealerDepartment.deleteMany({
+        where: {
+          serviceId: params.id,
+        },
+      });
+      data.subscriptionId = null;
+    }
     // Update the service request status
     const updatedService = await prisma.dealerService.update({
       where: { id: params.id },
-      data: { status: status as "pending" | "reviewing" | "rejected" | "allowed" },
+      data,
       include: {
         dealer: {
           select: {
@@ -67,4 +95,3 @@ export async function PUT(
     await prisma.$disconnect();
   }
 }
-

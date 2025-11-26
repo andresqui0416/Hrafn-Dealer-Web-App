@@ -20,6 +20,11 @@ export const metadata: Metadata = {
   title: "Hrafn AI Dealer Intelligence Platform",
   description:
     "Hrafn AI Dealer Intelligence Platform - AI-native dealer intelligence platform for the automotive industry with Next.js and shadcn/ui",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -29,9 +34,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/logo.png" />
-      </head>
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
         <FontAwesomeConfig />
         <AuthProvider>

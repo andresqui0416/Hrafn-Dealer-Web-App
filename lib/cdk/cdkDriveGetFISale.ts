@@ -125,40 +125,37 @@ export async function pollOperationStatus(
 export async function getFISalesData(
   endpointPath: string,
   departmentId?: string,
+  subscriptionId?: string | null,
   startDate?: string,
   endDate?: string,
 ): Promise<any[]> {
   // Get access token
   const accessToken = await getFortellisAccessToken();
+  console.log("Getting FISales data...");
+  console.log("Subscription ID:", subscriptionId);
+  console.log("Department ID:", departmentId);
+  console.log("Start date:", startDate);
+  console.log("End date:", endDate);
 
   // Get subscription and department info
   // Priority: 1) Provided departmentId parameter, 2) Environment variables, 3) Fetch from API
-  let subscriptionId = process.env.FORTELLIS_SUBSCRIPTION_ID;
-  let deptId = departmentId || process.env.FORTELLIS_DEPARTMENT_ID;
-
-  // If subscription ID or department ID not provided, fetch from API
-  if (!subscriptionId || !deptId) {
-    console.log("Fetching subscription and department info from Fortellis API...");
-    const subscriptionInfo = await getFortellisSubscriptionInfo(accessToken);
-    subscriptionId = subscriptionId || subscriptionInfo.subscriptionId;
-    deptId = deptId || subscriptionInfo.departmentId;
-  }
+  let deptId = departmentId;
 
   if (!subscriptionId) {
     throw new Error(
-      "Subscription ID is required. Set FORTELLIS_SUBSCRIPTION_ID or ensure API returns subscriptions.",
+      "Subscription ID is required. Provide as parameter, or ensure API returns subscriptions.",
     );
   }
 
   if (!deptId) {
     throw new Error(
-      "Department ID is required. Set FORTELLIS_DEPARTMENT_ID, provide as parameter, or ensure API returns departments.",
+      "Department ID is required. Provide as parameter, or ensure API returns departments.",
     );
   }
 
   try {
     // Build the endpoint URL
-    const baseUrl = "https://api.fortellis.io/cdk/drive/fisales/v3";
+    const baseUrl = "https://api.fortellis.io/cdk-test/drive/fisales/v3";
     const endpoint = `${baseUrl}/${endpointPath}`;
 
     // Build query parameters
@@ -227,34 +224,30 @@ export async function getFISalesData(
  */
 export async function getFISalesHistoryData(
   departmentId?: string,
+  subscriptionId?: string | null,
   startDate?: string,
   endDate?: string,
 ): Promise<any[]> {
   // Get access token
   const accessToken = await getFortellisAccessToken();
+  console.log("Subscription ID:", subscriptionId);
+  console.log("Department ID:", departmentId);
+  console.log("Start date:", startDate);
+  console.log("End date:", endDate);
 
   // Get subscription and department info
   // Priority: 1) Provided departmentId parameter, 2) Environment variables, 3) Fetch from API
-  let subscriptionId = process.env.FORTELLIS_SUBSCRIPTION_ID;
-  let deptId = departmentId || process.env.FORTELLIS_DEPARTMENT_ID;
-
-  // If subscription ID or department ID not provided, fetch from API
-  if (!subscriptionId || !deptId) {
-    console.log("Fetching subscription and department info from Fortellis API...");
-    const subscriptionInfo = await getFortellisSubscriptionInfo(accessToken);
-    subscriptionId = subscriptionId || subscriptionInfo.subscriptionId;
-    deptId = deptId || subscriptionInfo.departmentId;
-  }
+  let deptId = departmentId;
 
   if (!subscriptionId) {
     throw new Error(
-      "Subscription ID is required. Set FORTELLIS_SUBSCRIPTION_ID or ensure API returns subscriptions.",
+      "Subscription ID is required. Provide as parameter, or ensure API returns subscriptions.",
     );
   }
 
   if (!deptId) {
     throw new Error(
-      "Department ID is required. Set FORTELLIS_DEPARTMENT_ID, provide as parameter, or ensure API returns departments.",
+      "Department ID is required. Provide as parameter, or ensure API returns departments.",
     );
   }
 
@@ -264,7 +257,7 @@ export async function getFISalesHistoryData(
 
   try {
     // Build the endpoint URL - History Setup uses different base path
-    const baseUrl = "https://api.fortellis.io/cdk/drive/fisalessetup/v3";
+    const baseUrl = "https://api.fortellis.io/cdk-test/drive/fisalessetup/v3";
     const endpoint = `${baseUrl}/history`;
 
     // Build query parameters
