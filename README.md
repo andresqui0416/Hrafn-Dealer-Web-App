@@ -50,6 +50,7 @@ graph TB
 ```
 
 **Legend:**
+
 - **Next.js API Routes**: Single server surface; all secrets server-side
 - **DRAGIN Retrieval**: Distributed RAG across SQL + vectors (pgvector)
 - **Specialist Agents**: Inventory-first for demo; others follow
@@ -57,6 +58,7 @@ graph TB
 - **OpenAI → Llama**: Dev-time OpenAI, production migration to Llama
 
 ### Core Components
+
 - **Full-Stack Framework**: Next.js 14 (App Router) — React 18 + TypeScript + shadcn/ui
 - **Backend Layer**: Next.js API Routes for all secure operations (no client DB access)
 - **Database**: Supabase Postgres with RLS; accessed via server-only service role
@@ -65,35 +67,42 @@ graph TB
 - **APIs**: Single surface area at Next.js API routes (rate limited, validated)
 
 ### Security Essentials
+
 - Credentials and service role keys are server-side only; never in the browser
 - All DB reads/writes go through Next.js API routes; RLS enforced
 - JWT includes `dealer_id` claim; middleware verifies and scopes requests
 - Basic rate limiting and input validation on API routes
 
 ## 📁 Repository Structure
+
 - `/docs`: Documentation and design specs
 
 ## 📚 Documentation
+
 For a full table of contents and detailed guides, please refer to the [docs/README.md](docs/README.md).
 
 ## 🚀 Getting Started (Run Next.js locally)
 
 ### Prerequisites
+
 - Node.js 20+
 - npm 10+
 
 ### Clone this repository
+
 ```bash
 git clone https://github.com/HRAFNAI/dealer_webapp.git
 cd dealer_webapp
 ```
 
 ### Install dependencies
+
 ```bash
 npm install
 ```
 
 ### Environment variables
+
 - For the initial UI scaffold, none are required.
 - When adding backend features, create a `.env.local` with values like:
   - `JWT_SECRET=...`
@@ -102,12 +111,15 @@ npm install
   - `OPENAI_API_KEY=...`
 
 ### Run the dev server
+
 ```bash
 npm run dev
 ```
+
 Then open `http://localhost:3000` in your browser.
 
 ### Useful scripts
+
 - Lint: `npm run lint`
 - Fix lint: `npm run lint:fix`
 - Format: `npm run format`
@@ -115,12 +127,15 @@ Then open `http://localhost:3000` in your browser.
 - Start (after build): `npm start`
 
 ### If TypeScript can’t find new modules
+
 - Restart TS server: Ctrl+Shift+P → “TypeScript: Restart TS server”
 - Or reload window: Ctrl+Shift+P → “Developer: Reload Window”
 
 ### Planning and Timeline
+
 - Development Plan: [docs/Legacy_Planning/development_plan.md](docs/Legacy_Planning/development_plan.md)
 - Client Presentation Guide: [docs/Legacy_Planning/presentation_guide.md](docs/Legacy_Planning/presentation_guide.md)
 
 ## About
+
 HRAFN is an alpha-stage platform for dealer intelligence and recommendations, emphasizing recommendation logs, dealer isolation, and aggregate-safe analytics. The platform uses secure multi-tenant architecture with RLS enforcement and comprehensive data pipelines for automated competitive analysis.

@@ -11,6 +11,7 @@
 ### Title: HRAFN Dealer Intelligence Platform - 3-Month Development Plan
 
 **Key Points:**
+
 - AI-native dealer intelligence platform
 - 3-month timeline (12 weeks) for demo-ready system
 - Secure, scalable architecture with Next.js full-stack framework
@@ -27,31 +28,31 @@ graph TB
     subgraph Frontend["Frontend Layer"]
         UI[React Dashboard<br/>Next.js Frontend<br/>shadcn/ui Components]
     end
-    
+
     subgraph Backend["Backend Layer - Next.js API Routes"]
         API[API Routes<br/>Server Actions]
         ETL[ETL Orchestration<br/>Scheduling & Retries]
         INTEG[External Integrations<br/>Tekion, CDK Global]
         AUTH[Authentication &<br/>Credential Management]
     end
-    
+
     subgraph External["External Systems"]
         TEKION[Tekion DMS]
         CDK[CDK Global]
         OEM[OEM Feeds]
         WEB[Competitor Sites]
     end
-    
+
     subgraph Database["Database Layer"]
         SUPABASE[(Supabase PostgreSQL<br/>RLS Enforcement<br/>Real-time Capabilities)]
     end
-    
+
     subgraph AI["AI Layer - Server-Side Only"]
         LLM[Fine-Tuned Models<br/>OpenAI → Llama]
         DRAGIN[DRAGIN Retrieval<br/>Vector Search]
         AGENTS[Specialist Agents<br/>Inventory, Recommendations]
     end
-    
+
     UI -->|API Calls| API
     API -->|Secure Auth| INTEG
     INTEG -->|Fetch Data| TEKION
@@ -66,7 +67,7 @@ graph TB
     AGENTS -->|Generate Recs| API
     ETL -->|Orchestrate| INTEG
     ETL -->|Aggregate Data| SUPABASE
-    
+
     style UI fill:#4A90E2,stroke:#2C5282,stroke-width:2px,color:#fff
     style API fill:#FF8C42,stroke:#CC6D35,stroke-width:2px,color:#fff
     style SUPABASE fill:#4CAF50,stroke:#388E3C,stroke-width:2px,color:#fff
@@ -75,6 +76,7 @@ graph TB
 ```
 
 **Key Talking Points:**
+
 - **Security First:** All external API calls happen server-side (Next.js API routes)
 - **No Browser Exposure:** Credentials never leave the server
 - **Single Codebase:** Frontend and backend in one Next.js project
@@ -94,7 +96,7 @@ graph LR
         R1 -->|Exposes API Keys| EXT1[External APIs]
         R1 -->|Direct Connection| DB1[(Supabase)]
     end
-    
+
     subgraph Right["✅ Next.js Full-Stack"]
         N1[React Frontend]
         N2[Next.js API Routes]
@@ -102,12 +104,13 @@ graph LR
         N2 -->|Protected Credentials| EXT2[External APIs]
         N2 -->|Service Role| DB2[(Supabase)]
     end
-    
+
     style Wrong fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
     style Right fill:#27AE60,stroke:#229954,stroke-width:2px,color:#fff
 ```
 
 **Key Benefits:**
+
 1. **Security:** API keys stored in environment variables (server-side only)
 2. **ETL Capability:** Can handle scheduled jobs, retries, monitoring
 3. **Data Transformation:** Server-side normalization before database writes
@@ -144,6 +147,7 @@ gantt
 ```
 
 **Key Milestones:**
+
 - **Week 4 (Nov 30, 2025):** Foundation complete - Data flowing from Tekion/CDK
 - **Week 9 (Jan 4, 2026):** Intelligence layer operational - NLQ working
 - **Week 12 (Jan 25, 2026):** Demo ready - Client presentation
@@ -161,23 +165,23 @@ sequenceDiagram
     participant API as Next.js API Routes
     participant Tekion as Tekion/CDK APIs
     participant Supabase as Supabase Database
-    
+
     Note over User,Supabase: Week 1: Database Setup
     API->>Supabase: Create tables & RLS policies
     API->>Supabase: Set up authentication
-    
+
     Note over User,Supabase: Week 2: Data Ingestion
     API->>Tekion: Authenticate (OAuth/API Key)
     Tekion-->>API: Return inventory/offers data
     API->>API: Transform & normalize data
     API->>Supabase: Write using service role
-    
+
     Note over User,Supabase: Week 3: Frontend
     Frontend->>API: Request dashboard data
     API->>Supabase: Query with RLS
     Supabase-->>API: Return dealer-scoped data
     API-->>Frontend: Display inventory/offers
-    
+
     Note over User,Supabase: Week 4: Real-time
     Frontend->>API: Subscribe to updates
     API->>Supabase: Real-time subscriptions
@@ -185,6 +189,7 @@ sequenceDiagram
 ```
 
 **Deliverables:**
+
 - ✅ Secure database with RLS enforcement
 - ✅ One working adapter (Tekion or CDK)
 - ✅ Basic dashboard showing inventory and offers
@@ -201,7 +206,7 @@ flowchart TB
     subgraph Scheduler["Scheduler"]
         CRON[Cron Jobs<br/>Trigger Agents]
     end
-    
+
     subgraph Agents["6 Specialist Agents - All Fine-Tuned"]
         AGT_INV[Inventory Agent<br/>Fine-Tuned Model<br/>Slow-moving stock, aging]
         AGT_SALES[Sales Agent<br/>Fine-Tuned Model<br/>Performance, forecasting]
@@ -210,56 +215,56 @@ flowchart TB
         AGT_WEB[Web Comps Agent<br/>Fine-Tuned Model<br/>Competitive intelligence]
         AGT_INC[Incentives Agent<br/>Fine-Tuned Model<br/>OEM rebates, financing]
     end
-    
+
     subgraph Evidence["Evidence Store"]
         DB[(Supabase<br/>Facts & Findings)]
         AGG[(Aggregate Tables<br/>Benchmarks)]
         LOGS[(Recommendation Logs)]
     end
-    
+
     subgraph Orchestrator["Orchestrator"]
         ROUTE[Route to Agent<br/>Intent Classification]
         EVAL[Evaluate Evidence]
         RECS[Generate Recommendations]
     end
-    
+
     subgraph Output["Delivery"]
         UI[Dashboard<br/>Recommendations]
         ALERT[Alerts &<br/>Notifications]
     end
-    
+
     CRON --> AGT_INV
     CRON --> AGT_SALES
     CRON --> AGT_CRM
     CRON --> AGT_VM
     CRON --> AGT_WEB
     CRON --> AGT_INC
-    
+
     AGT_INV --> DB
     AGT_SALES --> DB
     AGT_CRM --> DB
     AGT_VM --> DB
     AGT_WEB --> DB
     AGT_INC --> DB
-    
+
     AGT_INV --> AGG
     AGT_SALES --> AGG
     AGT_CRM --> AGG
-    
+
     ROUTE --> AGT_INV
     ROUTE --> AGT_SALES
     ROUTE --> AGT_CRM
     ROUTE --> AGT_VM
     ROUTE --> AGT_WEB
     ROUTE --> AGT_INC
-    
+
     DB --> EVAL
     AGG --> EVAL
     EVAL --> RECS
     RECS --> LOGS
     RECS --> UI
     RECS --> ALERT
-    
+
     style AGT_INV fill:#3498DB,stroke:#2980B9,stroke-width:2px,color:#fff
     style AGT_SALES fill:#3498DB,stroke:#2980B9,stroke-width:2px,color:#fff
     style AGT_CRM fill:#3498DB,stroke:#2980B9,stroke-width:2px,color:#fff
@@ -269,6 +274,7 @@ flowchart TB
 ```
 
 **Why Fine-Tuning is Essential:**
+
 - Each agent handles different user requirements
 - Domain-specific expertise requires fine-tuned models
 - Accurate recommendations need agent understanding of business context
@@ -290,7 +296,7 @@ graph TB
         REQ5[Competitive Intelligence]
         REQ6[Incentive Optimization]
     end
-    
+
     subgraph Agents["Specialist Agents - Fine-Tuned"]
         AGT_INV[Inventory Agent<br/>Fine-Tuned Model]
         AGT_SALES[Sales Agent<br/>Fine-Tuned Model]
@@ -299,14 +305,14 @@ graph TB
         AGT_WEB[Web Comps Agent<br/>Fine-Tuned Model]
         AGT_INC[Incentives Agent<br/>Fine-Tuned Model]
     end
-    
+
     subgraph NLQ["NLQ Pipeline - Fine-Tuned"]
         IC[Intent Classification]
         EE[Entity Extraction]
         SQL[SQL Generation]
         REC[Recommendation]
     end
-    
+
     subgraph Output["Domain-Specific Results"]
         RES1[Inventory Insights]
         RES2[Sales Recommendations]
@@ -315,29 +321,29 @@ graph TB
         RES5[Competitive Analysis]
         RES6[Incentive Plans]
     end
-    
+
     REQ1 --> AGT_INV
     REQ2 --> AGT_SALES
     REQ3 --> AGT_CRM
     REQ4 --> AGT_VM
     REQ5 --> AGT_WEB
     REQ6 --> AGT_INC
-    
+
     AGT_INV --> IC
     AGT_SALES --> IC
     AGT_CRM --> IC
-    
+
     IC --> EE
     EE --> SQL
     SQL --> REC
-    
+
     AGT_INV --> RES1
     AGT_SALES --> RES2
     AGT_CRM --> RES3
     AGT_VM --> RES4
     AGT_WEB --> RES5
     AGT_INC --> RES6
-    
+
     style AGT_INV fill:#3498DB,stroke:#2980B9,stroke-width:2px,color:#fff
     style AGT_SALES fill:#3498DB,stroke:#2980B9,stroke-width:2px,color:#fff
     style AGT_CRM fill:#3498DB,stroke:#2980B9,stroke-width:2px,color:#fff
@@ -347,6 +353,7 @@ graph TB
 ```
 
 **Key Features:**
+
 - **6 Specialist Agents:** Each fine-tuned for specific domain (Inventory, Sales, CRM, VM, Web Comps, Incentives)
 - **6 NLQ Pipeline Models:** Handle natural language processing
 - **Domain Expertise:** Each agent understands its specific business context
@@ -364,23 +371,23 @@ graph TB
     subgraph Input["Query Input"]
         NLQ[Natural Language Query<br/>Example Query]
     end
-    
+
     subgraph DRAGIN["DRAGIN Retrieval Layer"]
         RQ[Retriever Orchestrator<br/>Combines Semantic + SQL]
         IDX[Unified Index<br/>Vector Store<br/>pgvector]
         PIP[Normalization Schemas<br/>Data Standardization]
     end
-    
+
     subgraph Sources["Data Sources"]
         SQL[SQL Queries<br/>PostgreSQL<br/>RLS Enforced]
         VEC[Vector Search<br/>Semantic Similarity<br/>Embeddings]
         EXT[External APIs<br/>Tekion, CDK<br/>Competitive Data]
     end
-    
+
     subgraph Output["Context Output"]
         CTX[Consolidated Context<br/>Relevant Data + Embeddings]
     end
-    
+
     NLQ --> RQ
     RQ --> IDX
     RQ --> SQL
@@ -392,7 +399,7 @@ graph TB
     SQL --> CTX
     VEC --> CTX
     CTX --> AGENTS[Agents Use Context]
-    
+
     style RQ fill:#3498DB,stroke:#2980B9,stroke-width:2px,color:#fff
     style IDX fill:#9B59B6,stroke:#7D3C98,stroke-width:2px,color:#fff
     style PIP fill:#4CAF50,stroke:#388E3C,stroke-width:2px,color:#fff
@@ -400,6 +407,7 @@ graph TB
 ```
 
 **What DRAGIN Does:**
+
 - **Distributed RAG:** Retrieval-Augmented Generation across multiple data sources
 - **Semantic + SQL:** Combines vector search (semantic similarity) with SQL queries (structured data)
 - **Unified Index:** Single vector store for all dealer data (inventory, offers, etc.)
@@ -407,11 +415,13 @@ graph TB
 - **Context Retrieval:** Provides relevant context to agents and LLM models
 
 **Key Components:**
+
 1. **Retriever Orchestrator:** Routes queries to appropriate sources (SQL or vector search)
 2. **Unified Index Vector Store:** Uses Supabase pgvector for semantic search
 3. **Normalization Schemas:** Transforms data from different sources into unified format
 
 **Why It's Important:**
+
 - Agents need relevant context to generate accurate recommendations
 - Combines structured data (SQL) with semantic understanding (vector search)
 - Enables intelligent retrieval across all dealer data sources
@@ -431,7 +441,7 @@ graph TB
         TRAIN_AGENTS[Agent Training Data<br/>6 agents × 100-200 examples]
         TEST[Test Datasets<br/>20-30 examples/model]
     end
-    
+
     subgraph NLQ["NLQ Pipeline Models"]
         FT1[Intent Classification]
         FT2[Entity Extraction]
@@ -440,7 +450,7 @@ graph TB
         FT5[Recommendation Gen]
         FT6[Response Formatting]
     end
-    
+
     subgraph Agents["Specialist Agent Models"]
         AGT_INV[Inventory Agent<br/>Fine-Tuned]
         AGT_SALES[Sales Agent<br/>Fine-Tuned]
@@ -449,13 +459,13 @@ graph TB
         AGT_WEB[Web Comps Agent<br/>Fine-Tuned]
         AGT_INC[Incentives Agent<br/>Fine-Tuned]
     end
-    
+
     subgraph Validate["Validation"]
         VAL_NLQ[Test NLQ Pipeline<br/>End-to-End]
         VAL_AGENTS[Test Agents<br/>Domain Accuracy]
         SAFE[SQL Safety Checks<br/>RLS Validation]
     end
-    
+
     SCHEMA --> FT1
     SCHEMA --> FT4
     SCHEMA --> AGT_INV
@@ -491,7 +501,7 @@ graph TB
     AGT_INC --> VAL_AGENTS
     VAL_NLQ --> SAFE
     VAL_AGENTS --> SAFE
-    
+
     style SCHEMA fill:#4CAF50,stroke:#388E3C,stroke-width:2px,color:#fff
     style DOMAIN fill:#9B59B6,stroke:#7D3C98,stroke-width:2px,color:#fff
     style TRAIN_NLQ fill:#3498DB,stroke:#2980B9,stroke-width:2px,color:#fff
@@ -515,6 +525,7 @@ graph TB
 ```
 
 **Why Fine-Tuning is Critical:**
+
 - **12 Total Models:** 6 NLQ pipeline models + 6 specialist agent models
 - **Domain-Specific:** Each agent needs specialized training for its domain (Inventory, Sales, CRM, etc.)
 - **Accurate Recommendations:** Fine-tuned agents understand dealer business context
@@ -522,6 +533,7 @@ graph TB
 - **Production Ready:** Reuse all training data for Llama migration
 
 **Key Points:**
+
 - **Development:** Fine-tune OpenAI models (12 models total)
 - **Agent Specialization:** Each agent fine-tuned for its specific domain expertise
 - **Production:** Reuse training data for Llama fine-tuning (all 12 models)
@@ -544,7 +556,7 @@ sequenceDiagram
     participant LLM as Fine-Tuned Models
     participant DB as Supabase
     participant BENCH as Benchmark Tables
-    
+
     GM->>UI: "Which SUVs should we discount?"
     UI->>API: POST /api/nlq
     API->>LLM: Intent Classification
@@ -568,6 +580,7 @@ sequenceDiagram
 ```
 
 **Demo Features:**
+
 - ✅ Natural language query → SQL → Results
 - ✅ Benchmark comparisons
 - ✅ Actionable recommendations
@@ -586,30 +599,30 @@ graph TB
         REACT[React 18<br/>TypeScript]
         UI[shadcn/ui<br/>Components]
     end
-    
+
     subgraph Backend["Backend"]
         API_ROUTES[Next.js API Routes<br/>Server Actions]
         ENV[Environment Variables<br/>Secure Credentials]
         ETL_JOB[ETL Orchestration<br/>Cron/Scheduler]
     end
-    
+
     subgraph Database["Database"]
         SUPABASE[Supabase<br/>PostgreSQL]
         RLS[Row-Level Security<br/>Dealer Isolation]
         REALTIME[Real-time<br/>Subscriptions]
     end
-    
+
     subgraph AI["AI/ML"]
         OPENAI[OpenAI API<br/>Development]
         LLAMA[Llama<br/>Production]
         VECTOR[pgvector<br/>Semantic Search]
     end
-    
+
     subgraph External["External APIs"]
         TEKION[Tekion DMS]
         CDK[CDK Global]
     end
-    
+
     NEXT --> API_ROUTES
     REACT --> NEXT
     UI --> REACT
@@ -623,7 +636,7 @@ graph TB
     SUPABASE --> REALTIME
     SUPABASE --> VECTOR
     OPENAI -.->|Migration| LLAMA
-    
+
     style NEXT fill:#4A90E2,stroke:#2C5282,stroke-width:2px,color:#fff
     style REACT fill:#4A90E2,stroke:#2C5282,stroke-width:2px,color:#fff
     style UI fill:#4A90E2,stroke:#2C5282,stroke-width:2px,color:#fff
@@ -651,20 +664,20 @@ graph TB
     subgraph Client["Client Layer"]
         BROWSER[Browser<br/>No Credentials]
     end
-    
+
     subgraph Server["Server Layer - Next.js"]
         API[API Routes]
         ENV_VARS[Environment Variables<br/>API Keys, Tokens]
         AUTH[Authentication<br/>Middleware]
         VALID[Validation<br/>& Sanitization]
     end
-    
+
     subgraph Database["Database Layer"]
         RLS_POL[RLS Policies<br/>Dealer Isolation]
         SERVICE_ROLE[Service Role<br/>Server-Side Only]
         USER_AUTH[User Auth<br/>JWT Claims]
     end
-    
+
     BROWSER -->|API Calls Only| API
     API -->|Read Only| ENV_VARS
     API -->|Verify| AUTH
@@ -672,13 +685,14 @@ graph TB
     API -->|Service Role| SERVICE_ROLE
     SERVICE_ROLE -->|RLS Enforced| RLS_POL
     BROWSER -.->|Never Direct| RLS_POL
-    
+
     style BROWSER fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
     style ENV_VARS fill:#F39C12,stroke:#D68910,stroke-width:2px,color:#fff
     style RLS_POL fill:#27AE60,stroke:#229954,stroke-width:2px,color:#fff
 ```
 
 **Security Highlights:**
+
 - ✅ Credentials never exposed to browser
 - ✅ RLS ensures dealer data isolation
 - ✅ All external API calls server-side
@@ -696,7 +710,7 @@ graph LR
         TEKION[Tekion DMS]
         CDK[CDK Global]
     end
-    
+
     subgraph ETL["ETL Layer - Next.js API"]
         AUTH[Authenticate<br/>OAuth/API Keys]
         FETCH[Fetch Data<br/>Inventory/Offers]
@@ -704,19 +718,19 @@ graph LR
         VALIDATE[Validate Data]
         WRITE[Write to Supabase<br/>Service Role]
     end
-    
+
     subgraph Storage["Supabase Database"]
         DEALER[Dealer Tables<br/>RLS Protected]
         AGG[Aggregate Tables<br/>k-anonymity]
         SNAP[Snapshot Tables<br/>Historical]
     end
-    
+
     subgraph Schedule["Scheduling"]
         CRON[Cron Jobs<br/>Hourly/Nightly]
         RETRY[Retry Logic<br/>Error Handling]
         MONITOR[Monitoring<br/>Data Freshness]
     end
-    
+
     TEKION -->|API Calls| AUTH
     CDK -->|API Calls| AUTH
     AUTH --> FETCH
@@ -729,7 +743,7 @@ graph LR
     CRON --> AUTH
     RETRY --> AUTH
     MONITOR --> WRITE
-    
+
     style ETL fill:#FF8C42,stroke:#CC6D35,stroke-width:2px,color:#fff
     style Storage fill:#4CAF50,stroke:#388E3C,stroke-width:2px,color:#fff
 ```
@@ -758,6 +772,7 @@ timeline
 ```
 
 **Deliverables by Phase:**
+
 - **Foundation:** Secure data pipeline, basic dashboard
 - **Intelligence:** AI-powered recommendations, NLQ queries
 - **Demo:** Complete discount flow, benchmarking, polished UI
@@ -769,6 +784,7 @@ timeline
 ### Cost Breakdown
 
 **Development Phase (3 Months):**
+
 - OpenAI API usage (development/demo)
 - OpenAI Fine-Tuning (12 models × $0.008-$0.03 per 1K tokens)
   - 6 NLQ Pipeline models
@@ -778,6 +794,7 @@ timeline
 - Domain and SSL certificates
 
 **Production Phase (Post-Demo):**
+
 - Llama infrastructure (self-hosted or cloud)
 - Llama fine-tuning (reuse training data)
 - Ongoing Supabase costs
@@ -821,6 +838,7 @@ mindmap
 ```
 
 **Mitigation Strategies:**
+
 - Early testing and validation
 - Iterative fine-tuning approach
 - Comprehensive error handling
@@ -839,28 +857,28 @@ graph LR
         D2[Inventory Focus]
         D3[1-2 Adapters]
     end
-    
+
     subgraph Phase2["Phase 2: Production"]
         P1[Llama Migration]
         P2[Full ETL Platform]
         P3[All Agents]
         P4[Advanced Benchmarking]
     end
-    
+
     subgraph Phase3["Phase 3: Scale"]
         S1[Multiple Dealers]
         S2[Advanced Features]
         S3[Mobile App]
         S4[Enterprise Features]
     end
-    
+
     D1 --> P1
     D2 --> P3
     D3 --> P2
     P1 --> S1
     P3 --> S2
     P2 --> S3
-    
+
     style D1 fill:#3498DB,stroke:#2980B9,stroke-width:2px,color:#fff
     style D2 fill:#3498DB,stroke:#2980B9,stroke-width:2px,color:#fff
     style D3 fill:#3498DB,stroke:#2980B9,stroke-width:2px,color:#fff
@@ -875,6 +893,7 @@ graph LR
 ```
 
 **Post-Demo Priorities:**
+
 1. **Llama Migration** - Cost optimization
 2. **Full Adapter Suite** - All dealer systems
 3. **Production Hardening** - Load testing, CI/CD
@@ -918,6 +937,7 @@ graph LR
 ### Immediate Actions
 
 **Week 1 Requirements:**
+
 - ✅ Supabase account setup
 - ✅ Access to Tekion or CDK API (for testing)
 - ✅ Design mockups/wireframes
@@ -925,6 +945,7 @@ graph LR
 - ✅ Architecture approval
 
 **Parallel Work:**
+
 - Domain expertise for fine-tuning dataset creation
 - Sample dealer data (if available)
 - Demo requirements clarification
@@ -936,26 +957,31 @@ graph LR
 ### Why This Approach Works
 
 **Single Codebase:**
+
 - Frontend + Backend in one Next.js project
 - Easier deployment and maintenance
 - Type-safe end-to-end
 
 **Security First:**
+
 - All credentials server-side
 - No browser exposure of API keys
 - RLS enforcement at database level
 
 **Scalable Architecture:**
+
 - Handles high-volume data pulls
 - Supports multiple dealer systems
 - Ready for production scaling
 
 **AI-Native:**
+
 - Fine-tuned models for accuracy
 - Schema-aware SQL generation
 - End-to-end NLQ pipeline
 
 **3-Month Timeline:**
+
 - MVP-first approach
 - Incremental value delivery
 - Demo-ready by Week 12

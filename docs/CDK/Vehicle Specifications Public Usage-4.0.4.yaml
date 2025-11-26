@@ -1,0 +1,3549 @@
+swagger: "2.0"
+info:
+  version: 4.0.4
+  title: Vehicle Specifications
+  description: >
+    # Vehicle Specifications
+
+    Vehicle Specifications is the association of vehicle make, model and variant. This information is stored by data provider so that vehicles can be consistently identified.
+
+
+    # What does this API do?
+
+    The API will allow you to retrieve vehicle specifications by vin, vehicleSpecId, make, model or variant.
+
+
+    # Intended Audience
+
+    The Vehicle Specifications API is required for any API that uses vehicles as part of their query or results.
+  contact:
+    name: CDK Global
+    url: https://cdkglobal.com
+    email: info@cdk.com
+host: api.fortellis.io
+basePath: /vehicles/reference/v4/vehicle-specifications
+securityDefinitions:
+  permission-model:
+    type: oauth2
+    flow: implicit
+    authorizationUrl: https://identity.fortellis.io/oauth2/
+schemes:
+  - https
+paths:
+  "/vins/{vin}":
+    get:
+      summary: Decode a VIN into a vehicle specification
+      description: Decode a VIN into a vehicle specification
+      operationId: decodeVin
+      tags:
+        - Vehicle Specifications Queries
+      parameters:
+        - name: Prefer
+          in: header
+          type: string
+          description: Specifies which version of representation you prefer.
+          enum:
+            - return=representation
+            - return=minimal
+        - name: Request-Id
+          in: header
+          type: string
+          required: true
+          format: guid
+          description: A UUID representing this unique api call
+        - name: vin
+          in: path
+          required: true
+          description: The ISO 3779:2009 vehicle-identification-number (VIN)
+          type: string
+        - &a1
+          name: Subscription-Id
+          in: header
+          description: The Fortellis Marketplace subscription identifier between a user
+            entity and the app.
+          required: true
+          type: string
+          default: test
+        - &a2
+          name: Authorization
+          in: header
+          description: Provides authorization to access Fortellis APIs. For calling a
+            Fortellis Provider, this must be an OAuth 2.0 token issued by the
+            Fortellis authorization server.
+          required: true
+          type: string
+          disabled: true
+          placeholder: Automatically set
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Content-Language:
+              type: string
+            Content-Type:
+              type: string
+            Request-Id:
+              type: string
+          schema:
+            description: A response containing a complete vehicle specification
+            properties:
+              vehicleSpecification:
+                description: A vehicle specification including, but not limited to, make, model,
+                  and variant
+                required:
+                  - vehicleSpecId
+                  - countryCode
+                  - make
+                  - model
+                  - variant
+                example:
+                  vehicleSpecId: BUIC-VERANO-2012-US
+                  countryCode: US
+                  mfrCode: GM
+                  make:
+                    makeId: BUIC
+                    name: Buick
+                  model:
+                    modelId: VERANO
+                    name: Verano
+                  variant:
+                    variantId: "2012"
+                    name: "2012"
+                  links:
+                    - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/BUIC-VERANO-2012-US
+                      method: GET
+                      rel: self
+                properties:
+                  vehicleSpecId:
+                    type: string
+                    description: The vehicle specification identifier
+                  countryCode:
+                    type: string
+                    pattern: "[A-Z]{2}"
+                    description: The ISO 3166 alpha-2 country code
+                  mfrCode:
+                    type: string
+                    description: The vehicle manufacturer code
+                  make:
+                    description: A vehicle make
+                    required:
+                      - makeId
+                      - name
+                    example:
+                      makeId: BUIC
+                      name: Buick
+                      links:
+                        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC
+                          method: GET
+                          rel: self
+                    properties:
+                      makeId:
+                        type: string
+                        pattern: "[A-Z_]{1,64}"
+                        description: The vehicle make identifier
+                      name:
+                        type: string
+                        description: The vehicle make name
+                      links:
+                        type: array
+                        items:
+                          description: Details of a link to a resource
+                          required:
+                            - href
+                            - rel
+                          example:
+                            href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                            rel: prevPage
+                            method: GET
+                            title: Get the previous page of results
+                          properties:
+                            href:
+                              type: string
+                              description: The target URI
+                            rel:
+                              type: string
+                              description: The link relation type
+                            method:
+                              type: string
+                              description: The HTTP verb that MUST be used to make a request to the target of
+                                the link
+                            title:
+                              type: string
+                              description: The title property provides a title for the link and is a helpful
+                                documentation tool to facilitate understanding
+                                by the end clients
+                  model:
+                    description: A vehicle model
+                    required:
+                      - modelId
+                      - name
+                    example:
+                      modelId: VERANO
+                      name: Verano
+                      links:
+                        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/model/VERANO
+                          method: GET
+                          rel: self
+                    properties:
+                      modelId:
+                        type: string
+                        pattern: "[A-Z0-9_]{1,64}"
+                        description: The vehicle model identifier
+                      name:
+                        type: string
+                        description: The vehicle model name
+                      links:
+                        type: array
+                        items:
+                          description: Details of a link to a resource
+                          required:
+                            - href
+                            - rel
+                          example:
+                            href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                            rel: prevPage
+                            method: GET
+                            title: Get the previous page of results
+                          properties:
+                            href:
+                              type: string
+                              description: The target URI
+                            rel:
+                              type: string
+                              description: The link relation type
+                            method:
+                              type: string
+                              description: The HTTP verb that MUST be used to make a request to the target of
+                                the link
+                            title:
+                              type: string
+                              description: The title property provides a title for the link and is a helpful
+                                documentation tool to facilitate understanding
+                                by the end clients
+                  variant:
+                    description: A variant of a vehicle. Typically the model year.
+                    required:
+                      - variantId
+                      - name
+                    example:
+                      variantId: "2012"
+                      name: "2012"
+                      links:
+                        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants/2012
+                          method: GET
+                          rel: self
+                    properties:
+                      variantId:
+                        type: string
+                        pattern: "[A-Z0-9_]{1,64}"
+                        description: The code of the vehicle variant
+                      name:
+                        type: string
+                        description: The name of the vehicle variant
+                      links:
+                        type: array
+                        items:
+                          description: Details of a link to a resource
+                          required:
+                            - href
+                            - rel
+                          example:
+                            href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                            rel: prevPage
+                            method: GET
+                            title: Get the previous page of results
+                          properties:
+                            href:
+                              type: string
+                              description: The target URI
+                            rel:
+                              type: string
+                              description: The link relation type
+                            method:
+                              type: string
+                              description: The HTTP verb that MUST be used to make a request to the target of
+                                the link
+                            title:
+                              type: string
+                              description: The title property provides a title for the link and is a helpful
+                                documentation tool to facilitate understanding
+                                by the end clients
+                  links:
+                    type: array
+                    items:
+                      description: Details of a link to a resource
+                      required:
+                        - href
+                        - rel
+                      example:
+                        href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                        rel: prevPage
+                        method: GET
+                        title: Get the previous page of results
+                      properties:
+                        href:
+                          type: string
+                          description: The target URI
+                        rel:
+                          type: string
+                          description: The link relation type
+                        method:
+                          type: string
+                          description: The HTTP verb that MUST be used to make a request to the target of
+                            the link
+                        title:
+                          type: string
+                          description: The title property provides a title for the link and is a helpful
+                            documentation tool to facilitate understanding by
+                            the end clients
+            required:
+              - vehicleSpecification
+            example:
+              vehicleSpecification:
+                vehicleSpecId: BUIC-VERANO-2012-US
+                countryCode: US
+                mfrCode: GM
+                make:
+                  makeId: BUIC
+                  name: Buick
+                model:
+                  modelId: VERANO
+                  name: Verano
+                variant:
+                  variantId: "2012"
+                  name: "2012"
+                links:
+                  - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/BUIC-VERANO-2012-US
+                    method: GET
+                    rel: self
+        "400":
+          description: 400 - Bad Request
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "401":
+          description: 401 - Unauthorized
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "403":
+          description: 403 - Forbidden
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "404":
+          description: 404 - Not Found
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+  "/{vehicleSpecId}":
+    get:
+      summary: Query vehicle specification by identifier
+      description: Query vehicle specification by identifier
+      operationId: queryVehicleSpecificationById
+      tags:
+        - Vehicle Specifications Queries
+      parameters:
+        - name: Prefer
+          in: header
+          type: string
+          description: Specifies which version of representation you prefer.
+          enum:
+            - return=representation
+            - return=minimal
+        - name: Request-Id
+          in: header
+          type: string
+          required: true
+          format: guid
+          description: A UUID representing this unique api call
+        - name: vehicleSpecId
+          in: path
+          required: true
+          description: The vehicle specification identifier
+          type: string
+        - *a1
+        - *a2
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Content-Language:
+              type: string
+            Content-Type:
+              type: string
+            Preference-Applied:
+              type: string
+              enum:
+                - return=representation
+                - return=minimal
+          schema:
+            description: A response containing a complete vehicle specification
+            properties:
+              vehicleSpecification:
+                description: A vehicle specification including, but not limited to, make, model,
+                  and variant
+                properties:
+                  vehicleSpecId:
+                    type: string
+                    description: The vehicle specification identifier
+                  countryCode:
+                    type: string
+                    pattern: "[A-Z]{2}"
+                    description: The ISO 3166 alpha-2 country code
+                  mfrCode:
+                    type: string
+                    description: The vehicle manufacturer code
+                  make:
+                    description: A vehicle make
+                    properties:
+                      makeId:
+                        type: string
+                        pattern: "[A-Z_]{1,64}"
+                        description: The vehicle make identifier
+                      name:
+                        type: string
+                        description: The vehicle make name
+                      links:
+                        type: array
+                        items:
+                          description: Details of a link to a resource
+                          properties:
+                            href:
+                              type: string
+                              description: The target URI
+                            rel:
+                              type: string
+                              description: The link relation type
+                            method:
+                              type: string
+                              description: The HTTP verb that MUST be used to make a request to the target of
+                                the link
+                            title:
+                              type: string
+                              description: The title property provides a title for the link and is a helpful
+                                documentation tool to facilitate understanding
+                                by the end clients
+                          required:
+                            - href
+                            - rel
+                          example:
+                            href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                            rel: prevPage
+                            method: GET
+                            title: Get the previous page of results
+                    required:
+                      - makeId
+                      - name
+                    example:
+                      makeId: BUIC
+                      name: Buick
+                      links:
+                        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC
+                          method: GET
+                          rel: self
+                  model:
+                    description: A vehicle model
+                    properties:
+                      modelId:
+                        type: string
+                        pattern: "[A-Z0-9_]{1,64}"
+                        description: The vehicle model identifier
+                      name:
+                        type: string
+                        description: The vehicle model name
+                      links:
+                        type: array
+                        items:
+                          description: Details of a link to a resource
+                          properties:
+                            href:
+                              type: string
+                              description: The target URI
+                            rel:
+                              type: string
+                              description: The link relation type
+                            method:
+                              type: string
+                              description: The HTTP verb that MUST be used to make a request to the target of
+                                the link
+                            title:
+                              type: string
+                              description: The title property provides a title for the link and is a helpful
+                                documentation tool to facilitate understanding
+                                by the end clients
+                          required:
+                            - href
+                            - rel
+                          example:
+                            href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                            rel: prevPage
+                            method: GET
+                            title: Get the previous page of results
+                    required:
+                      - modelId
+                      - name
+                    example:
+                      modelId: VERANO
+                      name: Verano
+                      links:
+                        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/model/VERANO
+                          method: GET
+                          rel: self
+                  variant:
+                    description: A variant of a vehicle. Typically the model year.
+                    properties:
+                      variantId:
+                        type: string
+                        pattern: "[A-Z0-9_]{1,64}"
+                        description: The code of the vehicle variant
+                      name:
+                        type: string
+                        description: The name of the vehicle variant
+                      links:
+                        type: array
+                        items:
+                          description: Details of a link to a resource
+                          properties:
+                            href:
+                              type: string
+                              description: The target URI
+                            rel:
+                              type: string
+                              description: The link relation type
+                            method:
+                              type: string
+                              description: The HTTP verb that MUST be used to make a request to the target of
+                                the link
+                            title:
+                              type: string
+                              description: The title property provides a title for the link and is a helpful
+                                documentation tool to facilitate understanding
+                                by the end clients
+                          required:
+                            - href
+                            - rel
+                          example:
+                            href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                            rel: prevPage
+                            method: GET
+                            title: Get the previous page of results
+                    required:
+                      - variantId
+                      - name
+                    example:
+                      variantId: "2012"
+                      name: "2012"
+                      links:
+                        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants/2012
+                          method: GET
+                          rel: self
+                  links:
+                    type: array
+                    items:
+                      description: Details of a link to a resource
+                      properties:
+                        href:
+                          type: string
+                          description: The target URI
+                        rel:
+                          type: string
+                          description: The link relation type
+                        method:
+                          type: string
+                          description: The HTTP verb that MUST be used to make a request to the target of
+                            the link
+                        title:
+                          type: string
+                          description: The title property provides a title for the link and is a helpful
+                            documentation tool to facilitate understanding by
+                            the end clients
+                      required:
+                        - href
+                        - rel
+                      example:
+                        href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                        rel: prevPage
+                        method: GET
+                        title: Get the previous page of results
+                required:
+                  - vehicleSpecId
+                  - countryCode
+                  - make
+                  - model
+                  - variant
+                example:
+                  vehicleSpecId: BUIC-VERANO-2012-US
+                  countryCode: US
+                  mfrCode: GM
+                  make:
+                    makeId: BUIC
+                    name: Buick
+                  model:
+                    modelId: VERANO
+                    name: Verano
+                  variant:
+                    variantId: "2012"
+                    name: "2012"
+                  links:
+                    - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/BUIC-VERANO-2012-US
+                      method: GET
+                      rel: self
+            required:
+              - vehicleSpecification
+            example:
+              vehicleSpecification:
+                vehicleSpecId: BUIC-VERANO-2012-US
+                countryCode: US
+                mfrCode: GM
+                make:
+                  makeId: BUIC
+                  name: Buick
+                model:
+                  modelId: VERANO
+                  name: Verano
+                variant:
+                  variantId: "2012"
+                  name: "2012"
+                links:
+                  - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/BUIC-VERANO-2012-US
+                    method: GET
+                    rel: self
+        "400":
+          description: 400 - Bad Request
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "401":
+          description: 401 - Unauthorized
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "403":
+          description: 403 - Forbidden
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "404":
+          description: 404 - Not Found
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+  /makes:
+    get:
+      summary: Query vehicle makes
+      description: Query vehicle makes
+      operationId: queryVehicleMakes
+      tags:
+        - Vehicle Specifications Queries
+      parameters:
+        - name: Prefer
+          in: header
+          type: string
+          description: Specifies which version of representation you prefer.
+          enum:
+            - return=representation
+            - return=minimal
+        - name: Request-Id
+          in: header
+          type: string
+          required: true
+          format: guid
+          description: A UUID representing this unique api call
+        - name: countryCode
+          in: query
+          description: The ISO 3166 alpha-2 country code (default is US)
+          type: string
+        - name: page
+          in: query
+          description: A non-zero integer representing the page of the results
+          type: number
+        - name: pageSize
+          in: query
+          description: A non-negative, non-zero integer indicating the maximum number of
+            results to return at one time
+          type: number
+        - *a1
+        - *a2
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Content-Language:
+              type: string
+            Content-Type:
+              type: string
+            Preference-Applied:
+              type: string
+              enum:
+                - return=representation
+                - return=minimal
+          schema:
+            description: A collection of vehicle makes
+            allOf:
+              - description: Definition of properties required for paginated returned lists and
+                  totals
+                type: object
+                properties:
+                  totalItems:
+                    type: integer
+                    format: int32
+                    description: The total number of items contained in the collection
+                  totalPages:
+                    type: integer
+                    format: int32
+                    description: The total number of pages given the requested page size
+                  links:
+                    description: The hypermedia links describing the possible resource actions
+                    type: array
+                    items:
+                      description: Details of a link to a resource
+                      properties:
+                        href:
+                          type: string
+                          description: The target URI
+                        rel:
+                          type: string
+                          description: The link relation type
+                        method:
+                          type: string
+                          description: The HTTP verb that MUST be used to make a request to the target of
+                            the link
+                        title:
+                          type: string
+                          description: The title property provides a title for the link and is a helpful
+                            documentation tool to facilitate understanding by
+                            the end clients
+                      required:
+                        - href
+                        - rel
+                      example:
+                        href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                        rel: prevPage
+                        method: GET
+                        title: Get the previous page of results
+                required:
+                  - totalItems
+                  - totalPages
+                  - links
+                example:
+                  totalItems: 2
+                  totalPages: 1
+                  links:
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=1&pageSize=20
+                      method: GET
+                      rel: firstPage
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=4&pageSize=20
+                      method: GET
+                      rel: nextPage
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                      method: GET
+                      rel: prevPage
+              - type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      description: A vehicle make
+                      properties:
+                        makeId:
+                          type: string
+                          pattern: "[A-Z_]{1,64}"
+                          description: The vehicle make identifier
+                        name:
+                          type: string
+                          description: The vehicle make name
+                        links:
+                          type: array
+                          items:
+                            description: Details of a link to a resource
+                            properties:
+                              href:
+                                type: string
+                                description: The target URI
+                              rel:
+                                type: string
+                                description: The link relation type
+                              method:
+                                type: string
+                                description: The HTTP verb that MUST be used to make a request to the target of
+                                  the link
+                              title:
+                                type: string
+                                description: The title property provides a title for the link and is a helpful
+                                  documentation tool to facilitate understanding
+                                  by the end clients
+                            required:
+                              - href
+                              - rel
+                            example:
+                              href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                              rel: prevPage
+                              method: GET
+                              title: Get the previous page of results
+                      required:
+                        - makeId
+                        - name
+                      example:
+                        makeId: BUIC
+                        name: Buick
+                        links:
+                          - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC
+                            method: GET
+                            rel: self
+            required:
+              - items
+            example:
+              items:
+                - makeId: BUIC
+                  name: Buick
+                - makeId: DODG
+                  name: Dodge
+                - makeId: VW
+                  name: Volkswagen
+              totalItems: 3
+              totalPages: 1
+              links:
+                - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes?page=1&pageSize=20
+                  method: GET
+                  rel: firstPage
+        "400":
+          description: 400 - Bad Request
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "401":
+          description: 401 - Unauthorized
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "403":
+          description: 403 - Forbidden
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "404":
+          description: 404 - Not Found
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+  "/makes/{makeId}/models":
+    get:
+      summary: Query vehicle models
+      description: Query vehicle models
+      operationId: queryVehicleModels
+      tags:
+        - Vehicle Specifications Queries
+      parameters:
+        - name: Prefer
+          in: header
+          type: string
+          description: Specifies which version of representation you prefer.
+          enum:
+            - return=representation
+            - return=minimal
+        - name: Request-Id
+          in: header
+          type: string
+          required: true
+          format: guid
+          description: A UUID representing this unique api call
+        - name: makeId
+          in: path
+          required: true
+          description: The vehicle make identifier
+          type: string
+        - name: countryCode
+          in: query
+          description: The ISO 3166 alpha-2 country code (default is US)
+          type: string
+        - name: page
+          in: query
+          description: A non-zero integer representing the page of the results
+          type: number
+        - name: pageSize
+          in: query
+          description: A non-negative, non-zero integer indicating the maximum number of
+            results to return at one time
+          type: number
+        - *a1
+        - *a2
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Content-Language:
+              type: string
+            Content-Type:
+              type: string
+            Preference-Applied:
+              type: string
+              enum:
+                - return=representation
+                - return=minimal
+          schema:
+            description: A collection of vehicle models for a given make
+            allOf:
+              - description: Definition of properties required for paginated returned lists and
+                  totals
+                type: object
+                properties:
+                  totalItems:
+                    type: integer
+                    format: int32
+                    description: The total number of items contained in the collection
+                  totalPages:
+                    type: integer
+                    format: int32
+                    description: The total number of pages given the requested page size
+                  links:
+                    description: The hypermedia links describing the possible resource actions
+                    type: array
+                    items:
+                      description: Details of a link to a resource
+                      properties:
+                        href:
+                          type: string
+                          description: The target URI
+                        rel:
+                          type: string
+                          description: The link relation type
+                        method:
+                          type: string
+                          description: The HTTP verb that MUST be used to make a request to the target of
+                            the link
+                        title:
+                          type: string
+                          description: The title property provides a title for the link and is a helpful
+                            documentation tool to facilitate understanding by
+                            the end clients
+                      required:
+                        - href
+                        - rel
+                      example:
+                        href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                        rel: prevPage
+                        method: GET
+                        title: Get the previous page of results
+                required:
+                  - totalItems
+                  - totalPages
+                  - links
+                example:
+                  totalItems: 2
+                  totalPages: 1
+                  links:
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=1&pageSize=20
+                      method: GET
+                      rel: firstPage
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=4&pageSize=20
+                      method: GET
+                      rel: nextPage
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                      method: GET
+                      rel: prevPage
+              - type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      description: A vehicle model
+                      properties:
+                        modelId:
+                          type: string
+                          pattern: "[A-Z0-9_]{1,64}"
+                          description: The vehicle model identifier
+                        name:
+                          type: string
+                          description: The vehicle model name
+                        links:
+                          type: array
+                          items:
+                            description: Details of a link to a resource
+                            properties:
+                              href:
+                                type: string
+                                description: The target URI
+                              rel:
+                                type: string
+                                description: The link relation type
+                              method:
+                                type: string
+                                description: The HTTP verb that MUST be used to make a request to the target of
+                                  the link
+                              title:
+                                type: string
+                                description: The title property provides a title for the link and is a helpful
+                                  documentation tool to facilitate understanding
+                                  by the end clients
+                            required:
+                              - href
+                              - rel
+                            example:
+                              href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                              rel: prevPage
+                              method: GET
+                              title: Get the previous page of results
+                      required:
+                        - modelId
+                        - name
+                      example:
+                        modelId: VERANO
+                        name: Verano
+                        links:
+                          - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/model/VERANO
+                            method: GET
+                            rel: self
+            required:
+              - items
+            example:
+              items:
+                - modelId: ENCLAVE
+                  name: Enclave
+                - modelId: VERANO
+                  name: Verano
+              totalItems: 2
+              totalPages: 1
+              links:
+                - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/models?page=1&pageSize=20
+                  method: GET
+                  rel: firstPage
+        "400":
+          description: 400 - Bad Request
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "401":
+          description: 401 - Unauthorized
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "403":
+          description: 403 - Forbidden
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "404":
+          description: 404 - Not Found
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+  "/makes/{makeId}/variants":
+    get:
+      summary: Query vehicle variants by make
+      description: Query vehicle variants by make
+      operationId: queryVehicleVariantsByMake
+      tags:
+        - Vehicle Specifications Queries
+      parameters:
+        - name: Prefer
+          in: header
+          type: string
+          description: Specifies which version of representation you prefer.
+          enum:
+            - return=representation
+            - return=minimal
+        - name: Request-Id
+          in: header
+          type: string
+          required: true
+          format: guid
+          description: A UUID representing this unique api call
+        - name: makeId
+          in: path
+          required: true
+          description: The vehicle make identifier
+          type: string
+        - name: countryCode
+          in: query
+          description: The ISO 3166 alpha-2 country code (default is US)
+          type: string
+        - name: page
+          in: query
+          description: A non-zero integer representing the page of the results
+          type: number
+        - name: pageSize
+          in: query
+          description: A non-negative, non-zero integer indicating the maximum number of
+            results to return at one time
+          type: number
+        - *a1
+        - *a2
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Content-Language:
+              type: string
+            Content-Type:
+              type: string
+            Preference-Applied:
+              type: string
+              enum:
+                - return=representation
+                - return=minimal
+          schema:
+            description: A collection of vehicle variants for a given make
+            allOf:
+              - description: Definition of properties required for paginated returned lists and
+                  totals
+                type: object
+                properties:
+                  totalItems:
+                    type: integer
+                    format: int32
+                    description: The total number of items contained in the collection
+                  totalPages:
+                    type: integer
+                    format: int32
+                    description: The total number of pages given the requested page size
+                  links:
+                    description: The hypermedia links describing the possible resource actions
+                    type: array
+                    items:
+                      description: Details of a link to a resource
+                      properties:
+                        href:
+                          type: string
+                          description: The target URI
+                        rel:
+                          type: string
+                          description: The link relation type
+                        method:
+                          type: string
+                          description: The HTTP verb that MUST be used to make a request to the target of
+                            the link
+                        title:
+                          type: string
+                          description: The title property provides a title for the link and is a helpful
+                            documentation tool to facilitate understanding by
+                            the end clients
+                      required:
+                        - href
+                        - rel
+                      example:
+                        href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                        rel: prevPage
+                        method: GET
+                        title: Get the previous page of results
+                required:
+                  - totalItems
+                  - totalPages
+                  - links
+                example:
+                  totalItems: 2
+                  totalPages: 1
+                  links:
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=1&pageSize=20
+                      method: GET
+                      rel: firstPage
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=4&pageSize=20
+                      method: GET
+                      rel: nextPage
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                      method: GET
+                      rel: prevPage
+              - type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      description: A variant of a vehicle. Typically the model year.
+                      properties:
+                        variantId:
+                          type: string
+                          pattern: "[A-Z0-9_]{1,64}"
+                          description: The code of the vehicle variant
+                        name:
+                          type: string
+                          description: The name of the vehicle variant
+                        links:
+                          type: array
+                          items:
+                            description: Details of a link to a resource
+                            properties:
+                              href:
+                                type: string
+                                description: The target URI
+                              rel:
+                                type: string
+                                description: The link relation type
+                              method:
+                                type: string
+                                description: The HTTP verb that MUST be used to make a request to the target of
+                                  the link
+                              title:
+                                type: string
+                                description: The title property provides a title for the link and is a helpful
+                                  documentation tool to facilitate understanding
+                                  by the end clients
+                            required:
+                              - href
+                              - rel
+                            example:
+                              href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                              rel: prevPage
+                              method: GET
+                              title: Get the previous page of results
+                      required:
+                        - variantId
+                        - name
+                      example:
+                        variantId: "2012"
+                        name: "2012"
+                        links:
+                          - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants/2012
+                            method: GET
+                            rel: self
+            required:
+              - items
+            example:
+              items:
+                - variantId: "2012"
+                  name: "2012"
+                - variantId: "2013"
+                  name: "2013"
+              totalItems: 2
+              totalPages: 1
+              links:
+                - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants?page=1&pageSize=20
+                  method: GET
+                  rel: firstPage
+        "400":
+          description: 400 - Bad Request
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "401":
+          description: 401 - Unauthorized
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "403":
+          description: 403 - Forbidden
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "404":
+          description: 404 - Not Found
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+  "/makes/{makeId}/models/{modelId}/variants":
+    get:
+      summary: Query vehicle variants
+      description: Query vehicle variants
+      operationId: queryVehicleVariants
+      tags:
+        - Vehicle Specifications Queries
+      parameters:
+        - name: Prefer
+          in: header
+          type: string
+          description: Specifies which version of representation you prefer.
+          enum:
+            - return=representation
+            - return=minimal
+        - name: Request-Id
+          in: header
+          type: string
+          required: true
+          format: guid
+          description: A UUID representing this unique api call
+        - name: makeId
+          in: path
+          required: true
+          description: The vehicle make identifier
+          type: string
+        - name: modelId
+          in: path
+          required: true
+          description: The vehicle model identifier
+          type: string
+        - name: countryCode
+          in: query
+          description: The ISO 3166 alpha-2 country code (default is US)
+          type: string
+        - name: page
+          in: query
+          description: A non-zero integer representing the page of the results
+          type: number
+        - name: pageSize
+          in: query
+          description: A non-negative, non-zero integer indicating the maximum number of
+            results to return at one time
+          type: number
+        - *a1
+        - *a2
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Content-Language:
+              type: string
+            Content-Type:
+              type: string
+            Preference-Applied:
+              type: string
+              enum:
+                - return=representation
+                - return=minimal
+          schema:
+            description: A collection of vehicle variants for a given make and model
+            allOf:
+              - description: Definition of properties required for paginated returned lists and
+                  totals
+                type: object
+                properties:
+                  totalItems:
+                    type: integer
+                    format: int32
+                    description: The total number of items contained in the collection
+                  totalPages:
+                    type: integer
+                    format: int32
+                    description: The total number of pages given the requested page size
+                  links:
+                    description: The hypermedia links describing the possible resource actions
+                    type: array
+                    items:
+                      description: Details of a link to a resource
+                      properties:
+                        href:
+                          type: string
+                          description: The target URI
+                        rel:
+                          type: string
+                          description: The link relation type
+                        method:
+                          type: string
+                          description: The HTTP verb that MUST be used to make a request to the target of
+                            the link
+                        title:
+                          type: string
+                          description: The title property provides a title for the link and is a helpful
+                            documentation tool to facilitate understanding by
+                            the end clients
+                      required:
+                        - href
+                        - rel
+                      example:
+                        href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                        rel: prevPage
+                        method: GET
+                        title: Get the previous page of results
+                required:
+                  - totalItems
+                  - totalPages
+                  - links
+                example:
+                  totalItems: 2
+                  totalPages: 1
+                  links:
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=1&pageSize=20
+                      method: GET
+                      rel: firstPage
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=4&pageSize=20
+                      method: GET
+                      rel: nextPage
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                      method: GET
+                      rel: prevPage
+              - type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      description: A variant of a vehicle. Typically the model year.
+                      properties:
+                        variantId:
+                          type: string
+                          pattern: "[A-Z0-9_]{1,64}"
+                          description: The code of the vehicle variant
+                        name:
+                          type: string
+                          description: The name of the vehicle variant
+                        links:
+                          type: array
+                          items:
+                            description: Details of a link to a resource
+                            properties:
+                              href:
+                                type: string
+                                description: The target URI
+                              rel:
+                                type: string
+                                description: The link relation type
+                              method:
+                                type: string
+                                description: The HTTP verb that MUST be used to make a request to the target of
+                                  the link
+                              title:
+                                type: string
+                                description: The title property provides a title for the link and is a helpful
+                                  documentation tool to facilitate understanding
+                                  by the end clients
+                            required:
+                              - href
+                              - rel
+                            example:
+                              href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                              rel: prevPage
+                              method: GET
+                              title: Get the previous page of results
+                      required:
+                        - variantId
+                        - name
+                      example:
+                        variantId: "2012"
+                        name: "2012"
+                        links:
+                          - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants/2012
+                            method: GET
+                            rel: self
+            required:
+              - items
+            example:
+              items:
+                - variantId: "2012"
+                  name: "2012"
+                - variantId: "2013"
+                  name: "2013"
+              totalItems: 2
+              totalPages: 1
+              links:
+                - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/models/VERANO/variants?page=1&pageSize=20
+                  method: GET
+                  rel: firstPage
+        "400":
+          description: 400 - Bad Request
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "401":
+          description: 401 - Unauthorized
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "403":
+          description: 403 - Forbidden
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "404":
+          description: 404 - Not Found
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+  "/makes/{makeId}/variants/{variantId}/models":
+    get:
+      summary: Query vehicle models by variant
+      description: Query vehicle models by variant
+      operationId: queryVehicleModelsByVariant
+      tags:
+        - Vehicle Specifications Queries
+      parameters:
+        - name: Prefer
+          in: header
+          type: string
+          description: Specifies which version of representation you prefer.
+          enum:
+            - return=representation
+            - return=minimal
+        - name: Request-Id
+          in: header
+          type: string
+          required: true
+          format: guid
+          description: A UUID representing this unique api call
+        - name: makeId
+          in: path
+          required: true
+          description: The vehicle make identifier
+          type: string
+        - name: variantId
+          in: path
+          required: true
+          description: The vehicle variant identifier
+          type: string
+        - name: countryCode
+          in: query
+          description: The ISO 3166 alpha-2 country code (default is US)
+          type: string
+        - name: page
+          in: query
+          description: A non-zero integer representing the page of the results
+          type: number
+        - name: pageSize
+          in: query
+          description: A non-negative, non-zero integer indicating the maximum number of
+            results to return at one time
+          type: number
+        - *a1
+        - *a2
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Content-Language:
+              type: string
+            Content-Type:
+              type: string
+            Preference-Applied:
+              type: string
+              enum:
+                - return=representation
+                - return=minimal
+          schema:
+            description: A collection of vehicle models for a given make and variant
+            allOf:
+              - description: Definition of properties required for paginated returned lists and
+                  totals
+                type: object
+                properties:
+                  totalItems:
+                    type: integer
+                    format: int32
+                    description: The total number of items contained in the collection
+                  totalPages:
+                    type: integer
+                    format: int32
+                    description: The total number of pages given the requested page size
+                  links:
+                    description: The hypermedia links describing the possible resource actions
+                    type: array
+                    items:
+                      description: Details of a link to a resource
+                      properties:
+                        href:
+                          type: string
+                          description: The target URI
+                        rel:
+                          type: string
+                          description: The link relation type
+                        method:
+                          type: string
+                          description: The HTTP verb that MUST be used to make a request to the target of
+                            the link
+                        title:
+                          type: string
+                          description: The title property provides a title for the link and is a helpful
+                            documentation tool to facilitate understanding by
+                            the end clients
+                      required:
+                        - href
+                        - rel
+                      example:
+                        href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                        rel: prevPage
+                        method: GET
+                        title: Get the previous page of results
+                required:
+                  - totalItems
+                  - totalPages
+                  - links
+                example:
+                  totalItems: 2
+                  totalPages: 1
+                  links:
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=1&pageSize=20
+                      method: GET
+                      rel: firstPage
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=4&pageSize=20
+                      method: GET
+                      rel: nextPage
+                    - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                      method: GET
+                      rel: prevPage
+              - type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      description: A vehicle model
+                      properties:
+                        modelId:
+                          type: string
+                          pattern: "[A-Z0-9_]{1,64}"
+                          description: The vehicle model identifier
+                        name:
+                          type: string
+                          description: The vehicle model name
+                        links:
+                          type: array
+                          items:
+                            description: Details of a link to a resource
+                            properties:
+                              href:
+                                type: string
+                                description: The target URI
+                              rel:
+                                type: string
+                                description: The link relation type
+                              method:
+                                type: string
+                                description: The HTTP verb that MUST be used to make a request to the target of
+                                  the link
+                              title:
+                                type: string
+                                description: The title property provides a title for the link and is a helpful
+                                  documentation tool to facilitate understanding
+                                  by the end clients
+                            required:
+                              - href
+                              - rel
+                            example:
+                              href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                              rel: prevPage
+                              method: GET
+                              title: Get the previous page of results
+                      required:
+                        - modelId
+                        - name
+                      example:
+                        modelId: VERANO
+                        name: Verano
+                        links:
+                          - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/model/VERANO
+                            method: GET
+                            rel: self
+            required:
+              - items
+            example:
+              items:
+                - modelId: ENCLAVE
+                  name: Enclave
+                - modelId: VERANO
+                  name: Verano
+              totalItems: 2
+              totalPages: 1
+              links:
+                - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants/2012/models?page=1&pageSize=20
+                  method: GET
+                  rel: firstPage
+        "400":
+          description: 400 - Bad Request
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "401":
+          description: 401 - Unauthorized
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "403":
+          description: 403 - Forbidden
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+        "404":
+          description: 404 - Not Found
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Details of a general error response
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+            required:
+              - code
+              - message
+            example:
+              code: 400
+              message: Bad Request.
+parameters:
+  header.Subscription-Id:
+    name: Subscription-Id
+    in: header
+    required: true
+    type: string
+    description: Specifies the Fortellis Marketplace customer subscription request
+  header.Authorization:
+    name: Authorization
+    in: header
+    required: true
+    type: string
+    description: The bearer token
+  header.Prefer:
+    name: Prefer
+    in: header
+    type: string
+    description: Specifies which version of representation you prefer.
+    enum:
+      - return=representation
+      - return=minimal
+  header.Request-Id:
+    name: Request-Id
+    in: header
+    type: string
+    required: true
+    format: guid
+    description: A UUID representing this unique api call
+  path.vehicleSpecId:
+    name: vehicleSpecId
+    in: path
+    required: true
+    description: The vehicle specification identifier
+    type: string
+  path.makeId:
+    name: makeId
+    in: path
+    required: true
+    description: The vehicle make identifier
+    type: string
+  path.modelId:
+    name: modelId
+    in: path
+    required: true
+    description: The vehicle model identifier
+    type: string
+  path.variantId:
+    name: variantId
+    in: path
+    required: true
+    description: The vehicle variant identifier
+    type: string
+  path.vin:
+    name: vin
+    in: path
+    required: true
+    description: The ISO 3779:2009 vehicle-identification-number (VIN)
+    type: string
+  query.countryCode:
+    name: countryCode
+    in: query
+    description: The ISO 3166 alpha-2 country code (default is US)
+    type: string
+  query.make:
+    name: make
+    in: query
+    description: The vehicle make identifier
+    type: string
+  query.model:
+    name: model
+    in: query
+    description: The vehicle model identifier
+    type: string
+  query.variant:
+    name: variant
+    in: query
+    description: The vehicle variant identifier
+    type: string
+  query.paginationPage:
+    name: page
+    in: query
+    description: A non-zero integer representing the page of the results
+    type: number
+  query.paginationPageSize:
+    name: pageSize
+    in: query
+    description: A non-negative, non-zero integer indicating the maximum number of
+      results to return at one time
+    type: number
+responses:
+  BadRequest:
+    description: 400 - Bad Request
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      description: Details of a general error response
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+      required:
+        - code
+        - message
+      example:
+        code: 400
+        message: Bad Request.
+  Unauthorized:
+    description: 401 - Unauthorized
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      description: Details of a general error response
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+      required:
+        - code
+        - message
+      example:
+        code: 400
+        message: Bad Request.
+  Forbidden:
+    description: 403 - Forbidden
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      description: Details of a general error response
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+      required:
+        - code
+        - message
+      example:
+        code: 400
+        message: Bad Request.
+  NotFound:
+    description: 404 - Not Found
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      description: Details of a general error response
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+      required:
+        - code
+        - message
+      example:
+        code: 400
+        message: Bad Request.
+definitions:
+  Specification:
+    description: A vehicle specification including, but not limited to, make, model,
+      and variant
+    properties:
+      vehicleSpecId:
+        type: string
+        description: The vehicle specification identifier
+      countryCode:
+        type: string
+        pattern: "[A-Z]{2}"
+        description: The ISO 3166 alpha-2 country code
+      mfrCode:
+        type: string
+        description: The vehicle manufacturer code
+      make:
+        description: A vehicle make
+        properties:
+          makeId:
+            type: string
+            pattern: "[A-Z_]{1,64}"
+            description: The vehicle make identifier
+          name:
+            type: string
+            description: The vehicle make name
+          links:
+            type: array
+            items:
+              description: Details of a link to a resource
+              properties:
+                href:
+                  type: string
+                  description: The target URI
+                rel:
+                  type: string
+                  description: The link relation type
+                method:
+                  type: string
+                  description: The HTTP verb that MUST be used to make a request to the target of
+                    the link
+                title:
+                  type: string
+                  description: The title property provides a title for the link and is a helpful
+                    documentation tool to facilitate understanding by the end
+                    clients
+              required:
+                - href
+                - rel
+              example:
+                href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                rel: prevPage
+                method: GET
+                title: Get the previous page of results
+        required:
+          - makeId
+          - name
+        example:
+          makeId: BUIC
+          name: Buick
+          links:
+            - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC
+              method: GET
+              rel: self
+      model:
+        description: A vehicle model
+        properties:
+          modelId:
+            type: string
+            pattern: "[A-Z0-9_]{1,64}"
+            description: The vehicle model identifier
+          name:
+            type: string
+            description: The vehicle model name
+          links:
+            type: array
+            items:
+              description: Details of a link to a resource
+              properties:
+                href:
+                  type: string
+                  description: The target URI
+                rel:
+                  type: string
+                  description: The link relation type
+                method:
+                  type: string
+                  description: The HTTP verb that MUST be used to make a request to the target of
+                    the link
+                title:
+                  type: string
+                  description: The title property provides a title for the link and is a helpful
+                    documentation tool to facilitate understanding by the end
+                    clients
+              required:
+                - href
+                - rel
+              example:
+                href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                rel: prevPage
+                method: GET
+                title: Get the previous page of results
+        required:
+          - modelId
+          - name
+        example:
+          modelId: VERANO
+          name: Verano
+          links:
+            - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/model/VERANO
+              method: GET
+              rel: self
+      variant:
+        description: A variant of a vehicle. Typically the model year.
+        properties:
+          variantId:
+            type: string
+            pattern: "[A-Z0-9_]{1,64}"
+            description: The code of the vehicle variant
+          name:
+            type: string
+            description: The name of the vehicle variant
+          links:
+            type: array
+            items:
+              description: Details of a link to a resource
+              properties:
+                href:
+                  type: string
+                  description: The target URI
+                rel:
+                  type: string
+                  description: The link relation type
+                method:
+                  type: string
+                  description: The HTTP verb that MUST be used to make a request to the target of
+                    the link
+                title:
+                  type: string
+                  description: The title property provides a title for the link and is a helpful
+                    documentation tool to facilitate understanding by the end
+                    clients
+              required:
+                - href
+                - rel
+              example:
+                href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                rel: prevPage
+                method: GET
+                title: Get the previous page of results
+        required:
+          - variantId
+          - name
+        example:
+          variantId: "2012"
+          name: "2012"
+          links:
+            - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants/2012
+              method: GET
+              rel: self
+      links:
+        type: array
+        items:
+          description: Details of a link to a resource
+          properties:
+            href:
+              type: string
+              description: The target URI
+            rel:
+              type: string
+              description: The link relation type
+            method:
+              type: string
+              description: The HTTP verb that MUST be used to make a request to the target of
+                the link
+            title:
+              type: string
+              description: The title property provides a title for the link and is a helpful
+                documentation tool to facilitate understanding by the end
+                clients
+          required:
+            - href
+            - rel
+          example:
+            href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+            rel: prevPage
+            method: GET
+            title: Get the previous page of results
+    required:
+      - vehicleSpecId
+      - countryCode
+      - make
+      - model
+      - variant
+    example:
+      vehicleSpecId: BUIC-VERANO-2012-US
+      countryCode: US
+      mfrCode: GM
+      make:
+        makeId: BUIC
+        name: Buick
+      model:
+        modelId: VERANO
+        name: Verano
+      variant:
+        variantId: "2012"
+        name: "2012"
+      links:
+        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/BUIC-VERANO-2012-US
+          method: GET
+          rel: self
+  Make:
+    description: A vehicle make
+    properties:
+      makeId:
+        type: string
+        pattern: "[A-Z_]{1,64}"
+        description: The vehicle make identifier
+      name:
+        type: string
+        description: The vehicle make name
+      links:
+        type: array
+        items:
+          description: Details of a link to a resource
+          properties:
+            href:
+              type: string
+              description: The target URI
+            rel:
+              type: string
+              description: The link relation type
+            method:
+              type: string
+              description: The HTTP verb that MUST be used to make a request to the target of
+                the link
+            title:
+              type: string
+              description: The title property provides a title for the link and is a helpful
+                documentation tool to facilitate understanding by the end
+                clients
+          required:
+            - href
+            - rel
+          example:
+            href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+            rel: prevPage
+            method: GET
+            title: Get the previous page of results
+    required:
+      - makeId
+      - name
+    example:
+      makeId: BUIC
+      name: Buick
+      links:
+        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC
+          method: GET
+          rel: self
+  Model:
+    description: A vehicle model
+    properties:
+      modelId:
+        type: string
+        pattern: "[A-Z0-9_]{1,64}"
+        description: The vehicle model identifier
+      name:
+        type: string
+        description: The vehicle model name
+      links:
+        type: array
+        items:
+          description: Details of a link to a resource
+          properties:
+            href:
+              type: string
+              description: The target URI
+            rel:
+              type: string
+              description: The link relation type
+            method:
+              type: string
+              description: The HTTP verb that MUST be used to make a request to the target of
+                the link
+            title:
+              type: string
+              description: The title property provides a title for the link and is a helpful
+                documentation tool to facilitate understanding by the end
+                clients
+          required:
+            - href
+            - rel
+          example:
+            href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+            rel: prevPage
+            method: GET
+            title: Get the previous page of results
+    required:
+      - modelId
+      - name
+    example:
+      modelId: VERANO
+      name: Verano
+      links:
+        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/model/VERANO
+          method: GET
+          rel: self
+  Variant:
+    description: A variant of a vehicle. Typically the model year.
+    properties:
+      variantId:
+        type: string
+        pattern: "[A-Z0-9_]{1,64}"
+        description: The code of the vehicle variant
+      name:
+        type: string
+        description: The name of the vehicle variant
+      links:
+        type: array
+        items:
+          description: Details of a link to a resource
+          properties:
+            href:
+              type: string
+              description: The target URI
+            rel:
+              type: string
+              description: The link relation type
+            method:
+              type: string
+              description: The HTTP verb that MUST be used to make a request to the target of
+                the link
+            title:
+              type: string
+              description: The title property provides a title for the link and is a helpful
+                documentation tool to facilitate understanding by the end
+                clients
+          required:
+            - href
+            - rel
+          example:
+            href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+            rel: prevPage
+            method: GET
+            title: Get the previous page of results
+    required:
+      - variantId
+      - name
+    example:
+      variantId: "2012"
+      name: "2012"
+      links:
+        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants/2012
+          method: GET
+          rel: self
+  QuerySpecificationResponse:
+    description: A response containing a complete vehicle specification
+    properties:
+      vehicleSpecification:
+        description: A vehicle specification including, but not limited to, make, model,
+          and variant
+        properties:
+          vehicleSpecId:
+            type: string
+            description: The vehicle specification identifier
+          countryCode:
+            type: string
+            pattern: "[A-Z]{2}"
+            description: The ISO 3166 alpha-2 country code
+          mfrCode:
+            type: string
+            description: The vehicle manufacturer code
+          make:
+            description: A vehicle make
+            properties:
+              makeId:
+                type: string
+                pattern: "[A-Z_]{1,64}"
+                description: The vehicle make identifier
+              name:
+                type: string
+                description: The vehicle make name
+              links:
+                type: array
+                items:
+                  description: Details of a link to a resource
+                  properties:
+                    href:
+                      type: string
+                      description: The target URI
+                    rel:
+                      type: string
+                      description: The link relation type
+                    method:
+                      type: string
+                      description: The HTTP verb that MUST be used to make a request to the target of
+                        the link
+                    title:
+                      type: string
+                      description: The title property provides a title for the link and is a helpful
+                        documentation tool to facilitate understanding by the
+                        end clients
+                  required:
+                    - href
+                    - rel
+                  example:
+                    href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                    rel: prevPage
+                    method: GET
+                    title: Get the previous page of results
+            required:
+              - makeId
+              - name
+            example:
+              makeId: BUIC
+              name: Buick
+              links:
+                - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC
+                  method: GET
+                  rel: self
+          model:
+            description: A vehicle model
+            properties:
+              modelId:
+                type: string
+                pattern: "[A-Z0-9_]{1,64}"
+                description: The vehicle model identifier
+              name:
+                type: string
+                description: The vehicle model name
+              links:
+                type: array
+                items:
+                  description: Details of a link to a resource
+                  properties:
+                    href:
+                      type: string
+                      description: The target URI
+                    rel:
+                      type: string
+                      description: The link relation type
+                    method:
+                      type: string
+                      description: The HTTP verb that MUST be used to make a request to the target of
+                        the link
+                    title:
+                      type: string
+                      description: The title property provides a title for the link and is a helpful
+                        documentation tool to facilitate understanding by the
+                        end clients
+                  required:
+                    - href
+                    - rel
+                  example:
+                    href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                    rel: prevPage
+                    method: GET
+                    title: Get the previous page of results
+            required:
+              - modelId
+              - name
+            example:
+              modelId: VERANO
+              name: Verano
+              links:
+                - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/model/VERANO
+                  method: GET
+                  rel: self
+          variant:
+            description: A variant of a vehicle. Typically the model year.
+            properties:
+              variantId:
+                type: string
+                pattern: "[A-Z0-9_]{1,64}"
+                description: The code of the vehicle variant
+              name:
+                type: string
+                description: The name of the vehicle variant
+              links:
+                type: array
+                items:
+                  description: Details of a link to a resource
+                  properties:
+                    href:
+                      type: string
+                      description: The target URI
+                    rel:
+                      type: string
+                      description: The link relation type
+                    method:
+                      type: string
+                      description: The HTTP verb that MUST be used to make a request to the target of
+                        the link
+                    title:
+                      type: string
+                      description: The title property provides a title for the link and is a helpful
+                        documentation tool to facilitate understanding by the
+                        end clients
+                  required:
+                    - href
+                    - rel
+                  example:
+                    href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                    rel: prevPage
+                    method: GET
+                    title: Get the previous page of results
+            required:
+              - variantId
+              - name
+            example:
+              variantId: "2012"
+              name: "2012"
+              links:
+                - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants/2012
+                  method: GET
+                  rel: self
+          links:
+            type: array
+            items:
+              description: Details of a link to a resource
+              properties:
+                href:
+                  type: string
+                  description: The target URI
+                rel:
+                  type: string
+                  description: The link relation type
+                method:
+                  type: string
+                  description: The HTTP verb that MUST be used to make a request to the target of
+                    the link
+                title:
+                  type: string
+                  description: The title property provides a title for the link and is a helpful
+                    documentation tool to facilitate understanding by the end
+                    clients
+              required:
+                - href
+                - rel
+              example:
+                href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                rel: prevPage
+                method: GET
+                title: Get the previous page of results
+        required:
+          - vehicleSpecId
+          - countryCode
+          - make
+          - model
+          - variant
+        example:
+          vehicleSpecId: BUIC-VERANO-2012-US
+          countryCode: US
+          mfrCode: GM
+          make:
+            makeId: BUIC
+            name: Buick
+          model:
+            modelId: VERANO
+            name: Verano
+          variant:
+            variantId: "2012"
+            name: "2012"
+          links:
+            - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/BUIC-VERANO-2012-US
+              method: GET
+              rel: self
+    required:
+      - vehicleSpecification
+    example:
+      vehicleSpecification:
+        vehicleSpecId: BUIC-VERANO-2012-US
+        countryCode: US
+        mfrCode: GM
+        make:
+          makeId: BUIC
+          name: Buick
+        model:
+          modelId: VERANO
+          name: Verano
+        variant:
+          variantId: "2012"
+          name: "2012"
+        links:
+          - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/BUIC-VERANO-2012-US
+            method: GET
+            rel: self
+  QueryMakesResponse:
+    description: A collection of vehicle makes
+    allOf:
+      - description: Definition of properties required for paginated returned lists and
+          totals
+        type: object
+        properties:
+          totalItems:
+            type: integer
+            format: int32
+            description: The total number of items contained in the collection
+          totalPages:
+            type: integer
+            format: int32
+            description: The total number of pages given the requested page size
+          links:
+            description: The hypermedia links describing the possible resource actions
+            type: array
+            items:
+              description: Details of a link to a resource
+              properties:
+                href:
+                  type: string
+                  description: The target URI
+                rel:
+                  type: string
+                  description: The link relation type
+                method:
+                  type: string
+                  description: The HTTP verb that MUST be used to make a request to the target of
+                    the link
+                title:
+                  type: string
+                  description: The title property provides a title for the link and is a helpful
+                    documentation tool to facilitate understanding by the end
+                    clients
+              required:
+                - href
+                - rel
+              example:
+                href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                rel: prevPage
+                method: GET
+                title: Get the previous page of results
+        required:
+          - totalItems
+          - totalPages
+          - links
+        example:
+          totalItems: 2
+          totalPages: 1
+          links:
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=1&pageSize=20
+              method: GET
+              rel: firstPage
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=4&pageSize=20
+              method: GET
+              rel: nextPage
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+              method: GET
+              rel: prevPage
+      - type: object
+        properties:
+          items:
+            type: array
+            items:
+              description: A vehicle make
+              properties:
+                makeId:
+                  type: string
+                  pattern: "[A-Z_]{1,64}"
+                  description: The vehicle make identifier
+                name:
+                  type: string
+                  description: The vehicle make name
+                links:
+                  type: array
+                  items:
+                    description: Details of a link to a resource
+                    properties:
+                      href:
+                        type: string
+                        description: The target URI
+                      rel:
+                        type: string
+                        description: The link relation type
+                      method:
+                        type: string
+                        description: The HTTP verb that MUST be used to make a request to the target of
+                          the link
+                      title:
+                        type: string
+                        description: The title property provides a title for the link and is a helpful
+                          documentation tool to facilitate understanding by the
+                          end clients
+                    required:
+                      - href
+                      - rel
+                    example:
+                      href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                      rel: prevPage
+                      method: GET
+                      title: Get the previous page of results
+              required:
+                - makeId
+                - name
+              example:
+                makeId: BUIC
+                name: Buick
+                links:
+                  - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC
+                    method: GET
+                    rel: self
+    required:
+      - items
+    example:
+      items:
+        - makeId: BUIC
+          name: Buick
+        - makeId: DODG
+          name: Dodge
+        - makeId: VW
+          name: Volkswagen
+      totalItems: 3
+      totalPages: 1
+      links:
+        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes?page=1&pageSize=20
+          method: GET
+          rel: firstPage
+  QueryModelsByMakeResponse:
+    description: A collection of vehicle models for a given make
+    allOf:
+      - description: Definition of properties required for paginated returned lists and
+          totals
+        type: object
+        properties:
+          totalItems:
+            type: integer
+            format: int32
+            description: The total number of items contained in the collection
+          totalPages:
+            type: integer
+            format: int32
+            description: The total number of pages given the requested page size
+          links:
+            description: The hypermedia links describing the possible resource actions
+            type: array
+            items:
+              description: Details of a link to a resource
+              properties:
+                href:
+                  type: string
+                  description: The target URI
+                rel:
+                  type: string
+                  description: The link relation type
+                method:
+                  type: string
+                  description: The HTTP verb that MUST be used to make a request to the target of
+                    the link
+                title:
+                  type: string
+                  description: The title property provides a title for the link and is a helpful
+                    documentation tool to facilitate understanding by the end
+                    clients
+              required:
+                - href
+                - rel
+              example:
+                href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                rel: prevPage
+                method: GET
+                title: Get the previous page of results
+        required:
+          - totalItems
+          - totalPages
+          - links
+        example:
+          totalItems: 2
+          totalPages: 1
+          links:
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=1&pageSize=20
+              method: GET
+              rel: firstPage
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=4&pageSize=20
+              method: GET
+              rel: nextPage
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+              method: GET
+              rel: prevPage
+      - type: object
+        properties:
+          items:
+            type: array
+            items:
+              description: A vehicle model
+              properties:
+                modelId:
+                  type: string
+                  pattern: "[A-Z0-9_]{1,64}"
+                  description: The vehicle model identifier
+                name:
+                  type: string
+                  description: The vehicle model name
+                links:
+                  type: array
+                  items:
+                    description: Details of a link to a resource
+                    properties:
+                      href:
+                        type: string
+                        description: The target URI
+                      rel:
+                        type: string
+                        description: The link relation type
+                      method:
+                        type: string
+                        description: The HTTP verb that MUST be used to make a request to the target of
+                          the link
+                      title:
+                        type: string
+                        description: The title property provides a title for the link and is a helpful
+                          documentation tool to facilitate understanding by the
+                          end clients
+                    required:
+                      - href
+                      - rel
+                    example:
+                      href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                      rel: prevPage
+                      method: GET
+                      title: Get the previous page of results
+              required:
+                - modelId
+                - name
+              example:
+                modelId: VERANO
+                name: Verano
+                links:
+                  - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/model/VERANO
+                    method: GET
+                    rel: self
+    required:
+      - items
+    example:
+      items:
+        - modelId: ENCLAVE
+          name: Enclave
+        - modelId: VERANO
+          name: Verano
+      totalItems: 2
+      totalPages: 1
+      links:
+        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/models?page=1&pageSize=20
+          method: GET
+          rel: firstPage
+  QueryVariantsByMakeResponse:
+    description: A collection of vehicle variants for a given make
+    allOf:
+      - description: Definition of properties required for paginated returned lists and
+          totals
+        type: object
+        properties:
+          totalItems:
+            type: integer
+            format: int32
+            description: The total number of items contained in the collection
+          totalPages:
+            type: integer
+            format: int32
+            description: The total number of pages given the requested page size
+          links:
+            description: The hypermedia links describing the possible resource actions
+            type: array
+            items:
+              description: Details of a link to a resource
+              properties:
+                href:
+                  type: string
+                  description: The target URI
+                rel:
+                  type: string
+                  description: The link relation type
+                method:
+                  type: string
+                  description: The HTTP verb that MUST be used to make a request to the target of
+                    the link
+                title:
+                  type: string
+                  description: The title property provides a title for the link and is a helpful
+                    documentation tool to facilitate understanding by the end
+                    clients
+              required:
+                - href
+                - rel
+              example:
+                href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                rel: prevPage
+                method: GET
+                title: Get the previous page of results
+        required:
+          - totalItems
+          - totalPages
+          - links
+        example:
+          totalItems: 2
+          totalPages: 1
+          links:
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=1&pageSize=20
+              method: GET
+              rel: firstPage
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=4&pageSize=20
+              method: GET
+              rel: nextPage
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+              method: GET
+              rel: prevPage
+      - type: object
+        properties:
+          items:
+            type: array
+            items:
+              description: A variant of a vehicle. Typically the model year.
+              properties:
+                variantId:
+                  type: string
+                  pattern: "[A-Z0-9_]{1,64}"
+                  description: The code of the vehicle variant
+                name:
+                  type: string
+                  description: The name of the vehicle variant
+                links:
+                  type: array
+                  items:
+                    description: Details of a link to a resource
+                    properties:
+                      href:
+                        type: string
+                        description: The target URI
+                      rel:
+                        type: string
+                        description: The link relation type
+                      method:
+                        type: string
+                        description: The HTTP verb that MUST be used to make a request to the target of
+                          the link
+                      title:
+                        type: string
+                        description: The title property provides a title for the link and is a helpful
+                          documentation tool to facilitate understanding by the
+                          end clients
+                    required:
+                      - href
+                      - rel
+                    example:
+                      href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                      rel: prevPage
+                      method: GET
+                      title: Get the previous page of results
+              required:
+                - variantId
+                - name
+              example:
+                variantId: "2012"
+                name: "2012"
+                links:
+                  - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants/2012
+                    method: GET
+                    rel: self
+    required:
+      - items
+    example:
+      items:
+        - variantId: "2012"
+          name: "2012"
+        - variantId: "2013"
+          name: "2013"
+      totalItems: 2
+      totalPages: 1
+      links:
+        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants?page=1&pageSize=20
+          method: GET
+          rel: firstPage
+  QueryVariantsByModelResponse:
+    description: A collection of vehicle variants for a given make and model
+    allOf:
+      - description: Definition of properties required for paginated returned lists and
+          totals
+        type: object
+        properties:
+          totalItems:
+            type: integer
+            format: int32
+            description: The total number of items contained in the collection
+          totalPages:
+            type: integer
+            format: int32
+            description: The total number of pages given the requested page size
+          links:
+            description: The hypermedia links describing the possible resource actions
+            type: array
+            items:
+              description: Details of a link to a resource
+              properties:
+                href:
+                  type: string
+                  description: The target URI
+                rel:
+                  type: string
+                  description: The link relation type
+                method:
+                  type: string
+                  description: The HTTP verb that MUST be used to make a request to the target of
+                    the link
+                title:
+                  type: string
+                  description: The title property provides a title for the link and is a helpful
+                    documentation tool to facilitate understanding by the end
+                    clients
+              required:
+                - href
+                - rel
+              example:
+                href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                rel: prevPage
+                method: GET
+                title: Get the previous page of results
+        required:
+          - totalItems
+          - totalPages
+          - links
+        example:
+          totalItems: 2
+          totalPages: 1
+          links:
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=1&pageSize=20
+              method: GET
+              rel: firstPage
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=4&pageSize=20
+              method: GET
+              rel: nextPage
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+              method: GET
+              rel: prevPage
+      - type: object
+        properties:
+          items:
+            type: array
+            items:
+              description: A variant of a vehicle. Typically the model year.
+              properties:
+                variantId:
+                  type: string
+                  pattern: "[A-Z0-9_]{1,64}"
+                  description: The code of the vehicle variant
+                name:
+                  type: string
+                  description: The name of the vehicle variant
+                links:
+                  type: array
+                  items:
+                    description: Details of a link to a resource
+                    properties:
+                      href:
+                        type: string
+                        description: The target URI
+                      rel:
+                        type: string
+                        description: The link relation type
+                      method:
+                        type: string
+                        description: The HTTP verb that MUST be used to make a request to the target of
+                          the link
+                      title:
+                        type: string
+                        description: The title property provides a title for the link and is a helpful
+                          documentation tool to facilitate understanding by the
+                          end clients
+                    required:
+                      - href
+                      - rel
+                    example:
+                      href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                      rel: prevPage
+                      method: GET
+                      title: Get the previous page of results
+              required:
+                - variantId
+                - name
+              example:
+                variantId: "2012"
+                name: "2012"
+                links:
+                  - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants/2012
+                    method: GET
+                    rel: self
+    required:
+      - items
+    example:
+      items:
+        - variantId: "2012"
+          name: "2012"
+        - variantId: "2013"
+          name: "2013"
+      totalItems: 2
+      totalPages: 1
+      links:
+        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/models/VERANO/variants?page=1&pageSize=20
+          method: GET
+          rel: firstPage
+  QueryModelsByVariantResponse:
+    description: A collection of vehicle models for a given make and variant
+    allOf:
+      - description: Definition of properties required for paginated returned lists and
+          totals
+        type: object
+        properties:
+          totalItems:
+            type: integer
+            format: int32
+            description: The total number of items contained in the collection
+          totalPages:
+            type: integer
+            format: int32
+            description: The total number of pages given the requested page size
+          links:
+            description: The hypermedia links describing the possible resource actions
+            type: array
+            items:
+              description: Details of a link to a resource
+              properties:
+                href:
+                  type: string
+                  description: The target URI
+                rel:
+                  type: string
+                  description: The link relation type
+                method:
+                  type: string
+                  description: The HTTP verb that MUST be used to make a request to the target of
+                    the link
+                title:
+                  type: string
+                  description: The title property provides a title for the link and is a helpful
+                    documentation tool to facilitate understanding by the end
+                    clients
+              required:
+                - href
+                - rel
+              example:
+                href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                rel: prevPage
+                method: GET
+                title: Get the previous page of results
+        required:
+          - totalItems
+          - totalPages
+          - links
+        example:
+          totalItems: 2
+          totalPages: 1
+          links:
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=1&pageSize=20
+              method: GET
+              rel: firstPage
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=4&pageSize=20
+              method: GET
+              rel: nextPage
+            - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+              method: GET
+              rel: prevPage
+      - type: object
+        properties:
+          items:
+            type: array
+            items:
+              description: A vehicle model
+              properties:
+                modelId:
+                  type: string
+                  pattern: "[A-Z0-9_]{1,64}"
+                  description: The vehicle model identifier
+                name:
+                  type: string
+                  description: The vehicle model name
+                links:
+                  type: array
+                  items:
+                    description: Details of a link to a resource
+                    properties:
+                      href:
+                        type: string
+                        description: The target URI
+                      rel:
+                        type: string
+                        description: The link relation type
+                      method:
+                        type: string
+                        description: The HTTP verb that MUST be used to make a request to the target of
+                          the link
+                      title:
+                        type: string
+                        description: The title property provides a title for the link and is a helpful
+                          documentation tool to facilitate understanding by the
+                          end clients
+                    required:
+                      - href
+                      - rel
+                    example:
+                      href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+                      rel: prevPage
+                      method: GET
+                      title: Get the previous page of results
+              required:
+                - modelId
+                - name
+              example:
+                modelId: VERANO
+                name: Verano
+                links:
+                  - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/model/VERANO
+                    method: GET
+                    rel: self
+    required:
+      - items
+    example:
+      items:
+        - modelId: ENCLAVE
+          name: Enclave
+        - modelId: VERANO
+          name: Verano
+      totalItems: 2
+      totalPages: 1
+      links:
+        - href: https://api.fortellis.io/service/reference/v4/vehicle-specifications/makes/BUIC/variants/2012/models?page=1&pageSize=20
+          method: GET
+          rel: firstPage
+  BaseCollection:
+    description: Definition of properties required for paginated returned lists and totals
+    type: object
+    properties:
+      totalItems:
+        type: integer
+        format: int32
+        description: The total number of items contained in the collection
+      totalPages:
+        type: integer
+        format: int32
+        description: The total number of pages given the requested page size
+      links:
+        description: The hypermedia links describing the possible resource actions
+        type: array
+        items:
+          description: Details of a link to a resource
+          properties:
+            href:
+              type: string
+              description: The target URI
+            rel:
+              type: string
+              description: The link relation type
+            method:
+              type: string
+              description: The HTTP verb that MUST be used to make a request to the target of
+                the link
+            title:
+              type: string
+              description: The title property provides a title for the link and is a helpful
+                documentation tool to facilitate understanding by the end
+                clients
+          required:
+            - href
+            - rel
+          example:
+            href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+            rel: prevPage
+            method: GET
+            title: Get the previous page of results
+    required:
+      - totalItems
+      - totalPages
+      - links
+    example:
+      totalItems: 2
+      totalPages: 1
+      links:
+        - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=1&pageSize=20
+          method: GET
+          rel: firstPage
+        - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=4&pageSize=20
+          method: GET
+          rel: nextPage
+        - href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+          method: GET
+          rel: prevPage
+  LinkDescriptionObject:
+    description: Details of a link to a resource
+    properties:
+      href:
+        type: string
+        description: The target URI
+      rel:
+        type: string
+        description: The link relation type
+      method:
+        type: string
+        description: The HTTP verb that MUST be used to make a request to the target of
+          the link
+      title:
+        type: string
+        description: The title property provides a title for the link and is a helpful
+          documentation tool to facilitate understanding by the end clients
+    required:
+      - href
+      - rel
+    example:
+      href: https://api.fortellis.io/domain/sub-domain/v0/resource?page=2&pageSize=20
+      rel: prevPage
+      method: GET
+      title: Get the previous page of results
+  ErrorResponse:
+    description: Details of a general error response
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+    required:
+      - code
+      - message
+    example:
+      code: 400
+      message: Bad Request.

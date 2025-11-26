@@ -1,0 +1,774 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  manager
+  viewer
+}
+
+enum AdminRole {
+  super_admin
+  admin
+  moderator
+}
+
+enum ServiceStatus {
+  pending
+  reviewing
+  rejected
+  allowed
+}
+
+enum ChatStatus {
+  opened
+  accepted
+  closed
+}
+
+enum DmsType {
+  Parts
+  Service
+  Accounting
+  Finance
+}
+
+
+model Dealer {
+  id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name          String          @unique
+  address       String
+  createdAt     DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  userRoles     UserDealerRole[]
+  inventory     InventoryListing[]
+  dealerServices DealerService[]
+  salesData     SaleData[]
+  departments   DealerDepartment[]
+
+  @@map("Dealer")
+}
+
+model DealerDepartment {
+  id                String        @id // Manually set, not auto-generated
+  dmsType           DmsType
+  dealerId           String        @db.Uuid
+  serviceId          String        @db.Uuid
+  lastSalesDataSyncAt DateTime?    @db.Timestamptz(6) // Track last sales data sync time for incremental sync
+  salesDataSyncInProgress Boolean  @default(false) // Flag to prevent concurrent syncs
+  salesDataSyncStartedAt DateTime?  @db.Timestamptz(6) // When current sync started (for timeout detection)
+  createdAt         DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime      @default(now()) @updatedAt @db.Timestamptz(6)
+  dealer            Dealer        @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_dd_dealer")
+  service           DealerService @relation(fields: [serviceId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_dd_service")
+
+  @@index([dealerId], map: "idx_dd_dealer")
+  @@index([serviceId], map: "idx_dd_service")
+  @@index([dmsType], map: "idx_dd_dms_type")
+  @@map("DealerDepartment")
+}
+
+model User {
+  id           String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email        String           @unique
+  name         String
+  passwordHash String
+  phone        String
+  avatar       String?
+  createdAt    DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
+  sessions     Session[]
+  dealerRoles  UserDealerRole[]
+  chats        Chat[]
+
+  @@map("User")
+}
+
+model Admin {
+  id            String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email         String         @unique
+  name          String
+  passwordHash  String
+  role          AdminRole      @default(admin)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
+  adminSessions AdminSession[]
+  handledChats  Chat[]
+
+  @@map("Admin")
+}
+
+model Session {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String   @db.Uuid
+  jwtId     String   @unique
+  expiresAt DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sess_user")
+
+  @@index([userId], map: "idx_sess_user")
+  @@map("Session")
+}
+
+model AdminSession {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  adminId   String   @db.Uuid
+  jwtId     String   @unique
+  expiresAt DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_adm_sess_admin")
+
+  @@index([adminId], map: "idx_adm_sess_admin")
+  @@map("AdminSession")
+}
+
+model InventoryListing {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  dealerId   String    @db.Uuid
+  vin        String
+  year       Int
+  make       String
+  model      String
+  trim       String?
+  bodyStyle  String?   @map("body_style")
+  drivetrain String?
+  msrp       Decimal?  @db.Decimal(10, 2)
+  price      Decimal?  @db.Decimal(10, 2)
+  mileage    Int       @default(0)
+  status     String    @default("available")
+  scrapedAt  DateTime  @default(now()) @map("scraped_at") @db.Timestamptz(6)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  dealer     Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_inv_dealer")
+
+  @@unique([dealerId, vin], map: "u_inv_dealer_vin")
+  @@index([dealerId], map: "idx_inv_dealer")
+  @@index([make, model], map: "idx_inv_make_model")
+  @@map("Inventory")
+}
+
+model UserDealerRole {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String   @db.Uuid
+  dealerId  String   @db.Uuid
+  role      Role
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_udr_user")
+  dealer    Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_udr_dealer")
+
+  @@unique([userId, dealerId, role], map: "u_udr")
+  @@index([userId], map: "idx_udr_user")
+  @@index([dealerId], map: "idx_udr_dealer")
+  @@map("UserDealerRole")
+}
+
+model ServiceKind {
+  id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name          String          @unique
+  description   String?
+  createdAt     DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  dealerServices DealerService[]
+
+  @@map("ServiceKind")
+}
+
+model DealerService {
+  id            String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  dealerId      String            @db.Uuid
+  serviceKindId String            @db.Uuid
+  orgName       String
+  subscriptionId String?          @db.Uuid
+  status        ServiceStatus     @default(pending)
+  createdAt     DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
+  dealer        Dealer            @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ds_dealer")
+  serviceKind   ServiceKind       @relation(fields: [serviceKindId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ds_service_kind")
+  departments   DealerDepartment[]
+
+  @@unique([dealerId, serviceKindId], map: "u_ds_dealer_service")
+  @@index([dealerId], map: "idx_ds_dealer")
+  @@index([serviceKindId], map: "idx_ds_service_kind")
+  @@index([status], map: "idx_ds_status")
+  @@index([subscriptionId], map: "idx_ds_subscription_id")
+  @@map("DealerService")
+}
+
+model Chat {
+  id        String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String      @db.Uuid
+  adminId   String?     @db.Uuid
+  subject   String
+  status    ChatStatus  @default(opened)
+  createdAt DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime    @default(now()) @updatedAt @db.Timestamptz(6)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_chat_user")
+  admin     Admin?      @relation(fields: [adminId], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "fk_chat_admin")
+  messages  Message[]
+
+  @@index([userId], map: "idx_chat_user")
+  @@index([adminId], map: "idx_chat_admin")
+  @@index([status], map: "idx_chat_status")
+  @@index([createdAt], map: "idx_chat_created")
+  @@map("Chat")
+}
+
+model Message {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  chatId    String   @db.Uuid
+  senderId  String   @db.Uuid
+  senderType String  // "user" or "admin"
+  content   String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_msg_chat")
+
+  @@index([chatId], map: "idx_msg_chat")
+  @@index([createdAt], map: "idx_msg_created")
+  @@map("Message")
+}
+
+// Sales Data Models
+model SaleData {
+  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  dealerId      String   @db.Uuid
+  dealNo        String   @unique // Vehicle sale deal number - unique identifier from CDK
+  status        String?  // Deal status: 'C' cleared, 'B' booked, 'P' pending, 'F' finalized, 'I' intermediate, 'U' unwound
+  dealStatusDate DateTime? @db.Timestamptz(6) // Deal status date
+  changedDate   DateTime? @db.Timestamptz(6) // Changed date and time
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  dealer        Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_dealer")
+  
+  // Relations
+  commission    SaleCommission?
+  deal          SaleDeal?
+  dealAuxiliary SaleDealAuxiliary?
+  dealEvents    SaleDealEvent[]
+  fees          SaleFee[]
+  incentives    SaleIncentive?
+  insurance     SaleInsurance?
+  salesPersons  SaleSalesPerson?
+  tax           SaleTax?
+  totals        SaleTotal?
+  trades        SaleTrade[]
+  vehicle       SaleVehicle?
+
+  @@index([dealerId], map: "idx_sale_dealer")
+  @@index([dealNo], map: "idx_sale_deal_no")
+  @@index([status], map: "idx_sale_status")
+  @@index([dealStatusDate], map: "idx_sale_status_date")
+  @@map("SaleData")
+}
+
+model SaleCommission {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @unique @db.Uuid
+  
+  // Commissions Deal
+  commissionGross    Decimal? @db.Decimal(12, 2)
+  commissionPack     Decimal? @db.Decimal(12, 2)
+  commOnSaleDlr      Decimal? @db.Decimal(12, 2)
+  surplusCash        Decimal? @db.Decimal(12, 2)
+  optionsCommDlr     Decimal? @db.Decimal(12, 2)
+  
+  // Commissions Base (stored as JSON for flexibility due to many fields)
+  commissionsBase    Json? // Contains dealerCommFeeOption1-10, initFee3-10, insuranceCommDlr, etc.
+  
+  // Commissions Salesperson 1
+  sp1Bonus           Decimal? @db.Decimal(12, 2)
+  sp1Commission      String?
+  sp1SaleCreditSP    String?
+  sp1SurplusCash     String?
+  sp1TotalCommission Decimal? @db.Decimal(12, 2)
+  
+  // Commissions Salesperson 2
+  sp2Bonus           Decimal? @db.Decimal(12, 2)
+  sp2Commission      String?
+  sp2SaleCreditSP    String?
+  sp2SurplusCash     String?
+  sp2TotalCommission Decimal? @db.Decimal(12, 2)
+  sp2PurchaseMBISPCommAmount Decimal? @db.Decimal(12, 2)
+  
+  // Commissions Salesperson 3
+  sp3Bonus           Decimal? @db.Decimal(12, 2)
+  sp3Commission      String?
+  sp3SaleCreditSP    String?
+  sp3SurplusCash     String?
+  
+  saleData           SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_comm_sale")
+  
+  @@map("SaleCommission")
+}
+
+model SaleDeal {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @unique @db.Uuid
+  
+  // Deal basic info
+  dealNo              String?  // Vehicle sale deal number
+  accountingAccount   String?
+  accountingDate      DateTime? @db.Timestamptz(6)
+  branch              String?
+  contractDate        DateTime? @db.Date
+  creationDate        DateTime? @db.Date
+  salesDate           DateTime? @db.Date
+  
+  // Financial fields
+  adjustedCapCost           Decimal? @db.Decimal(12, 2)
+  adjustedCostofVehicle     Decimal? @db.Decimal(12, 2)
+  adjustmentsDealerDefined  Decimal? @db.Decimal(12, 2)
+  adjustmentsROPO           Decimal? @db.Decimal(12, 2)
+  adjustmentsStandard        Decimal? @db.Decimal(12, 2)
+  amountDueAtStart           Decimal? @db.Decimal(12, 2)
+  apr                        Decimal? @db.Decimal(8, 4)
+  backGross                  Decimal? @db.Decimal(12, 2)
+  balloonAmount              Decimal? @db.Decimal(12, 2)
+  balloonRate                String?
+  bankFee                    String?
+  baseMSRP                   String?
+  msrpFee1                   String?
+  msrpFee2                   String?
+  baseResidual               Decimal? @db.Decimal(12, 2)
+  buyRateAddOn               Decimal? @db.Decimal(8, 4)
+  buyRateAPR                 Decimal? @db.Decimal(8, 4)
+  buyRateLMF                 String?
+  calcMethod                 String?
+  cashCapReduction            Decimal? @db.Decimal(12, 2)
+  capCostReductionTax2Amount Decimal? @db.Decimal(12, 2)
+  cashDown                   String?
+  cashPrice                   Decimal? @db.Decimal(12, 2)
+  costPrice                  Decimal? @db.Decimal(12, 2)
+  customerCashDown           Decimal? @db.Decimal(12, 2)
+  customerComments           String?  @db.Text
+  depositAmount               String?
+  depositType                 String?
+  dmvRosNumber                String?
+  dueOnDelivery               Decimal? @db.Decimal(12, 2)
+  fiDealType                  String?
+  fiIncome                    Decimal? @db.Decimal(12, 2)
+  financeAmt                  Decimal? @db.Decimal(12, 2)
+  financeCharge               Decimal? @db.Decimal(12, 2)
+  financeSource               String?
+  finInstituteCode            String?
+  firstPayDate                DateTime? @db.Date
+  fiWipStatusCode             String?
+  frontEndGrossProfit         Decimal? @db.Decimal(12, 2)
+  frontGross                  Decimal? @db.Decimal(12, 2)
+  grossProfit                 Decimal? @db.Decimal(12, 2)
+  hostItemId                  String?
+  initialCapCost              String?
+  lastPayAmount               Decimal? @db.Decimal(12, 2)
+  lastPayDate                 DateTime? @db.Date
+  
+  // Lease fields
+  leaseEndPercentageRate      Decimal? @db.Decimal(8, 4)
+  leaseEndValue               Decimal? @db.Decimal(12, 2)
+  leaseMileageAllowance       Decimal? @db.Decimal(12, 2)
+  leasePayment                String?
+  leaseType                   String?
+  levelizedLifeAmount         Decimal? @db.Decimal(12, 2)
+  levelizedLifeCost           String?
+  levelizedLifeIncome         String?
+  
+  // Lien holder fields
+  lienHolderAddress           String?
+  lienHolderCity              String?
+  lienHolderName              String?
+  lienHolderName2             String?
+  lienHolderPhone              String?
+  lienHolderState              String?
+  lienHolderZip               String?
+  
+  // Mileage fields
+  mileageExpected             Int?
+  mileageExpectedFlag         String?
+  mileageMonthlyLimit         String?
+  mileagePenaltyAmount        Decimal? @db.Decimal(12, 2)
+  mileagePenaltyRate          Decimal? @db.Decimal(8, 4)
+  
+  // Miscellaneous fields (1-10)
+  miscellaneous1             String?
+  miscellaneous2              String?
+  miscellaneous3             String?
+  miscellaneous4             String?
+  miscellaneous5             String?
+  miscellaneous6             String?
+  miscellaneous7             String?
+  miscellaneous8             String?
+  miscellaneous9             String?
+  miscellaneous10            String?
+  
+  // Dealer defined fields (1-8)
+  dealerDefined1              String?
+  dealerDefined2              String?
+  dealerDefined3              String?
+  dealerDefined4              String?
+  dealerDefined5              String?
+  dealerDefined6              String?
+  dealerDefined7              String?
+  dealerDefined8              String?
+  
+  // Payment fields
+  msrp                        Decimal? @db.Decimal(12, 2)
+  onePayAmount                String?
+  outTheDoorPrice             Decimal? @db.Decimal(12, 2)
+  paymentAmt                  Decimal? @db.Decimal(12, 2)
+  paymentCode                 String?
+  payments                    Int?
+  paymentStyle                String?
+  pickupPay1                  String?
+  pickupDate1                 DateTime? @db.Date
+  pickupPay2                  String?
+  pickupDate2                 DateTime? @db.Date
+  pickupPay3                  String?
+  pickupDate3                 DateTime? @db.Date
+  
+  // Sale fields
+  salePriceWithWeOwes         Decimal? @db.Decimal(12, 2)
+  salesAccount                 String?
+  salesManagementDealType      String?
+  saleType                     String? // Cash, Finance, or Lease
+  securityDepositAmount        Decimal? @db.Decimal(12, 2)
+  securityDepositName          String?
+  sellRateAddOn                Decimal? @db.Decimal(8, 4)
+  sellRateAPR                  String?
+  sellRateLMF                  String?
+  slsDealType                  String?
+  term                         Int?
+  unpaidBalance                Decimal? @db.Decimal(12, 2)
+  waqNumber                    String?
+  
+  // Deal source
+  dealSource                   String?
+  dealType                     String?
+  
+  saleData                    SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_deal_sale")
+  
+  @@map("SaleDeal")
+}
+
+model SaleDealAuxiliary {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @unique @db.Uuid
+  
+  // 50 auxiliary fields
+  fiAux1    String?
+  fiAux2    String?
+  fiAux3    String?
+  fiAux4    String?
+  fiAux5    String?
+  fiAux6    String?
+  fiAux7    String?
+  fiAux8    String?
+  fiAux9    String?
+  fiAux10   String?
+  fiAux11   String?
+  fiAux12   String?
+  fiAux13   String?
+  fiAux14   String?
+  fiAux15   String?
+  fiAux16   String?
+  fiAux17   String?
+  fiAux18   String?
+  fiAux19   String?
+  fiAux20   String?
+  fiAux21   String?
+  fiAux22   String?
+  fiAux23   String?
+  fiAux24   String?
+  fiAux25   String?
+  fiAux26   String?
+  fiAux27   String?
+  fiAux28   String?
+  fiAux29   String?
+  fiAux30   String?
+  fiAux31   String?
+  fiAux32   String?
+  fiAux33   String?
+  fiAux34   String?
+  fiAux35   String?
+  fiAux36   String?
+  fiAux37   String?
+  fiAux38   String?
+  fiAux39   String?
+  fiAux40   String?
+  fiAux41   String?
+  fiAux42   String?
+  fiAux43   String?
+  fiAux44   String?
+  fiAux45   String?
+  fiAux46   String?
+  fiAux47   String?
+  fiAux48   String?
+  fiAux49   String?
+  fiAux50   String?
+  
+  saleData  SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_aux_sale")
+  
+  @@map("SaleDealAuxiliary")
+}
+
+model SaleDealEvent {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @db.Uuid
+  
+  // Special contract fields
+  specialContract1Date   DateTime? @db.Date
+  specialContract1Reason String?
+  specialContract2Date   DateTime? @db.Date
+  specialContract2Reason String?
+  
+  // Event fields (for events array)
+  dealEvent      String?
+  dealEventDate  DateTime? @db.Date
+  eventOrder     Int? // Order in the events array (1-10)
+  
+  saleData       SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_event_sale")
+  
+  @@index([saleDataId], map: "idx_sale_event_sale")
+  @@map("SaleDealEvent")
+}
+
+model SaleFee {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @db.Uuid
+  
+  feeType   String   // "addToCapCostFee", "annualFee", "feeOption", "initialFee", "addToPriceFeeName"
+  amount    Decimal? @db.Decimal(12, 2)
+  name      String?
+  costAmount Decimal? @db.Decimal(12, 2)
+  profitType String?
+  flag      Boolean?
+  orderIndex Int? // Order in the array
+  
+  saleData  SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_fee_sale")
+  
+  @@index([saleDataId], map: "idx_sale_fee_sale")
+  @@index([feeType], map: "idx_sale_fee_type")
+  @@map("SaleFee")
+}
+
+model SaleIncentive {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @unique @db.Uuid
+  
+  incentiveDealer   Decimal? @db.Decimal(12, 2)
+  incentiveProgram  Decimal? @db.Decimal(12, 2)
+  rebateAmount      Decimal? @db.Decimal(12, 2)
+  
+  // Common rebate details stored as JSON array
+  commonRebateDetails Json? // Array of {id, amount, code, description}
+  
+  saleData          SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_inc_sale")
+  
+  @@map("SaleIncentive")
+}
+
+model SaleInsurance {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @unique @db.Uuid
+  
+  extWarrantyExpMilesLease Int?
+  extWarrantyTermLease     Int?
+  insuranceTypeCode        String?
+  texasGAPInsuranceAmount  Decimal? @db.Decimal(12, 2)
+  
+  // Insurance 1-3 stored as JSON for flexibility
+  insurance1               Json? // {cost, fee, income, deductible, limit, limitMiles, name, term, unemploymentInsuranceFlag?}
+  insurance2               Json?
+  insurance3               Json?
+  
+  // Accidental Health Insurance
+  ahiCost                  Decimal? @db.Decimal(12, 2)
+  ahiIncome                Decimal? @db.Decimal(12, 2)
+  ahiMonthlyMaxAmount      Decimal? @db.Decimal(12, 2)
+  ahiPremium               Decimal? @db.Decimal(12, 2)
+  ahiRate                  Decimal? @db.Decimal(8, 4)
+  ahiTerm                  Int?
+  
+  // Credit Life Insurance
+  cliCost                  Decimal? @db.Decimal(12, 2)
+  cliIncome                Decimal? @db.Decimal(12, 2)
+  cliMonthlyMaxAmount      Decimal? @db.Decimal(12, 2)
+  cliPremium               Decimal? @db.Decimal(12, 2)
+  cliRate                  Decimal? @db.Decimal(8, 4)
+  cliTerm                  Int?
+  cliInsuranceType         String?
+  
+  // Mechanical Breakdown Insurance
+  mbiCarrier               String?
+  mbiCost                  Decimal? @db.Decimal(12, 2)
+  mbiDeductible            Decimal? @db.Decimal(12, 2)
+  mbiEligComment            String?
+  mbiEligFlag              Boolean?
+  mbiFee                   Decimal? @db.Decimal(12, 2)
+  mbiIncome                Decimal? @db.Decimal(12, 2)
+  mbiLimit                 Int?
+  mbiLimitMax              String?
+  mbiName                  String?
+  mbiTerm                  Int?
+  mbiPolicyNo              String?
+  mbiPurchaseCost          Decimal? @db.Decimal(12, 2)
+  
+  saleData                 SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_ins_sale")
+  
+  @@map("SaleInsurance")
+}
+
+model SaleSalesPerson {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @unique @db.Uuid
+  
+  assnSlsperson  String?
+  billingClerk   String?
+  closingMgr     String?
+  deliveryCoord  String?
+  fiMgr1         String?
+  fiMgr2         String?
+  salesMgr       String?
+  salesperson1   String?
+  salesperson2   String?
+  salesperson3   String?
+  
+  saleData       SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_sp_sale")
+  
+  @@map("SaleSalesPerson")
+}
+
+model SaleTax {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @unique @db.Uuid
+  
+  serviceTaxAmount          Decimal? @db.Decimal(12, 2)
+  leaseFlexibleTax1Amount   Decimal? @db.Decimal(12, 2)
+  leaseFlexibleTax2Amount   Decimal? @db.Decimal(12, 2)
+  
+  // Goods and Services Tax Details stored as JSON
+  goodsAndServicesTaxDetails Json?
+  
+  // Luxury Tax Details stored as JSON
+  luxuryTaxDetails          Json?
+  
+  // Sales Tax Details stored as JSON
+  salesTaxDetails          Json?
+  
+  // Purchase Flexible Tax Details stored as JSON array
+  purchaseFlexibleTaxDetails Json?
+  
+  // Tax Common Details stored as JSON array
+  taxCommonDetails         Json?
+  
+  saleData                 SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_tax_sale")
+  
+  @@map("SaleTax")
+}
+
+model SaleTotal {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @unique @db.Uuid
+  
+  totalTradeAllowance       Decimal? @db.Decimal(12, 2)
+  totalTradesACV            Decimal? @db.Decimal(12, 2)
+  totalTradesNet            Decimal? @db.Decimal(12, 2)
+  totalTradesOver           Decimal? @db.Decimal(12, 2)
+  totalTradesPayoff         Decimal? @db.Decimal(12, 2)
+  totalAnnFees               Decimal? @db.Decimal(12, 2)
+  totalBackCostAdjustments   Decimal? @db.Decimal(12, 2)
+  totalBasePrice             Decimal? @db.Decimal(12, 2)
+  totalCapReduction          Decimal? @db.Decimal(12, 2)
+  totalCashSurplus           Decimal? @db.Decimal(12, 2)
+  totalCommission            Decimal? @db.Decimal(12, 2)
+  totalDMVLicenseFeeCalifornia Decimal? @db.Decimal(12, 2)
+  totalDown                  Decimal? @db.Decimal(12, 2)
+  totalFinancedFeeOptions    Decimal? @db.Decimal(12, 2)
+  totalFrontCostAdjustments  Decimal? @db.Decimal(12, 2)
+  totalInsurancePremiums     Decimal? @db.Decimal(12, 2)
+  totalGross                 Decimal? @db.Decimal(12, 2)
+  totalInitFees              Decimal? @db.Decimal(12, 2)
+  totalOfMonthlyPayments     Decimal? @db.Decimal(12, 2)
+  totalOptionsFees           Decimal? @db.Decimal(12, 2)
+  totalTaxableFees            Decimal? @db.Decimal(12, 2)
+  totalTaxRate                Decimal? @db.Decimal(8, 4)
+  weOweCostTotal             Decimal? @db.Decimal(12, 2)
+  weOweSaleTotal             Decimal? @db.Decimal(12, 2)
+  tax                        Decimal? @db.Decimal(12, 2)
+  
+  saleData                   SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_total_sale")
+  
+  @@map("SaleTotal")
+}
+
+model SaleTrade {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @db.Uuid
+  
+  // Trade details (for tradeDetails array)
+  netTrade      Decimal? @db.Decimal(12, 2)
+  tradeACV       String?
+  tradeColor     String?
+  tradeGross     Decimal? @db.Decimal(12, 2)
+  tradeMake      String?
+  tradeMakeName  String?
+  tradeMileage   String?
+  tradeModel     String?
+  tradeModelName String?
+  tradeModelNo   String?
+  tradeModelType String?
+  tradeOver      Decimal? @db.Decimal(12, 2)
+  tradePayOff    String?
+  tradeStock     String?
+  tradeStyle     String?
+  tradeVIN       String?
+  tradeYear      Int?
+  orderIndex     Int? // Order in the tradeDetails array
+  
+  // Trade dealer defined fields (1-8) - stored once per sale, not per trade
+  tradeDealerDefined1 String?
+  tradeDealerDefined2 String?
+  tradeDealerDefined3 String?
+  tradeDealerDefined4 String?
+  tradeDealerDefined5 String?
+  tradeDealerDefined6 String?
+  tradeDealerDefined7 String?
+  tradeDealerDefined8 String?
+  
+  saleData       SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_trade_sale")
+  
+  @@index([saleDataId], map: "idx_sale_trade_sale")
+  @@map("SaleTrade")
+}
+
+model SaleVehicle {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  saleDataId String  @unique @db.Uuid
+  
+  vin                 String?
+  make                String?
+  makeName            String?
+  model               String?
+  modelName           String?
+  modelNo             String?
+  modelType           String?
+  year                Int?
+  age                 Int?
+  bodyStyle           String?
+  color               String?
+  stockNo             String?
+  vehicleMileage      Int?
+  vehInventoryCompany String?
+  vehSaleCompany      String?
+  glVehicleCost       Decimal? @db.Decimal(12, 2)
+  
+  saleData            SaleData @relation(fields: [saleDataId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sale_veh_sale")
+  
+  @@index([vin], map: "idx_sale_veh_vin")
+  @@index([make, model], map: "idx_sale_veh_make_model")
+  @@map("SaleVehicle")
+}
