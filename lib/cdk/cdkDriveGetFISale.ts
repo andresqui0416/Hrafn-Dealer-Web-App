@@ -1,16 +1,18 @@
 import {
   generateUniqueRequestId,
   getFortellisAccessToken,
-  getFortellisSubscriptionInfo,
+  clearTokenCache,
 } from "./index";
 /**
  * Get query result from CDK API
  * Fetches the actual data from the result endpoint after operation completes
+ * Automatically refreshes token on 401 errors
  */
 async function getQueryResult(
   resultUrl: string,
   accessToken: string,
   subscriptionId: string,
+  retryOn401: boolean = true,
 ): Promise<any[]> {
   try {
     console.log(`Fetching query result from: ${resultUrl}`);
@@ -24,6 +26,15 @@ async function getQueryResult(
         Accept: "application/json",
       },
     });
+
+    // Handle 401 Unauthorized - token expired, refresh and retry once
+    if (resultResponse.status === 401 && retryOn401) {
+      console.log("Token expired during result fetch, refreshing token...");
+      clearTokenCache();
+      const newAccessToken = await getFortellisAccessToken(true);
+      // Retry with new token (only once to avoid infinite loops)
+      return getQueryResult(resultUrl, newAccessToken, subscriptionId, false);
+    }
 
     if (!resultResponse.ok) {
       const errorText = await resultResponse.text();
@@ -52,6 +63,7 @@ async function getQueryResult(
 /**
  * Poll operation status until complete
  * Handles async bulk operations by polling the status endpoint
+ * Automatically refreshes token on 401 errors
  */
 export async function pollOperationStatus(
   statusUrl: string,
@@ -61,6 +73,7 @@ export async function pollOperationStatus(
   maxWaitTime: number = 300000, // 5 minutes default
 ): Promise<any[]> {
   const startTime = Date.now();
+  let currentAccessToken = accessToken;
 
   while (Date.now() - startTime < maxWaitTime) {
     try {
@@ -70,20 +83,32 @@ export async function pollOperationStatus(
       } else {
         return await getQueryResult(
           statusUrl.replace("/status", "/result"),
-          accessToken,
+          currentAccessToken,
           subscriptionId,
         );
       }
 
+      // Refresh token before each status check to prevent expiration during long operations
+      currentAccessToken = await getFortellisAccessToken();
+
       const statusResponse = await fetch(statusUrl, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${currentAccessToken}`,
           "Subscription-Id": subscriptionId,
           "Request-Id": generateUniqueRequestId(),
           Accept: "application/json",
         },
       });
+
+      // Handle 401 Unauthorized - token expired, refresh and continue
+      if (statusResponse.status === 401) {
+        console.log("Token expired during status check, refreshing token...");
+        clearTokenCache();
+        currentAccessToken = await getFortellisAccessToken(true);
+        // Continue to next iteration with new token
+        continue;
+      }
 
       if (!statusResponse.ok) {
         const errorText = await statusResponse.text();
@@ -101,7 +126,9 @@ export async function pollOperationStatus(
           console.log(
             `Operation completed. Fetching result from: ${statusData._links.result.href}`,
           );
-          return await getQueryResult(statusData._links.result.href, accessToken, subscriptionId);
+          // Refresh token before fetching result
+          currentAccessToken = await getFortellisAccessToken();
+          return await getQueryResult(statusData._links.result.href, currentAccessToken, subscriptionId);
         }
       }
       continue;
@@ -130,7 +157,7 @@ export async function getFISalesData(
   endDate?: string,
 ): Promise<any[]> {
   // Get access token
-  const accessToken = await getFortellisAccessToken();
+  let accessToken = await getFortellisAccessToken();
   console.log("Getting FISales data...");
   console.log("Subscription ID:", subscriptionId);
   console.log("Department ID:", departmentId);
@@ -168,7 +195,7 @@ export async function getFISalesData(
     }
     const url = queryParams.toString() ? `${endpoint}?${queryParams.toString()}` : endpoint;
 
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -178,6 +205,23 @@ export async function getFISalesData(
         Accept: "application/json",
       },
     });
+
+    // Handle 401 Unauthorized - token expired, refresh and retry once
+    if (response.status === 401) {
+      console.log("Token expired during initial request, refreshing token...");
+      clearTokenCache();
+      accessToken = await getFortellisAccessToken(true);
+      response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Subscription-Id": subscriptionId,
+          "Department-Id": deptId,
+          "Request-Id": generateUniqueRequestId(),
+          Accept: "application/json",
+        },
+      });
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -229,7 +273,7 @@ export async function getFISalesHistoryData(
   endDate?: string,
 ): Promise<any[]> {
   // Get access token
-  const accessToken = await getFortellisAccessToken();
+  let accessToken = await getFortellisAccessToken();
   console.log("Subscription ID:", subscriptionId);
   console.log("Department ID:", departmentId);
   console.log("Start date:", startDate);
@@ -268,7 +312,7 @@ export async function getFISalesHistoryData(
     }
     const url = `${endpoint}?${queryParams.toString()}`;
 
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -278,6 +322,23 @@ export async function getFISalesHistoryData(
         Accept: "application/json",
       },
     });
+
+    // Handle 401 Unauthorized - token expired, refresh and retry once
+    if (response.status === 401) {
+      console.log("Token expired during history request, refreshing token...");
+      clearTokenCache();
+      accessToken = await getFortellisAccessToken(true);
+      response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Subscription-Id": subscriptionId,
+          "Department-Id": deptId,
+          "Request-Id": generateUniqueRequestId(),
+          Accept: "application/json",
+        },
+      });
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
