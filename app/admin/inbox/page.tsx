@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -90,27 +90,7 @@ export default function AdminInboxPage() {
     setCurrentPage(1); // Reset to first page when filters change
   }, [activeTab, statusFilter, searchQuery]);
 
-  useEffect(() => {
-    loadChats();
-
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, [activeTab, statusFilter, searchQuery, currentPage]);
-
-  useEffect(() => {
-    if (showChatDialog && selectedChat) {
-      loadMessages(selectedChat.id);
-    }
-  }, [showChatDialog, selectedChat]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
-
-  const loadChats = async () => {
+  const loadChats = useCallback(async () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -161,7 +141,27 @@ export default function AdminInboxPage() {
         setLoading(false);
       }
     }
-  };
+  }, [activeTab, statusFilter, searchQuery, currentPage, pageSize]);
+
+  useEffect(() => {
+    loadChats();
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [loadChats]);
+
+  useEffect(() => {
+    if (showChatDialog && selectedChat) {
+      loadMessages(selectedChat.id);
+    }
+  }, [showChatDialog, selectedChat]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length]);
 
   const loadMessages = async (chatId: string) => {
     try {
