@@ -1,0 +1,1338 @@
+swagger: "2.0"
+info:
+  version: 1.0.1
+  title: OpCodes
+  description: >
+    ## CDK Drive - Service - Catalog - OpCodes
+
+    A labor operation code (opcode) is used to specify the work to be done in service requests contained in CDK Drive appointments and repair-orders.
+
+
+    ## What does this API do?
+
+    The API will allow you to query CDK Drive service opcodes to return data such as the description and hours to complete the operation. 
+
+
+    ## Intended Audience
+
+    It is expected that systems that require query access to CDK Drive opcodes will use this API. 
+  contact:
+    name: Fortellis Development
+    email: info@fortellis.io
+host: api.fortellis.io
+basePath: /cdkdrive/service/catalog/v1/opcodes
+securityDefinitions:
+  permission-model:
+    type: oauth2
+    flow: application
+    tokenUrl: https://identity.fortellis.io/oauth2/aus1p1ixy7YL8cMq02p7/v1/token
+    scopes:
+      anonymous: anonymous
+security:
+  - permission-model:
+      - anonymous
+schemes:
+  - https
+paths:
+  /:
+    get:
+      summary: Query opcodes
+      description: Query service operation codes (opcodes)
+      operationId: queryOpCodes
+      tags:
+        - options
+      parameters:
+        - name: Request-Id
+          in: header
+          required: false
+          type: string
+          format: uuid
+        - name: desc
+          in: query
+          required: false
+          type: string
+          description: Description text to filter results
+        - name: page
+          in: query
+          type: number
+          description: A non-zero integer indicating the requested the page of query results
+        - name: pageSize
+          in: query
+          type: number
+          description: A non-negative, non-zero integer indicating the maximum number of
+            results to return at one time
+        - &a1
+          name: Subscription-Id
+          in: header
+          description: The Fortellis Marketplace subscription identifier between a user
+            entity and the app.
+          required: true
+          type: string
+          default: test
+        - &a2
+          name: Authorization
+          in: header
+          description: Provides authorization to access Fortellis APIs. For calling a
+            Fortellis Provider, this must be an OAuth 2.0 token issued by the
+            Fortellis authorization server.
+          required: true
+          type: string
+          disabled: true
+          placeholder: Automatically set
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            type: object
+            example:
+              totalItems: 3
+              totalPages: 1
+              links:
+                firstPage:
+                  href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes?page=1&pageSize=3
+                  method: GET
+                  title: Get the first page of results
+                nextPage:
+                  href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes?page=2&pageSize=3
+                  method: GET
+                  title: Get the next page of results
+                previousPage:
+                  href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes?page=1&pageSize=3
+                  method: GET
+                  title: Get the previous page of results
+              items:
+                - opCode: ABC
+                  description: Replace left tail-light assembly
+                  dispatchCodeId: S101
+                  flatSellRate: 19.55
+                  flatHours: 0.5
+                  estimatedDuration: 0.4
+                  links:
+                    self:
+                      href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+                - opCode: XYZ
+                  description: Rotate tires
+                  dispatchCodeId: S102
+                  flatSellRate: 9.95
+                  flatHours: 0.4
+                  estimatedDuration: 0.5
+                  links:
+                    self:
+                      href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/XYZ
+                - opCode: F15Z
+                  description: Perform 4-wheel alignment
+                  dispatchCodeId: S110
+                  flatSellRate: 59.95
+                  flatHours: 1
+                  estimatedDuration: 0.7
+                  links:
+                    self:
+                      href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/F15Z
+            required:
+              - items
+              - links
+              - totalItems
+              - totalPages
+            properties:
+              totalItems:
+                type: number
+                description: The total number of items contained in the collection
+              totalPages:
+                type: number
+                description: The total number of pages given the requested page size
+              links:
+                type: object
+                required:
+                  - firstPage
+                properties:
+                  firstPage:
+                    type: object
+                    required:
+                      - href
+                    properties:
+                      href:
+                        type: string
+                        description: The target URI
+                      method:
+                        type: string
+                        description: The HTTP verb that MUST be used to make a request to the target of
+                          the link
+                      title:
+                        type: string
+                        description: A human readable title for the link that conveys the purpose of the
+                          link
+                  nextPage:
+                    type: object
+                    required:
+                      - href
+                    properties:
+                      href:
+                        type: string
+                        description: The target URI
+                      method:
+                        type: string
+                        description: The HTTP verb that MUST be used to make a request to the target of
+                          the link
+                      title:
+                        type: string
+                        description: A human readable title for the link that conveys the purpose of the
+                          link
+                  previousPage:
+                    type: object
+                    required:
+                      - href
+                    properties:
+                      href:
+                        type: string
+                        description: The target URI
+                      method:
+                        type: string
+                        description: The HTTP verb that MUST be used to make a request to the target of
+                          the link
+                      title:
+                        type: string
+                        description: A human readable title for the link that conveys the purpose of the
+                          link
+              items:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - opCode
+                    - description
+                    - links
+                  example:
+                    opCode: ABC
+                    description: Replace left tail-light assembly
+                    dispatchCodeId: S101
+                    flatSellRate: 19.55
+                    flatHours: 0.5
+                    estimatedDuration: 0.4
+                    links:
+                      self:
+                        href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+                  properties:
+                    opCode:
+                      type: string
+                      description: The operation code
+                    description:
+                      type: string
+                      description: The description of the operation
+                    dispatchCodeId:
+                      type: string
+                      description: The dispatch code for the operation
+                    flatSellRate:
+                      type: number
+                      description: The flat sell rate
+                    flatHours:
+                      type: number
+                      description: The flat hours
+                    estimatedDuration:
+                      type: number
+                      description: Estimated duration of a job in tenths of an hour
+                    links:
+                      type: object
+                      required:
+                        - self
+                      example:
+                        self:
+                          href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+                      properties:
+                        self:
+                          type: object
+                          required:
+                            - href
+                          properties:
+                            href:
+                              type: string
+                              description: The target URI
+                            method:
+                              type: string
+                              description: The HTTP verb that MUST be used to make a request to the target of
+                                the link
+                            title:
+                              type: string
+                              description: A human readable title for the link that conveys the purpose of the
+                                link
+        "400":
+          description: 400 - Bad Request
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            type: array
+            items:
+              type: object
+              description: 400 - Bad Request
+              properties:
+                code:
+                  type: integer
+                  format: int32
+                message:
+                  type: string
+              required:
+                - code
+                - message
+              example:
+                code: 400
+                message: Bad Request
+        "401":
+          description: 401 - Unauthorized
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            type: array
+            items:
+              type: object
+              description: 401 - Unauthorized
+              properties:
+                code:
+                  type: integer
+                  format: int32
+                message:
+                  type: string
+              required:
+                - code
+                - message
+              example:
+                code: 401
+                message: Unauthorized
+        "403":
+          description: 403 - Forbidden
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            type: array
+            items:
+              type: object
+              description: 403 - Forbidden
+              properties:
+                code:
+                  type: integer
+                  format: int32
+                message:
+                  type: string
+              required:
+                - code
+                - message
+              example:
+                code: 403
+                message: Forbidden
+  "/{opCode}":
+    get:
+      summary: Query an opcode
+      description: Query a service operation code (opcode)
+      operationId: queryOpCodeByCode
+      tags:
+        - options
+      parameters:
+        - name: Request-Id
+          in: header
+          required: false
+          type: string
+          format: uuid
+        - name: opCode
+          in: path
+          required: true
+          type: string
+          description: The operation code
+        - *a1
+        - *a2
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            type: object
+            properties:
+              opCode:
+                type: string
+                description: The operation code
+              description:
+                type: string
+                description: The description of the operation
+              dispatchCodeId:
+                type: string
+                description: The dispatch code for the operation
+              flatSellRate:
+                type: number
+                description: The flat sell rate
+              flatHours:
+                type: number
+                description: The flat hours
+              estimatedDuration:
+                type: number
+                description: Estimated duration of a job in tenths of an hour
+              links:
+                type: object
+                properties:
+                  self:
+                    type: object
+                    properties:
+                      href:
+                        type: string
+                        description: The target URI
+                      method:
+                        type: string
+                        description: The HTTP verb that MUST be used to make a request to the target of
+                          the link
+                      title:
+                        type: string
+                        description: A human readable title for the link that conveys the purpose of the
+                          link
+                    required:
+                      - href
+                required:
+                  - self
+                example:
+                  self:
+                    href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+            required:
+              - opCode
+              - description
+              - links
+            example:
+              opCode: ABC
+              description: Replace left tail-light assembly
+              dispatchCodeId: S101
+              flatSellRate: 19.55
+              flatHours: 0.5
+              estimatedDuration: 0.4
+              links:
+                self:
+                  href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+        "400":
+          description: 400 - Bad Request
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            type: array
+            items:
+              type: object
+              description: 400 - Bad Request
+              properties:
+                code:
+                  type: integer
+                  format: int32
+                message:
+                  type: string
+              required:
+                - code
+                - message
+              example:
+                code: 400
+                message: Bad Request
+        "401":
+          description: 401 - Unauthorized
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            type: array
+            items:
+              type: object
+              description: 401 - Unauthorized
+              properties:
+                code:
+                  type: integer
+                  format: int32
+                message:
+                  type: string
+              required:
+                - code
+                - message
+              example:
+                code: 401
+                message: Unauthorized
+        "403":
+          description: 403 - Forbidden
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            type: array
+            items:
+              type: object
+              description: 403 - Forbidden
+              properties:
+                code:
+                  type: integer
+                  format: int32
+                message:
+                  type: string
+              required:
+                - code
+                - message
+              example:
+                code: 403
+                message: Forbidden
+        "404":
+          description: 404 - Not Found
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            type: array
+            items:
+              type: object
+              description: 404 - Not Found
+              properties:
+                code:
+                  type: integer
+                  format: int32
+                message:
+                  type: string
+              required:
+                - code
+                - message
+              example:
+                code: 404
+                message: Not Found
+parameters:
+  header.Subscription-Id:
+    name: Subscription-Id
+    in: header
+    required: true
+    type: string
+    description: The Fortellis Marketplace subscription identifier between a user
+      entity and the solution. For sample responses use the Subscription-Id test
+      and your solutions apikey.
+  header.Authorization:
+    name: Authorization
+    in: header
+    required: true
+    type: string
+    description: Provides authorization to access Fortellis APIs. For calling a
+      Fortellis Provider, this must be an OAuth 2.0 token issued by the
+      Fortellis authorization server, but you may call the simulator platform
+      with Basic Authorization using your API key and secret.
+  path.opCode:
+    name: opCode
+    in: path
+    required: true
+    type: string
+    description: The operation code
+  query.desc:
+    name: desc
+    in: query
+    required: false
+    type: string
+    description: Description text to filter results
+  header.Request-Id:
+    name: Request-Id
+    in: header
+    required: false
+    type: string
+    format: uuid
+  query.page:
+    name: page
+    in: query
+    type: number
+    description: A non-zero integer indicating the requested the page of query results
+  query.pageSize:
+    name: pageSize
+    in: query
+    type: number
+    description: A non-negative, non-zero integer indicating the maximum number of
+      results to return at one time
+responses:
+  OpCodeCollection:
+    description: OK
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      type: object
+      allOf:
+        - type: object
+          properties:
+            totalItems:
+              type: number
+              description: The total number of items contained in the collection
+            totalPages:
+              type: number
+              description: The total number of pages given the requested page size
+            links:
+              type: object
+              properties:
+                firstPage:
+                  type: object
+                  properties:
+                    href:
+                      type: string
+                      description: The target URI
+                    method:
+                      type: string
+                      description: The HTTP verb that MUST be used to make a request to the target of
+                        the link
+                    title:
+                      type: string
+                      description: A human readable title for the link that conveys the purpose of the
+                        link
+                  required:
+                    - href
+                nextPage:
+                  type: object
+                  properties:
+                    href:
+                      type: string
+                      description: The target URI
+                    method:
+                      type: string
+                      description: The HTTP verb that MUST be used to make a request to the target of
+                        the link
+                    title:
+                      type: string
+                      description: A human readable title for the link that conveys the purpose of the
+                        link
+                  required:
+                    - href
+                previousPage:
+                  type: object
+                  properties:
+                    href:
+                      type: string
+                      description: The target URI
+                    method:
+                      type: string
+                      description: The HTTP verb that MUST be used to make a request to the target of
+                        the link
+                    title:
+                      type: string
+                      description: A human readable title for the link that conveys the purpose of the
+                        link
+                  required:
+                    - href
+              required:
+                - firstPage
+          required:
+            - totalItems
+            - totalPages
+            - links
+        - properties:
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  opCode:
+                    type: string
+                    description: The operation code
+                  description:
+                    type: string
+                    description: The description of the operation
+                  dispatchCodeId:
+                    type: string
+                    description: The dispatch code for the operation
+                  flatSellRate:
+                    type: number
+                    description: The flat sell rate
+                  flatHours:
+                    type: number
+                    description: The flat hours
+                  estimatedDuration:
+                    type: number
+                    description: Estimated duration of a job in tenths of an hour
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+                            description: The target URI
+                          method:
+                            type: string
+                            description: The HTTP verb that MUST be used to make a request to the target of
+                              the link
+                          title:
+                            type: string
+                            description: A human readable title for the link that conveys the purpose of the
+                              link
+                        required:
+                          - href
+                    required:
+                      - self
+                    example:
+                      self:
+                        href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+                required:
+                  - opCode
+                  - description
+                  - links
+                example:
+                  opCode: ABC
+                  description: Replace left tail-light assembly
+                  dispatchCodeId: S101
+                  flatSellRate: 19.55
+                  flatHours: 0.5
+                  estimatedDuration: 0.4
+                  links:
+                    self:
+                      href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+          required:
+            - items
+      example:
+        totalItems: 3
+        totalPages: 1
+        links:
+          firstPage:
+            href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes?page=1&pageSize=3
+            method: GET
+            title: Get the first page of results
+          nextPage:
+            href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes?page=2&pageSize=3
+            method: GET
+            title: Get the next page of results
+          previousPage:
+            href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes?page=1&pageSize=3
+            method: GET
+            title: Get the previous page of results
+        items:
+          - opCode: ABC
+            description: Replace left tail-light assembly
+            dispatchCodeId: S101
+            flatSellRate: 19.55
+            flatHours: 0.5
+            estimatedDuration: 0.4
+            links:
+              self:
+                href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+          - opCode: XYZ
+            description: Rotate tires
+            dispatchCodeId: S102
+            flatSellRate: 9.95
+            flatHours: 0.4
+            estimatedDuration: 0.5
+            links:
+              self:
+                href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/XYZ
+          - opCode: F15Z
+            description: Perform 4-wheel alignment
+            dispatchCodeId: S110
+            flatSellRate: 59.95
+            flatHours: 1
+            estimatedDuration: 0.7
+            links:
+              self:
+                href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/F15Z
+  OpCode:
+    description: OK
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      type: object
+      properties:
+        opCode:
+          type: string
+          description: The operation code
+        description:
+          type: string
+          description: The description of the operation
+        dispatchCodeId:
+          type: string
+          description: The dispatch code for the operation
+        flatSellRate:
+          type: number
+          description: The flat sell rate
+        flatHours:
+          type: number
+          description: The flat hours
+        estimatedDuration:
+          type: number
+          description: Estimated duration of a job in tenths of an hour
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: The target URI
+                method:
+                  type: string
+                  description: The HTTP verb that MUST be used to make a request to the target of
+                    the link
+                title:
+                  type: string
+                  description: A human readable title for the link that conveys the purpose of the
+                    link
+              required:
+                - href
+          required:
+            - self
+          example:
+            self:
+              href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+      required:
+        - opCode
+        - description
+        - links
+      example:
+        opCode: ABC
+        description: Replace left tail-light assembly
+        dispatchCodeId: S101
+        flatSellRate: 19.55
+        flatHours: 0.5
+        estimatedDuration: 0.4
+        links:
+          self:
+            href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+  BadRequest:
+    description: 400 - Bad Request
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      type: array
+      items:
+        type: object
+        description: 400 - Bad Request
+        properties:
+          code:
+            type: integer
+            format: int32
+          message:
+            type: string
+        required:
+          - code
+          - message
+        example:
+          code: 400
+          message: Bad Request
+  Unauthorized:
+    description: 401 - Unauthorized
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      type: array
+      items:
+        type: object
+        description: 401 - Unauthorized
+        properties:
+          code:
+            type: integer
+            format: int32
+          message:
+            type: string
+        required:
+          - code
+          - message
+        example:
+          code: 401
+          message: Unauthorized
+  Forbidden:
+    description: 403 - Forbidden
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      type: array
+      items:
+        type: object
+        description: 403 - Forbidden
+        properties:
+          code:
+            type: integer
+            format: int32
+          message:
+            type: string
+        required:
+          - code
+          - message
+        example:
+          code: 403
+          message: Forbidden
+  NotFound:
+    description: 404 - Not Found
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      type: array
+      items:
+        type: object
+        description: 404 - Not Found
+        properties:
+          code:
+            type: integer
+            format: int32
+          message:
+            type: string
+        required:
+          - code
+          - message
+        example:
+          code: 404
+          message: Not Found
+definitions:
+  OpCode:
+    type: object
+    properties:
+      opCode:
+        type: string
+        description: The operation code
+      description:
+        type: string
+        description: The description of the operation
+      dispatchCodeId:
+        type: string
+        description: The dispatch code for the operation
+      flatSellRate:
+        type: number
+        description: The flat sell rate
+      flatHours:
+        type: number
+        description: The flat hours
+      estimatedDuration:
+        type: number
+        description: Estimated duration of a job in tenths of an hour
+      links:
+        type: object
+        properties:
+          self:
+            type: object
+            properties:
+              href:
+                type: string
+                description: The target URI
+              method:
+                type: string
+                description: The HTTP verb that MUST be used to make a request to the target of
+                  the link
+              title:
+                type: string
+                description: A human readable title for the link that conveys the purpose of the
+                  link
+            required:
+              - href
+        required:
+          - self
+        example:
+          self:
+            href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+    required:
+      - opCode
+      - description
+      - links
+    example:
+      opCode: ABC
+      description: Replace left tail-light assembly
+      dispatchCodeId: S101
+      flatSellRate: 19.55
+      flatHours: 0.5
+      estimatedDuration: 0.4
+      links:
+        self:
+          href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+  OpCodeLinks:
+    type: object
+    properties:
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            description: The target URI
+          method:
+            type: string
+            description: The HTTP verb that MUST be used to make a request to the target of
+              the link
+          title:
+            type: string
+            description: A human readable title for the link that conveys the purpose of the
+              link
+        required:
+          - href
+    required:
+      - self
+    example:
+      self:
+        href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+  OpCodeCollection:
+    type: object
+    allOf:
+      - type: object
+        properties:
+          totalItems:
+            type: number
+            description: The total number of items contained in the collection
+          totalPages:
+            type: number
+            description: The total number of pages given the requested page size
+          links:
+            type: object
+            properties:
+              firstPage:
+                type: object
+                properties:
+                  href:
+                    type: string
+                    description: The target URI
+                  method:
+                    type: string
+                    description: The HTTP verb that MUST be used to make a request to the target of
+                      the link
+                  title:
+                    type: string
+                    description: A human readable title for the link that conveys the purpose of the
+                      link
+                required:
+                  - href
+              nextPage:
+                type: object
+                properties:
+                  href:
+                    type: string
+                    description: The target URI
+                  method:
+                    type: string
+                    description: The HTTP verb that MUST be used to make a request to the target of
+                      the link
+                  title:
+                    type: string
+                    description: A human readable title for the link that conveys the purpose of the
+                      link
+                required:
+                  - href
+              previousPage:
+                type: object
+                properties:
+                  href:
+                    type: string
+                    description: The target URI
+                  method:
+                    type: string
+                    description: The HTTP verb that MUST be used to make a request to the target of
+                      the link
+                  title:
+                    type: string
+                    description: A human readable title for the link that conveys the purpose of the
+                      link
+                required:
+                  - href
+            required:
+              - firstPage
+        required:
+          - totalItems
+          - totalPages
+          - links
+      - properties:
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                opCode:
+                  type: string
+                  description: The operation code
+                description:
+                  type: string
+                  description: The description of the operation
+                dispatchCodeId:
+                  type: string
+                  description: The dispatch code for the operation
+                flatSellRate:
+                  type: number
+                  description: The flat sell rate
+                flatHours:
+                  type: number
+                  description: The flat hours
+                estimatedDuration:
+                  type: number
+                  description: Estimated duration of a job in tenths of an hour
+                links:
+                  type: object
+                  properties:
+                    self:
+                      type: object
+                      properties:
+                        href:
+                          type: string
+                          description: The target URI
+                        method:
+                          type: string
+                          description: The HTTP verb that MUST be used to make a request to the target of
+                            the link
+                        title:
+                          type: string
+                          description: A human readable title for the link that conveys the purpose of the
+                            link
+                      required:
+                        - href
+                  required:
+                    - self
+                  example:
+                    self:
+                      href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+              required:
+                - opCode
+                - description
+                - links
+              example:
+                opCode: ABC
+                description: Replace left tail-light assembly
+                dispatchCodeId: S101
+                flatSellRate: 19.55
+                flatHours: 0.5
+                estimatedDuration: 0.4
+                links:
+                  self:
+                    href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+        required:
+          - items
+    example:
+      totalItems: 3
+      totalPages: 1
+      links:
+        firstPage:
+          href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes?page=1&pageSize=3
+          method: GET
+          title: Get the first page of results
+        nextPage:
+          href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes?page=2&pageSize=3
+          method: GET
+          title: Get the next page of results
+        previousPage:
+          href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes?page=1&pageSize=3
+          method: GET
+          title: Get the previous page of results
+      items:
+        - opCode: ABC
+          description: Replace left tail-light assembly
+          dispatchCodeId: S101
+          flatSellRate: 19.55
+          flatHours: 0.5
+          estimatedDuration: 0.4
+          links:
+            self:
+              href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/ABC
+        - opCode: XYZ
+          description: Rotate tires
+          dispatchCodeId: S102
+          flatSellRate: 9.95
+          flatHours: 0.4
+          estimatedDuration: 0.5
+          links:
+            self:
+              href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/XYZ
+        - opCode: F15Z
+          description: Perform 4-wheel alignment
+          dispatchCodeId: S110
+          flatSellRate: 59.95
+          flatHours: 1
+          estimatedDuration: 0.7
+          links:
+            self:
+              href: https://api.fortellis.io/cdkdrive/service/catalog/v1/opcodes/F15Z
+  BaseCollection:
+    type: object
+    properties:
+      totalItems:
+        type: number
+        description: The total number of items contained in the collection
+      totalPages:
+        type: number
+        description: The total number of pages given the requested page size
+      links:
+        type: object
+        properties:
+          firstPage:
+            type: object
+            properties:
+              href:
+                type: string
+                description: The target URI
+              method:
+                type: string
+                description: The HTTP verb that MUST be used to make a request to the target of
+                  the link
+              title:
+                type: string
+                description: A human readable title for the link that conveys the purpose of the
+                  link
+            required:
+              - href
+          nextPage:
+            type: object
+            properties:
+              href:
+                type: string
+                description: The target URI
+              method:
+                type: string
+                description: The HTTP verb that MUST be used to make a request to the target of
+                  the link
+              title:
+                type: string
+                description: A human readable title for the link that conveys the purpose of the
+                  link
+            required:
+              - href
+          previousPage:
+            type: object
+            properties:
+              href:
+                type: string
+                description: The target URI
+              method:
+                type: string
+                description: The HTTP verb that MUST be used to make a request to the target of
+                  the link
+              title:
+                type: string
+                description: A human readable title for the link that conveys the purpose of the
+                  link
+            required:
+              - href
+        required:
+          - firstPage
+    required:
+      - totalItems
+      - totalPages
+      - links
+  BaseCollectionLinks:
+    type: object
+    properties:
+      firstPage:
+        type: object
+        properties:
+          href:
+            type: string
+            description: The target URI
+          method:
+            type: string
+            description: The HTTP verb that MUST be used to make a request to the target of
+              the link
+          title:
+            type: string
+            description: A human readable title for the link that conveys the purpose of the
+              link
+        required:
+          - href
+      nextPage:
+        type: object
+        properties:
+          href:
+            type: string
+            description: The target URI
+          method:
+            type: string
+            description: The HTTP verb that MUST be used to make a request to the target of
+              the link
+          title:
+            type: string
+            description: A human readable title for the link that conveys the purpose of the
+              link
+        required:
+          - href
+      previousPage:
+        type: object
+        properties:
+          href:
+            type: string
+            description: The target URI
+          method:
+            type: string
+            description: The HTTP verb that MUST be used to make a request to the target of
+              the link
+          title:
+            type: string
+            description: A human readable title for the link that conveys the purpose of the
+              link
+        required:
+          - href
+    required:
+      - firstPage
+  LinkDescriptionObject:
+    type: object
+    properties:
+      href:
+        type: string
+        description: The target URI
+      method:
+        type: string
+        description: The HTTP verb that MUST be used to make a request to the target of
+          the link
+      title:
+        type: string
+        description: A human readable title for the link that conveys the purpose of the
+          link
+    required:
+      - href
+  ErrorResponseBadRequest:
+    type: object
+    description: 400 - Bad Request
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+    required:
+      - code
+      - message
+    example:
+      code: 400
+      message: Bad Request
+  ErrorResponseUnauthorized:
+    type: object
+    description: 401 - Unauthorized
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+    required:
+      - code
+      - message
+    example:
+      code: 401
+      message: Unauthorized
+  ErrorResponseForbidden:
+    type: object
+    description: 403 - Forbidden
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+    required:
+      - code
+      - message
+    example:
+      code: 403
+      message: Forbidden
+  ErrorResponseNotFound:
+    type: object
+    description: 404 - Not Found
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+    required:
+      - code
+      - message
+    example:
+      code: 404
+      message: Not Found

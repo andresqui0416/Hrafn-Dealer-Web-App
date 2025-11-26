@@ -7,6 +7,7 @@ This document defines the security posture, threat model, and privacy controls f
 ---
 
 ## 1. Security Objectives
+
 - Protect dealer data from cross-dealer leakage.
 - Enforce least privilege access across users, agents, and systems.
 - Provide auditable access and actions.
@@ -17,6 +18,7 @@ This document defines the security posture, threat model, and privacy controls f
 ## 2. Threat Model
 
 ### Adversaries
+
 - **Curious dealer**: attempts to access competitor data.
 - **Compromised user account**: stolen credentials.
 - **Compromised agent**: rogue or misconfigured agent code.
@@ -24,6 +26,7 @@ This document defines the security posture, threat model, and privacy controls f
 - **Insider threat**: malicious employee with elevated access.
 
 ### Attack Vectors
+
 - SQL injection or template injection.
 - RLS bypass via misconfigured policies.
 - Cross-tenant joins in queries.
@@ -36,22 +39,26 @@ This document defines the security posture, threat model, and privacy controls f
 ## 3. Controls
 
 ### Authentication & Authorization
+
 - JWT-based auth with dealer_id claim.
 - Row Level Security (RLS) on all dealer-scoped tables.
 - Role separation: `authenticated` vs `analytics`.
 - Stored procedures and parameterized SQL templates only.
 
 ### Data Privacy
+
 - K-anonymity enforced in aggregate tables (suppress N < 5).
 - SELECT-only roles for aggregate tables.
 - Snapshots are append-only and immutable.
 
 ### Storage & Secrets
+
 - Secrets stored in environment variables, rotated regularly.
 - Supabase object storage ACLs tied to dealer_id.
 - No public buckets; signed URLs only.
 
 ### Logging & Auditing
+
 - Logs include dealer_id or aggregate_id for traceability.
 - Audit events for logins, query executions, policy changes.
 - Retention policy: 1 year for audit logs.
@@ -88,6 +95,7 @@ This document defines the security posture, threat model, and privacy controls f
 - Alignment with SOC2 Type II controls over time.
 
 ## Change Log
+
 - v0.1: Initial draft defining threat model, controls, and governance framework
 
 ---

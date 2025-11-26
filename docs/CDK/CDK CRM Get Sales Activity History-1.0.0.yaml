@@ -1,0 +1,1142 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: Elead Sales Activity History
+  description: >
+    # Elead - Sales - Activity - History
+      
+    # What does this API do?
+
+    This API allows for the query of sales activity history with comments.
+
+    ## Capabilities and Features
+
+    This API includes the following capabilities and features for retrieving sales activity history with comments:
+
+    - Query by Elead sales customer and opportunity identifier
+
+    # Intended Audience
+
+    This API is for dealers and vendor partners who need to retrieve sales activity history with comments within the Elead CRM. 
+  contact:
+    name: CDK Global - Vehicle Sales
+    url: https://fortellis.io/contact-us
+    email: support@fortellis.io
+host: api.fortellis.io
+basePath: /sales/elead/v1/activity-history
+tags:
+  - Elead
+  - Sales
+  - Activity
+  - History
+  - Comments
+schemes:
+  - https
+securityDefinitions:
+  permission-model:
+    type: oauth2
+    flow: implicit
+    authorizationUrl: https://identity.fortellis.io/oauth2/
+    scopes:
+      anonymous: Permissions to query activity history with comments
+security:
+  - permission-model:
+      - anonymous
+paths:
+  /search:
+    get:
+      summary: Query activity history by sales customer and opportunity identifier
+      description: Retrieve activity history with comments by sales customer and
+        opportunity identifier
+      tags:
+        - Activity History
+      operationId: ActivityHistory_Search
+      produces:
+        - application/json
+      parameters:
+        - name: Request-Id
+          in: header
+          required: true
+          type: string
+          description: You must include the Request-Id in every call to track the same
+            call across systems.
+        - name: customerId
+          in: query
+          required: true
+          type: string
+          format: uuid
+          description: Elead customer unique identifier
+        - name: opportunityId
+          in: query
+          required: true
+          type: string
+          format: uuid
+          description: Elead opportunity unique identifier
+        - name: Subscription-Id
+          in: header
+          description: The Fortellis Marketplace subscription identifier between a user
+            entity and the app.
+          required: true
+          type: string
+          default: test
+        - name: Authorization
+          in: header
+          description: Provides authorization to access Fortellis APIs. For calling a
+            Fortellis Provider, this must be an OAuth 2.0 token issued by the
+            Fortellis authorization server.
+          required: true
+          type: string
+          disabled: true
+          placeholder: Automatically set
+      responses:
+        "200":
+          description: 200 - OK
+          schema:
+            description: Object that describes a collection of scheduled and completed
+              activity history with comments
+            type: object
+            properties:
+              customerId:
+                description: Unique identifier of the customer
+                format: uuid
+                type: string
+                example: fba64045-7966-ea11-a977-005056b7c647
+              opportunityId:
+                description: Unique identifier of the opportunity
+                format: uuid
+                type: string
+                example: b41b6e9e-8366-ea11-a96c-005056b70f49
+              scheduledActivities:
+                description: A collection of scheduled activities
+                type: array
+                items:
+                  description: Object that describes a scheduled activity
+                  type: object
+                  required:
+                    - activityId
+                    - activityName
+                    - activityType
+                    - dueDate
+                    - assignedTo
+                  example:
+                    activityId: 009c5321-d218-ed11-b0d8-0050569006be
+                    activityName: Phone Followup
+                    activityType: 2
+                    dueDate: 2023-06-28T16:00:00Z
+                    assignedTo: Sales, P
+                    comments: Some comments on scheduled activity
+                  properties:
+                    activityId:
+                      description: Unique identifier of the activity
+                      format: uuid
+                      type: string
+                      example: c99ad2f5-8966-ea11-a96c-005056b70f49
+                    activityName:
+                      description: Name of the activity
+                      type: string
+                      example: Phone Lead
+                    activityType:
+                      description: Type of activity
+                      format: int32
+                      type: integer
+                      example: 7
+                    dueDate:
+                      description: The UTC date/time when the activity is due
+                      type: string
+                      format: date-time
+                      example: 2023-06-29T16:00:00Z
+                    assignedTo:
+                      description: Name of the user that the activity is assigned to
+                      type: string
+                      example: Sales, P
+                    comments:
+                      description: The contents of the activity comment
+                      type: string
+                      example: This is a comment
+              completedActivities:
+                description: A collection of completed activities
+                type: array
+                items:
+                  description: Object that describes a completed activity
+                  type: object
+                  required:
+                    - activityId
+                    - activityName
+                    - activityType
+                    - completedDate
+                    - outcome
+                    - completedBy
+                    - category
+                  example:
+                    activityId: dcb7998a-8266-ea11-a977-005056b7c647
+                    activityName: Phone Lead
+                    activityType: 9
+                    completedDate: 2023-06-27T16:00:00Z
+                    outcome: Completed
+                    completedBy: Sales, P
+                    comments: Some comments on completed activity
+                    category: Completed
+                  properties:
+                    activityId:
+                      description: Unique identifier of the activity
+                      format: uuid
+                      type: string
+                      example: c99ad2f5-8966-ea11-a96c-005056b70f49
+                    activityName:
+                      description: Name of the activity
+                      type: string
+                      example: Phone Lead
+                    activityType:
+                      description: Type of activity
+                      format: int32
+                      type: integer
+                      example: 7
+                    completedDate:
+                      description: The UTC date/time when the activity was completed
+                      type: string
+                      format: date-time
+                      example: 2023-06-22T18:17:47Z
+                    outcome:
+                      description: Outcome of the activity
+                      type: string
+                      example: Completed
+                    completedBy:
+                      description: Name of the user that the activity was completed by
+                      type: string
+                      example: Sales, P
+                    comments:
+                      description: The contents of the activity comment
+                      type: string
+                      example: This is a comment
+                    numberDialed:
+                      description: Phone number that was dialed
+                      type: string
+                      example: (555) 867-5309
+                    callDuration:
+                      description: The duration of the call formatted as MM:SS (minutes:seconds)
+                      type: string
+                      example: 05:42
+                    category:
+                      description: Category of the activity
+                      type: string
+                      example: Completed
+            required:
+              - customerId
+              - opportunityId
+            example:
+              customerId: c99ad2f5-8966-ea11-a96c-005056b70f49
+              opportunityId: b41b6e9e-8366-ea11-a96c-005056b70f49
+              scheduledActivities:
+                - activityId: 009c5321-d218-ed11-b0d8-0050569006be
+                  activityName: Phone Followup
+                  activityType: 2
+                  dueDate: 2023-06-28T16:00:00Z
+                  assignedTo: Sales, P
+                  comments: Some comments on scheduled activity
+              completedActivities:
+                - activityId: dcb7998a-8266-ea11-a977-005056b7c647
+                  activityName: Phone Lead
+                  activityType: 9
+                  completedDate: 2023-06-27T16:00:00Z
+                  outcome: Completed
+                  completedBy: Sales, P
+                  comments: Some comments on completed activity
+                  category: Completed
+          headers:
+            Request-Id:
+              type: string
+        "400":
+          description: 400 - Bad Request
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Common error response object
+            properties:
+              code:
+                type: string
+                description: An error code further identifying the error
+              message:
+                type: string
+                description: A description of the error
+              link:
+                type: string
+                description: An optional link with further information about the error type
+              referenceId:
+                type: string
+                format: uuid
+                description: A reference identifier used for correlation purposes
+              timestamp:
+                description: Date/time of error response
+                type: string
+                format: date-time
+            required:
+              - code
+              - message
+              - referenceId
+              - timestamp
+            example:
+              code: ExampleErrorCode
+              message: Example of an error message.
+              referenceId: 9e88d251-9b50-3dfb-00ef-00c5009b003d
+              timestamp: 2023-06-22T18:17:47Z
+        "401":
+          description: 401 - Unauthorized
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Common error response object
+            properties:
+              code:
+                type: string
+                description: An error code further identifying the error
+              message:
+                type: string
+                description: A description of the error
+              link:
+                type: string
+                description: An optional link with further information about the error type
+              referenceId:
+                type: string
+                format: uuid
+                description: A reference identifier used for correlation purposes
+              timestamp:
+                description: Date/time of error response
+                type: string
+                format: date-time
+            required:
+              - code
+              - message
+              - referenceId
+              - timestamp
+            example:
+              code: ExampleErrorCode
+              message: Example of an error message.
+              referenceId: 9e88d251-9b50-3dfb-00ef-00c5009b003d
+              timestamp: 2023-06-22T18:17:47Z
+        "403":
+          description: 403 - Forbidden
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Common error response object
+            properties:
+              code:
+                type: string
+                description: An error code further identifying the error
+              message:
+                type: string
+                description: A description of the error
+              link:
+                type: string
+                description: An optional link with further information about the error type
+              referenceId:
+                type: string
+                format: uuid
+                description: A reference identifier used for correlation purposes
+              timestamp:
+                description: Date/time of error response
+                type: string
+                format: date-time
+            required:
+              - code
+              - message
+              - referenceId
+              - timestamp
+            example:
+              code: ExampleErrorCode
+              message: Example of an error message.
+              referenceId: 9e88d251-9b50-3dfb-00ef-00c5009b003d
+              timestamp: 2023-06-22T18:17:47Z
+        "404":
+          description: 404 - Not Found
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Common error response object
+            properties:
+              code:
+                type: string
+                description: An error code further identifying the error
+              message:
+                type: string
+                description: A description of the error
+              link:
+                type: string
+                description: An optional link with further information about the error type
+              referenceId:
+                type: string
+                format: uuid
+                description: A reference identifier used for correlation purposes
+              timestamp:
+                description: Date/time of error response
+                type: string
+                format: date-time
+            required:
+              - code
+              - message
+              - referenceId
+              - timestamp
+            example:
+              code: ExampleErrorCode
+              message: Example of an error message.
+              referenceId: 9e88d251-9b50-3dfb-00ef-00c5009b003d
+              timestamp: 2023-06-22T18:17:47Z
+        "500":
+          description: 500 - Internal Server Error
+          headers:
+            Request-Id:
+              type: string
+          schema:
+            description: Common error response object
+            properties:
+              code:
+                type: string
+                description: An error code further identifying the error
+              message:
+                type: string
+                description: A description of the error
+              link:
+                type: string
+                description: An optional link with further information about the error type
+              referenceId:
+                type: string
+                format: uuid
+                description: A reference identifier used for correlation purposes
+              timestamp:
+                description: Date/time of error response
+                type: string
+                format: date-time
+            required:
+              - code
+              - message
+              - referenceId
+              - timestamp
+            example:
+              code: ExampleErrorCode
+              message: Example of an error message.
+              referenceId: 9e88d251-9b50-3dfb-00ef-00c5009b003d
+              timestamp: 2023-06-22T18:17:47Z
+definitions:
+  ActivityHistoryWithCommentsCollection:
+    description: Object that describes a collection of scheduled and completed
+      activity history with comments
+    type: object
+    properties:
+      customerId:
+        description: Unique identifier of the customer
+        format: uuid
+        type: string
+        example: fba64045-7966-ea11-a977-005056b7c647
+      opportunityId:
+        description: Unique identifier of the opportunity
+        format: uuid
+        type: string
+        example: b41b6e9e-8366-ea11-a96c-005056b70f49
+      scheduledActivities:
+        description: A collection of scheduled activities
+        type: array
+        items:
+          description: Object that describes a scheduled activity
+          type: object
+          properties:
+            activityId:
+              description: Unique identifier of the activity
+              format: uuid
+              type: string
+              example: c99ad2f5-8966-ea11-a96c-005056b70f49
+            activityName:
+              description: Name of the activity
+              type: string
+              example: Phone Lead
+            activityType:
+              description: Type of activity
+              format: int32
+              type: integer
+              example: 7
+            dueDate:
+              description: The UTC date/time when the activity is due
+              type: string
+              format: date-time
+              example: 2023-06-29T16:00:00Z
+            assignedTo:
+              description: Name of the user that the activity is assigned to
+              type: string
+              example: Sales, P
+            comments:
+              description: The contents of the activity comment
+              type: string
+              example: This is a comment
+          required:
+            - activityId
+            - activityName
+            - activityType
+            - dueDate
+            - assignedTo
+          example:
+            activityId: 009c5321-d218-ed11-b0d8-0050569006be
+            activityName: Phone Followup
+            activityType: 2
+            dueDate: 2023-06-28T16:00:00Z
+            assignedTo: Sales, P
+            comments: Some comments on scheduled activity
+      completedActivities:
+        description: A collection of completed activities
+        type: array
+        items:
+          description: Object that describes a completed activity
+          type: object
+          properties:
+            activityId:
+              description: Unique identifier of the activity
+              format: uuid
+              type: string
+              example: c99ad2f5-8966-ea11-a96c-005056b70f49
+            activityName:
+              description: Name of the activity
+              type: string
+              example: Phone Lead
+            activityType:
+              description: Type of activity
+              format: int32
+              type: integer
+              example: 7
+            completedDate:
+              description: The UTC date/time when the activity was completed
+              type: string
+              format: date-time
+              example: 2023-06-22T18:17:47Z
+            outcome:
+              description: Outcome of the activity
+              type: string
+              example: Completed
+            completedBy:
+              description: Name of the user that the activity was completed by
+              type: string
+              example: Sales, P
+            comments:
+              description: The contents of the activity comment
+              type: string
+              example: This is a comment
+            numberDialed:
+              description: Phone number that was dialed
+              type: string
+              example: (555) 867-5309
+            callDuration:
+              description: The duration of the call formatted as MM:SS (minutes:seconds)
+              type: string
+              example: 05:42
+            category:
+              description: Category of the activity
+              type: string
+              example: Completed
+          required:
+            - activityId
+            - activityName
+            - activityType
+            - completedDate
+            - outcome
+            - completedBy
+            - category
+          example:
+            activityId: dcb7998a-8266-ea11-a977-005056b7c647
+            activityName: Phone Lead
+            activityType: 9
+            completedDate: 2023-06-27T16:00:00Z
+            outcome: Completed
+            completedBy: Sales, P
+            comments: Some comments on completed activity
+            category: Completed
+    required:
+      - customerId
+      - opportunityId
+    example:
+      customerId: c99ad2f5-8966-ea11-a96c-005056b70f49
+      opportunityId: b41b6e9e-8366-ea11-a96c-005056b70f49
+      scheduledActivities:
+        - activityId: 009c5321-d218-ed11-b0d8-0050569006be
+          activityName: Phone Followup
+          activityType: 2
+          dueDate: 2023-06-28T16:00:00Z
+          assignedTo: Sales, P
+          comments: Some comments on scheduled activity
+      completedActivities:
+        - activityId: dcb7998a-8266-ea11-a977-005056b7c647
+          activityName: Phone Lead
+          activityType: 9
+          completedDate: 2023-06-27T16:00:00Z
+          outcome: Completed
+          completedBy: Sales, P
+          comments: Some comments on completed activity
+          category: Completed
+  ScheduledActivity:
+    description: Object that describes a scheduled activity
+    type: object
+    properties:
+      activityId:
+        description: Unique identifier of the activity
+        format: uuid
+        type: string
+        example: c99ad2f5-8966-ea11-a96c-005056b70f49
+      activityName:
+        description: Name of the activity
+        type: string
+        example: Phone Lead
+      activityType:
+        description: Type of activity
+        format: int32
+        type: integer
+        example: 7
+      dueDate:
+        description: The UTC date/time when the activity is due
+        type: string
+        format: date-time
+        example: 2023-06-29T16:00:00Z
+      assignedTo:
+        description: Name of the user that the activity is assigned to
+        type: string
+        example: Sales, P
+      comments:
+        description: The contents of the activity comment
+        type: string
+        example: This is a comment
+    required:
+      - activityId
+      - activityName
+      - activityType
+      - dueDate
+      - assignedTo
+    example:
+      activityId: 009c5321-d218-ed11-b0d8-0050569006be
+      activityName: Phone Followup
+      activityType: 2
+      dueDate: 2023-06-28T16:00:00Z
+      assignedTo: Sales, P
+      comments: Some comments on scheduled activity
+  CompletedActivity:
+    description: Object that describes a completed activity
+    type: object
+    properties:
+      activityId:
+        description: Unique identifier of the activity
+        format: uuid
+        type: string
+        example: c99ad2f5-8966-ea11-a96c-005056b70f49
+      activityName:
+        description: Name of the activity
+        type: string
+        example: Phone Lead
+      activityType:
+        description: Type of activity
+        format: int32
+        type: integer
+        example: 7
+      completedDate:
+        description: The UTC date/time when the activity was completed
+        type: string
+        format: date-time
+        example: 2023-06-22T18:17:47Z
+      outcome:
+        description: Outcome of the activity
+        type: string
+        example: Completed
+      completedBy:
+        description: Name of the user that the activity was completed by
+        type: string
+        example: Sales, P
+      comments:
+        description: The contents of the activity comment
+        type: string
+        example: This is a comment
+      numberDialed:
+        description: Phone number that was dialed
+        type: string
+        example: (555) 867-5309
+      callDuration:
+        description: The duration of the call formatted as MM:SS (minutes:seconds)
+        type: string
+        example: 05:42
+      category:
+        description: Category of the activity
+        type: string
+        example: Completed
+    required:
+      - activityId
+      - activityName
+      - activityType
+      - completedDate
+      - outcome
+      - completedBy
+      - category
+    example:
+      activityId: dcb7998a-8266-ea11-a977-005056b7c647
+      activityName: Phone Lead
+      activityType: 9
+      completedDate: 2023-06-27T16:00:00Z
+      outcome: Completed
+      completedBy: Sales, P
+      comments: Some comments on completed activity
+      category: Completed
+  ActivityId:
+    description: Unique identifier of the activity
+    format: uuid
+    type: string
+    example: c99ad2f5-8966-ea11-a96c-005056b70f49
+  ActivityName:
+    description: Name of the activity
+    type: string
+    example: Phone Lead
+  ActivityType:
+    description: Type of activity
+    format: int32
+    type: integer
+    example: 7
+  AssignedTo:
+    description: Name of the user that the activity is assigned to
+    type: string
+    example: Sales, P
+  CompletedBy:
+    description: Name of the user that the activity was completed by
+    type: string
+    example: Sales, P
+  CustomerId:
+    description: Unique identifier of the customer
+    format: uuid
+    type: string
+    example: fba64045-7966-ea11-a977-005056b7c647
+  OpportunityId:
+    description: Unique identifier of the opportunity
+    format: uuid
+    type: string
+    example: b41b6e9e-8366-ea11-a96c-005056b70f49
+  Outcome:
+    description: Outcome of the activity
+    type: string
+    example: Completed
+  Category:
+    description: Category of the activity
+    type: string
+    example: Completed
+  Comments:
+    description: The contents of the activity comment
+    type: string
+    example: This is a comment
+  CompletedDate:
+    description: The UTC date/time when the activity was completed
+    type: string
+    format: date-time
+    example: 2023-06-22T18:17:47Z
+  DueDate:
+    description: The UTC date/time when the activity is due
+    type: string
+    format: date-time
+    example: 2023-06-29T16:00:00Z
+  CallDuration:
+    description: The duration of the call formatted as MM:SS (minutes:seconds)
+    type: string
+    example: 05:42
+  NumberDialed:
+    description: Phone number that was dialed
+    type: string
+    example: (555) 867-5309
+  Error:
+    description: Common error response object
+    properties:
+      code:
+        type: string
+        description: An error code further identifying the error
+      message:
+        type: string
+        description: A description of the error
+      link:
+        type: string
+        description: An optional link with further information about the error type
+      referenceId:
+        type: string
+        format: uuid
+        description: A reference identifier used for correlation purposes
+      timestamp:
+        description: Date/time of error response
+        type: string
+        format: date-time
+    required:
+      - code
+      - message
+      - referenceId
+      - timestamp
+    example:
+      code: ExampleErrorCode
+      message: Example of an error message.
+      referenceId: 9e88d251-9b50-3dfb-00ef-00c5009b003d
+      timestamp: 2023-06-22T18:17:47Z
+parameters:
+  header.Authorization:
+    name: Authorization
+    in: header
+    required: true
+    type: string
+    description: Provide authorization to access Fortellis APIs. This must be an
+      OAuth 2.0 token for calling a Fortellis provider.
+  header.Request-Id:
+    name: Request-Id
+    in: header
+    required: true
+    type: string
+    description: You must include the Request-Id in every call to track the same
+      call across systems.
+  header.Subscription-Id:
+    name: Subscription-Id
+    description: The Fortellis Marketplace subscription identifier between a user
+      entity and the solution.
+    in: header
+    required: true
+    type: string
+  query.customerId:
+    name: customerId
+    in: query
+    required: true
+    type: string
+    format: uuid
+    description: Elead customer unique identifier
+  query.opportunityId:
+    name: opportunityId
+    in: query
+    required: true
+    type: string
+    format: uuid
+    description: Elead opportunity unique identifier
+responses:
+  ActivityHistoryWithCommentsCollection:
+    description: 200 - OK
+    schema:
+      description: Object that describes a collection of scheduled and completed
+        activity history with comments
+      type: object
+      properties:
+        customerId:
+          description: Unique identifier of the customer
+          format: uuid
+          type: string
+          example: fba64045-7966-ea11-a977-005056b7c647
+        opportunityId:
+          description: Unique identifier of the opportunity
+          format: uuid
+          type: string
+          example: b41b6e9e-8366-ea11-a96c-005056b70f49
+        scheduledActivities:
+          description: A collection of scheduled activities
+          type: array
+          items:
+            description: Object that describes a scheduled activity
+            type: object
+            properties:
+              activityId:
+                description: Unique identifier of the activity
+                format: uuid
+                type: string
+                example: c99ad2f5-8966-ea11-a96c-005056b70f49
+              activityName:
+                description: Name of the activity
+                type: string
+                example: Phone Lead
+              activityType:
+                description: Type of activity
+                format: int32
+                type: integer
+                example: 7
+              dueDate:
+                description: The UTC date/time when the activity is due
+                type: string
+                format: date-time
+                example: 2023-06-29T16:00:00Z
+              assignedTo:
+                description: Name of the user that the activity is assigned to
+                type: string
+                example: Sales, P
+              comments:
+                description: The contents of the activity comment
+                type: string
+                example: This is a comment
+            required:
+              - activityId
+              - activityName
+              - activityType
+              - dueDate
+              - assignedTo
+            example:
+              activityId: 009c5321-d218-ed11-b0d8-0050569006be
+              activityName: Phone Followup
+              activityType: 2
+              dueDate: 2023-06-28T16:00:00Z
+              assignedTo: Sales, P
+              comments: Some comments on scheduled activity
+        completedActivities:
+          description: A collection of completed activities
+          type: array
+          items:
+            description: Object that describes a completed activity
+            type: object
+            properties:
+              activityId:
+                description: Unique identifier of the activity
+                format: uuid
+                type: string
+                example: c99ad2f5-8966-ea11-a96c-005056b70f49
+              activityName:
+                description: Name of the activity
+                type: string
+                example: Phone Lead
+              activityType:
+                description: Type of activity
+                format: int32
+                type: integer
+                example: 7
+              completedDate:
+                description: The UTC date/time when the activity was completed
+                type: string
+                format: date-time
+                example: 2023-06-22T18:17:47Z
+              outcome:
+                description: Outcome of the activity
+                type: string
+                example: Completed
+              completedBy:
+                description: Name of the user that the activity was completed by
+                type: string
+                example: Sales, P
+              comments:
+                description: The contents of the activity comment
+                type: string
+                example: This is a comment
+              numberDialed:
+                description: Phone number that was dialed
+                type: string
+                example: (555) 867-5309
+              callDuration:
+                description: The duration of the call formatted as MM:SS (minutes:seconds)
+                type: string
+                example: 05:42
+              category:
+                description: Category of the activity
+                type: string
+                example: Completed
+            required:
+              - activityId
+              - activityName
+              - activityType
+              - completedDate
+              - outcome
+              - completedBy
+              - category
+            example:
+              activityId: dcb7998a-8266-ea11-a977-005056b7c647
+              activityName: Phone Lead
+              activityType: 9
+              completedDate: 2023-06-27T16:00:00Z
+              outcome: Completed
+              completedBy: Sales, P
+              comments: Some comments on completed activity
+              category: Completed
+      required:
+        - customerId
+        - opportunityId
+      example:
+        customerId: c99ad2f5-8966-ea11-a96c-005056b70f49
+        opportunityId: b41b6e9e-8366-ea11-a96c-005056b70f49
+        scheduledActivities:
+          - activityId: 009c5321-d218-ed11-b0d8-0050569006be
+            activityName: Phone Followup
+            activityType: 2
+            dueDate: 2023-06-28T16:00:00Z
+            assignedTo: Sales, P
+            comments: Some comments on scheduled activity
+        completedActivities:
+          - activityId: dcb7998a-8266-ea11-a977-005056b7c647
+            activityName: Phone Lead
+            activityType: 9
+            completedDate: 2023-06-27T16:00:00Z
+            outcome: Completed
+            completedBy: Sales, P
+            comments: Some comments on completed activity
+            category: Completed
+    headers:
+      Request-Id:
+        type: string
+  BadRequest:
+    description: 400 - Bad Request
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      description: Common error response object
+      properties:
+        code:
+          type: string
+          description: An error code further identifying the error
+        message:
+          type: string
+          description: A description of the error
+        link:
+          type: string
+          description: An optional link with further information about the error type
+        referenceId:
+          type: string
+          format: uuid
+          description: A reference identifier used for correlation purposes
+        timestamp:
+          description: Date/time of error response
+          type: string
+          format: date-time
+      required:
+        - code
+        - message
+        - referenceId
+        - timestamp
+      example:
+        code: ExampleErrorCode
+        message: Example of an error message.
+        referenceId: 9e88d251-9b50-3dfb-00ef-00c5009b003d
+        timestamp: 2023-06-22T18:17:47Z
+  Unauthorized:
+    description: 401 - Unauthorized
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      description: Common error response object
+      properties:
+        code:
+          type: string
+          description: An error code further identifying the error
+        message:
+          type: string
+          description: A description of the error
+        link:
+          type: string
+          description: An optional link with further information about the error type
+        referenceId:
+          type: string
+          format: uuid
+          description: A reference identifier used for correlation purposes
+        timestamp:
+          description: Date/time of error response
+          type: string
+          format: date-time
+      required:
+        - code
+        - message
+        - referenceId
+        - timestamp
+      example:
+        code: ExampleErrorCode
+        message: Example of an error message.
+        referenceId: 9e88d251-9b50-3dfb-00ef-00c5009b003d
+        timestamp: 2023-06-22T18:17:47Z
+  Forbidden:
+    description: 403 - Forbidden
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      description: Common error response object
+      properties:
+        code:
+          type: string
+          description: An error code further identifying the error
+        message:
+          type: string
+          description: A description of the error
+        link:
+          type: string
+          description: An optional link with further information about the error type
+        referenceId:
+          type: string
+          format: uuid
+          description: A reference identifier used for correlation purposes
+        timestamp:
+          description: Date/time of error response
+          type: string
+          format: date-time
+      required:
+        - code
+        - message
+        - referenceId
+        - timestamp
+      example:
+        code: ExampleErrorCode
+        message: Example of an error message.
+        referenceId: 9e88d251-9b50-3dfb-00ef-00c5009b003d
+        timestamp: 2023-06-22T18:17:47Z
+  NotFound:
+    description: 404 - Not Found
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      description: Common error response object
+      properties:
+        code:
+          type: string
+          description: An error code further identifying the error
+        message:
+          type: string
+          description: A description of the error
+        link:
+          type: string
+          description: An optional link with further information about the error type
+        referenceId:
+          type: string
+          format: uuid
+          description: A reference identifier used for correlation purposes
+        timestamp:
+          description: Date/time of error response
+          type: string
+          format: date-time
+      required:
+        - code
+        - message
+        - referenceId
+        - timestamp
+      example:
+        code: ExampleErrorCode
+        message: Example of an error message.
+        referenceId: 9e88d251-9b50-3dfb-00ef-00c5009b003d
+        timestamp: 2023-06-22T18:17:47Z
+  InternalServerError:
+    description: 500 - Internal Server Error
+    headers:
+      Request-Id:
+        type: string
+    schema:
+      description: Common error response object
+      properties:
+        code:
+          type: string
+          description: An error code further identifying the error
+        message:
+          type: string
+          description: A description of the error
+        link:
+          type: string
+          description: An optional link with further information about the error type
+        referenceId:
+          type: string
+          format: uuid
+          description: A reference identifier used for correlation purposes
+        timestamp:
+          description: Date/time of error response
+          type: string
+          format: date-time
+      required:
+        - code
+        - message
+        - referenceId
+        - timestamp
+      example:
+        code: ExampleErrorCode
+        message: Example of an error message.
+        referenceId: 9e88d251-9b50-3dfb-00ef-00c5009b003d
+        timestamp: 2023-06-22T18:17:47Z

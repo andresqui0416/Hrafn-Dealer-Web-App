@@ -7,6 +7,7 @@ This document defines the logging and auditing strategy for the HRAFN platform. 
 ---
 
 ## 1. Objectives
+
 - Provide complete traceability of user and agent actions.
 - Detect anomalies, breaches, and misuse in real time.
 - Support compliance (SOC2, GDPR) and incident response.
@@ -17,6 +18,7 @@ This document defines the logging and auditing strategy for the HRAFN platform. 
 ## 2. Log Schema
 
 ### Core Fields
+
 - `timestamp` (ISO8601, UTC)
 - `event_id` (ulid/uuid)
 - `actor_id` (user_id, agent_id, or system component)
@@ -29,6 +31,7 @@ This document defines the logging and auditing strategy for the HRAFN platform. 
 - `metadata` (JSONB: parameters, query plan_id, error codes)
 
 ### Sensitive Data Handling
+
 - No PII or raw query text stored.
 - Parameterized queries only; log plan_id not SQL string.
 - Redact tokens, passwords, or secrets.
@@ -36,6 +39,7 @@ This document defines the logging and auditing strategy for the HRAFN platform. 
 ---
 
 ## 3. Audit Events
+
 - **Authentication**
   - login_success / login_failure
   - token_refresh
@@ -53,6 +57,7 @@ This document defines the logging and auditing strategy for the HRAFN platform. 
 ---
 
 ## 4. Storage & Retention
+
 - Logs written to Supabase Postgres `audit_log` table (append-only).
 - ETL exports logs to object storage daily.
 - Retention:
@@ -63,6 +68,7 @@ This document defines the logging and auditing strategy for the HRAFN platform. 
 ---
 
 ## 5. Monitoring & Alerting
+
 - Metrics derived from logs:
   - login failures > threshold
   - anomalous query volumes
@@ -73,6 +79,7 @@ This document defines the logging and auditing strategy for the HRAFN platform. 
 ---
 
 ## 6. Access Control
+
 - Read access:
   - Security team, admins only.
 - Write access:
@@ -82,12 +89,14 @@ This document defines the logging and auditing strategy for the HRAFN platform. 
 ---
 
 ## 7. Governance
+
 - Schema and retention reviewed quarterly.
 - Access audits conducted monthly.
 - Log integrity checksums verified nightly.
 - Incident reports must include relevant audit log extracts.
 
 ## Change Log
+
 - v0.1: Initial draft defining logging schema, audit events, and monitoring strategy
 
 ---
