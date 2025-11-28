@@ -2,11 +2,7 @@ import {
   generateUniqueRequestId,
   getFortellisAccessToken,
 } from "./index";
-/**
- * Get query result from CDK API
- * Fetches the actual data from the result endpoint after operation completes
- * Automatically refreshes token on 401 errors
- */
+
 async function getQueryResult(
   resultUrl: string,
   accessToken: string,
@@ -58,12 +54,7 @@ async function getQueryResult(
   }
 }
 
-/**
- * Poll operation status until complete
- * Handles async bulk operations by polling the status endpoint
- * Automatically refreshes token on 401 errors
- */
-export async function pollOperationStatus(
+async function pollOperationStatus(
   statusUrl: string,
   accessToken: string,
   subscriptionId: string,
@@ -138,22 +129,19 @@ export async function pollOperationStatus(
   throw new Error(`Operation timed out after ${maxWaitTime / 1000} seconds`);
 }
 
-/**
- * Generic function to fetch FI Sales data from CDK/Fortellis API
- * Handles OAuth, subscription discovery, and async bulk operations
- * @param endpointPath - The endpoint path (e.g., "bulk", "open", "open/delta", "closed", "closed/delta")
- * @param departmentId - Optional department ID
- * @param startDate - Optional start date (ISO 8601 format: yyyy-mm-ddThh:mm:ss)
- * @param endDate - Optional end date (ISO 8601 format: yyyy-mm-ddThh:mm:ss)
- */
 export async function getFISalesData(
   endpointPath: string,
-  departmentId?: string,
-  subscriptionId?: string | null,
-  startDate?: string,
-  endDate?: string,
+  departmentId: string,
+  subscriptionId: string,
+  startDate: string,
+  endDate: string,
+  retryCount: number = 0,
 ): Promise<any> {
-  // Get access token - always get a fresh one to avoid timing issues
+  if(retryCount > 3) {
+    throw new Error("Failed to fetch FI Sales data from CDK API after 3 retries.");
+  }
+
+  console.log("==============================================\n");
   console.log("Getting FISales data...");
   console.log("Subscription ID:", subscriptionId);
   console.log("Department ID:", departmentId);
@@ -163,28 +151,24 @@ export async function getFISalesData(
   let accessToken = await getFortellisAccessToken();
   console.log(`Got access token (length: ${accessToken.length}, first 20 chars: ${accessToken.substring(0, 20)}...)`);
 
-  // Get subscription and department info
-  // Priority: 1) Provided departmentId parameter, 2) Environment variables, 3) Fetch from API
   let deptId = departmentId;
 
-  if (!subscriptionId) {
+  if (!subscriptionId || subscriptionId === "" || subscriptionId === null) {
     throw new Error(
       "Subscription ID is required. Provide as parameter, or ensure API returns subscriptions.",
     );
   }
 
-  if (!deptId) {
+  if (!deptId || deptId === "" || deptId === null) {
     throw new Error(
       "Department ID is required. Provide as parameter, or ensure API returns departments.",
     );
   }
 
   try {
-    // Build the endpoint URL
     const baseUrl = "https://api.fortellis.io/cdk-test/drive/fisales/v3";
     const endpoint = `${baseUrl}/${endpointPath}`;
 
-    // Build query parameters
     const queryParams = new URLSearchParams();
     if (startDate) {
       queryParams.append("startDate", startDate);
@@ -200,10 +184,16 @@ export async function getFISalesData(
         Authorization: `Bearer ${accessToken}`,
         "Subscription-Id": subscriptionId,
         "Department-Id": deptId,
-        "Request-Id": generateUniqueRequestId(), // Generate unique request ID
+        "Request-Id": generateUniqueRequestId(),
         Accept: "application/json",
       },
     });
+
+    if(response.status === 401) {
+      console.log("Token expired, refreshing token...");
+      accessToken = await getFortellisAccessToken(true);
+      return await getFISalesData(endpointPath, departmentId, subscriptionId, startDate, endDate, retryCount + 1);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -212,13 +202,11 @@ export async function getFISalesData(
 
     const operationResponse = await response.json();
 
-    // Check if this is an async operation response
     if (operationResponse.operationId && operationResponse._links?.status?.href) {
       console.log(
         `Received async operation ID: ${operationResponse.operationId}, status: ${operationResponse.status}`,
       );
 
-      // Poll the status endpoint until operation completes
       const statusUrl = operationResponse._links.status.href;
       const checkAfterSeconds = operationResponse.checkStatusAfterSeconds || 30;
 
@@ -231,47 +219,47 @@ export async function getFISalesData(
   }
 }
 
-/**
- * Fetch historical FI Sales data from CDK/Fortellis API (older than 31 days)
- * Handles OAuth, subscription discovery, and async bulk operations
- * @param departmentId - Optional department ID
- * @param startDate - Required start date (ISO 8601 format: yyyy-mm-ddThh:mm:ss)
- * @param endDate - Optional end date (ISO 8601 format: yyyy-mm-ddThh:mm:ss). Defaults to current date - 31 days
- * @returns Array of historical vehicle sale records with status 'F' (finalized)
- */
 export async function getFISalesHistoryData(
-  departmentId?: string,
-  subscriptionId?: string | null,
-  startDate?: string,
-  endDate?: string,
+  departmentId: string,
+  subscriptionId: string,
+  startDate: string,
+  endDate: string,
+  retryCount: number = 0,
 ): Promise<any> {
-  // Get access token - always get a fresh one to avoid timing issues
+  if(retryCount > 3) {
+    throw new Error("Failed to fetch historical data from CDK API after 3 retries.");
+  }
+  console.log("==============================================\n");
+  console.log("Getting historical FISales data...");
   console.log("Subscription ID:", subscriptionId);
   console.log("Department ID:", departmentId);
   console.log("Start date:", startDate);
   console.log("End date:", endDate);
-  console.log("Fetching fresh access token for history data...");
+  console.log("Fetching fresh access token for historical data...");
   let accessToken = await getFortellisAccessToken();
-  console.log(`Got access token (length: ${accessToken.length}, first 20 chars: ${accessToken.substring(0, 20)}...)`);
-
+  
   // Get subscription and department info
   // Priority: 1) Provided departmentId parameter, 2) Environment variables, 3) Fetch from API
   let deptId = departmentId;
 
-  if (!subscriptionId) {
+  if (!subscriptionId || subscriptionId === "" || subscriptionId === null) {
     throw new Error(
       "Subscription ID is required. Provide as parameter, or ensure API returns subscriptions.",
     );
   }
 
-  if (!deptId) {
+  if (!deptId || deptId === "" || deptId === null) {
     throw new Error(
       "Department ID is required. Provide as parameter, or ensure API returns departments.",
     );
   }
 
-  if (!startDate) {
+  if (!startDate || startDate === "" || startDate === null) {
     throw new Error("Start date is required for historical data retrieval.");
+  }
+
+  if (!endDate || endDate === "" || endDate === null) {
+    throw new Error("End date is required for historical data retrieval.");
   }
 
   try {
@@ -282,9 +270,7 @@ export async function getFISalesHistoryData(
     // Build query parameters
     const queryParams = new URLSearchParams();
     queryParams.append("startDate", startDate);
-    if (endDate) {
-      queryParams.append("endDate", endDate);
-    }
+    queryParams.append("endDate", endDate);
     const url = `${endpoint}?${queryParams.toString()}`;
 
     let response = await fetch(url, {
@@ -297,6 +283,12 @@ export async function getFISalesHistoryData(
         Accept: "application/json",
       },
     });
+
+    if(response.status === 401) {
+      console.log("Token expired, refreshing token...");
+      accessToken = await getFortellisAccessToken(true);
+      return await getFISalesHistoryData(departmentId, subscriptionId, startDate, endDate, retryCount + 1);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -322,14 +314,4 @@ export async function getFISalesHistoryData(
     console.error("Error fetching historical data from CDK API:", error);
     throw error;
   }
-}
-
-/**
- * Fetch inventory data from CDK/Fortellis API (backward compatibility)
- * Handles OAuth, subscription discovery, and async bulk operations
- */
-export async function getFISalesBulkData(
-  departmentId?: string,
-): Promise<any> {
-  return getFISalesData("bulk", departmentId);
 }

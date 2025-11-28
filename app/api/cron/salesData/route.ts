@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
  */
 async function fetchAndStoreBulkData(
   saleDepartmentId: string,
-  subscriptionId: string | null,
+  subscriptionId: string,
   dealerId: string,
   startDate: Date,
   endDate: Date,
@@ -50,14 +50,14 @@ async function fetchAndStoreBulkData(
  */
 async function fetchAndStoreHistoryChunks(
   saleDepartmentId: string,
-  subscriptionId: string | null,
+  subscriptionId: string,
   dealerId: string,
   startDate: Date,
   endDate: Date,
   dealerResults: { created: number; updated: number; errors: number; total: number },
 ): Promise<void> {
   let currentStart = new Date(startDate);
-  const sixMonthsInMs = 6 * 30 * 24 * 60 * 60 * 1000; // Approximate 6 months
+  const sixMonthsInMs = 6 * 30 * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000; // Approximate 6 months minus 3 hours
 
   while (currentStart < endDate) {
     const chunkEnd: Date = new Date(
@@ -65,9 +65,6 @@ async function fetchAndStoreHistoryChunks(
     );
 
     try {
-      console.log(
-        `==============================================\nFetching history chunk: ${currentStart.toISOString()} to ${chunkEnd.toISOString()}`,
-      );
       const historyData = await getFISalesHistoryData(
         saleDepartmentId,
         subscriptionId,
@@ -99,6 +96,7 @@ async function fetchAndStoreHistoryChunks(
         error?.message,
       );
       dealerResults.errors++;
+      throw error;
     }
 
     currentStart = new Date(chunkEnd.getTime() + 1); // Move to next chunk
@@ -216,7 +214,7 @@ export async function GET(request: NextRequest) {
           if(startDate <=historyEndDate) {
             await fetchAndStoreHistoryChunks(
               saleDepartment.id,
-              dealerService.subscriptionId,
+              dealerService.subscriptionId as string,
               dealerService.dealerId,
               startDate,
               historyEndDate,
@@ -226,7 +224,7 @@ export async function GET(request: NextRequest) {
 
           await fetchAndStoreBulkData(
             saleDepartment.id,
-            dealerService.subscriptionId,
+            dealerService.subscriptionId as string,
             dealerService.dealerId,
             new Date(Math.max(startDate.getTime(), historyEndDate.getTime())),
             bulkEndDate,
