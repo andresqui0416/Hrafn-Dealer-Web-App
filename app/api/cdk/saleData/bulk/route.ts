@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFISalesData } from "@/lib/cdk/cdkDriveGetFISale";
+import { PrismaClient } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+
+const prisma = new PrismaClient();
 
 /**
  * GET /api/cdk/saleData/bulk
@@ -11,11 +14,30 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const departmentId = searchParams.get("departmentId") || undefined;
-    const startDate = searchParams.get("startDate") || undefined;
-    const endDate = searchParams.get("endDate") || undefined;
+    const departmentId = searchParams.get("departmentId");
+    const startDate = searchParams.get("startDate") as string || (new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString());
+    const endDate = searchParams.get("endDate") as string || (new Date(Date.now()).toISOString());
 
-    const data = await getFISalesData("bulk", departmentId, startDate, endDate);
+    const dealerDepartment = await prisma.dealerDepartment.findUnique({
+      where: { id: departmentId as string },
+      include: {
+        service: {
+          select: {
+            subscriptionId: true,
+          },
+        },
+      },
+    });
+
+    if (!dealerDepartment) {
+      return NextResponse.json({ error: "Dealer department not found" }, { status: 404 });
+    }
+
+    if (!dealerDepartment.service.subscriptionId) {
+      return NextResponse.json({ error: "Dealer service subscription ID not found" }, { status: 404 });
+    } 
+
+    const data = await getFISalesData("bulk", departmentId as string, dealerDepartment.service.subscriptionId as string, startDate as string, endDate as string);
 
     return NextResponse.json({
       success: true,

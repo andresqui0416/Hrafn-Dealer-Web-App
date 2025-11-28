@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFISalesHistoryData } from "@/lib/cdk/cdkDriveGetFISale";
+import { PrismaClient } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+
+const prisma = new PrismaClient();
 
 /**
  * GET /api/cdk/saleData/history
@@ -17,21 +20,50 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const departmentId = searchParams.get("departmentId") || undefined;
-    const startDate = searchParams.get("startDate") || undefined;
-    const endDate = searchParams.get("endDate") || undefined;
+    const departmentId = searchParams.get("departmentId");
+    const startDate = searchParams.get("startDate") as string;
+    const endDate = searchParams.get("endDate") as string;
 
-    if (!startDate) {
+    if (!startDate || !endDate) {
       return NextResponse.json(
         {
           success: false,
-          error: "startDate is required. Format: yyyy-mm-ddThh:mm:ss (e.g., 2023-01-01T10:15:30)",
+          error: "startDate and endDate are required. Format: yyyy-mm-ddThh:mm:ss (e.g., 2023-01-01T10:15:30)",
         },
         { status: 400 }
       );
     }
 
-    const data = await getFISalesHistoryData(departmentId, startDate, endDate);
+    if (startDate >= endDate) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "startDate must be before endDate",
+        },
+        { status: 400 }
+      );
+    }
+
+    const dealerDepartment = await prisma.dealerDepartment.findUnique({
+      where: { id: departmentId as string },
+      include: {
+        service: {
+          select: {
+            subscriptionId: true,
+          },
+        },
+      },
+    });
+
+    if (!dealerDepartment) {
+      return NextResponse.json({ error: "Dealer department not found" }, { status: 404 });
+    }
+
+    if (!dealerDepartment.service.subscriptionId) {
+      return NextResponse.json({ error: "Dealer service subscription ID not found" }, { status: 404 });
+    }
+
+    const data = await getFISalesHistoryData(departmentId as string, dealerDepartment.service.subscriptionId as string, startDate as string, endDate as string);
 
     return NextResponse.json({
       success: true,
