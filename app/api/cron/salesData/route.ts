@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getFISalesData, getFISalesHistoryData } from "@/lib/cdk/cdkDriveGetFISale";
 import { storeSalesData } from "@/lib/cdk/storeSalesData";
-import { clearTokenCache, getFortellisAccessToken } from "@/lib/cdk";
 
 export const dynamic = "force-dynamic";
 
@@ -108,13 +107,6 @@ async function fetchAndStoreHistoryChunks(
 
 export async function GET(request: NextRequest) {
   try {
-    // Force token refresh at the start of each cron job run
-    // In serverless environments, the in-memory cache might not persist between invocations
-    console.log("Clearing token cache and refreshing token...");
-    clearTokenCache();
-    await getFortellisAccessToken(true);
-    console.log("Token refreshed successfully");
-    
     console.log("Fetching dealer services...");
     const dealerServices = await prisma.dealerService.findMany({
       where: {

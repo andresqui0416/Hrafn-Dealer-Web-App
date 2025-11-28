@@ -5,13 +5,6 @@ let tokenCache: {
 } | null = null;
 
 /**
- * Clear the token cache (useful when token expires during operations)
- */
-export function clearTokenCache(): void {
-  tokenCache = null;
-}
-
-/**
  * Get Fortellis OAuth2 access token
  * Uses client credentials flow and caches the token to avoid unnecessary requests
  * Refreshes proactively if token expires within 5 minutes
@@ -26,11 +19,6 @@ export async function getFortellisAccessToken(forceRefresh: boolean = false): Pr
     return tokenCache.accessToken;
   }
   
-  // If token exists but expires soon, clear it to force refresh
-  if (tokenCache && tokenCache.expiresAt <= now + FIVE_MINUTES_MS) {
-    console.log("Token expires soon, refreshing proactively...");
-    tokenCache = null;
-  }
 
   const clientId = process.env.FORTELLIS_CLIENT_ID;
   const clientSecret = process.env.FORTELLIS_CLIENT_SECRET;
@@ -71,18 +59,26 @@ export async function getFortellisAccessToken(forceRefresh: boolean = false): Pr
       throw new Error("No access_token in Fortellis response");
     }
 
+    // Trim the token to ensure no whitespace issues
+    const trimmedToken = data.access_token.trim();
+    if (!trimmedToken) {
+      throw new Error("Access token is empty after trimming");
+    }
+
     // Cache the token (expires_in is typically in seconds, convert to milliseconds)
     // Subtract 60 seconds as a buffer to account for clock skew
     const expiresIn = (data.expires_in || 3600) * 1000 - 60000;
-    tokenCache = {
-      accessToken: data.access_token,
+    const tokenCacheData = {
+      accessToken: trimmedToken,
       expiresAt: Date.now() + expiresIn,
-    };
+    }
+    tokenCache = {...tokenCacheData};
 
+    const tokenPreview = trimmedToken.substring(0, 20) + "...";
     console.log(
-      `Successfully obtained Fortellis access token (type: ${data.token_type || "Bearer"}, scope: ${data.scope || "unknown"}, expires in: ${data.expires_in || 3600}s)`,
+      `Successfully obtained Fortellis access token (preview: ${tokenPreview})`,
     );
-    return data.access_token;
+    return trimmedToken;
   } catch (error) {
     console.error("Error getting Fortellis access token:", error);
     throw error;
