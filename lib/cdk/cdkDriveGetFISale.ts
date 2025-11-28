@@ -1,7 +1,6 @@
 import {
   generateUniqueRequestId,
   getFortellisAccessToken,
-  clearTokenCache,
 } from "./index";
 /**
  * Get query result from CDK API
@@ -30,7 +29,6 @@ async function getQueryResult(
     // Handle 401 Unauthorized - token expired, refresh and retry once
     if (resultResponse.status === 401 && retryOn401) {
       console.log("Token expired during result fetch, refreshing token...");
-      clearTokenCache();
       const newAccessToken = await getFortellisAccessToken(true);
       // Retry with new token (only once to avoid infinite loops)
       return getQueryResult(resultUrl, newAccessToken, subscriptionId, false);
@@ -104,7 +102,6 @@ export async function pollOperationStatus(
       // Handle 401 Unauthorized - token expired, refresh and continue
       if (statusResponse.status === 401) {
         console.log("Token expired during status check, refreshing token...");
-        clearTokenCache();
         currentAccessToken = await getFortellisAccessToken(true);
         // Continue to next iteration with new token
         continue;
@@ -155,14 +152,16 @@ export async function getFISalesData(
   subscriptionId?: string | null,
   startDate?: string,
   endDate?: string,
-): Promise<any[]> {
-  // Get access token
-  let accessToken = await getFortellisAccessToken();
+): Promise<any> {
+  // Get access token - always get a fresh one to avoid timing issues
   console.log("Getting FISales data...");
   console.log("Subscription ID:", subscriptionId);
   console.log("Department ID:", departmentId);
   console.log("Start date:", startDate);
   console.log("End date:", endDate);
+  console.log("Fetching fresh access token...");
+  let accessToken = await getFortellisAccessToken();
+  console.log(`Got access token (length: ${accessToken.length}, first 20 chars: ${accessToken.substring(0, 20)}...)`);
 
   // Get subscription and department info
   // Priority: 1) Provided departmentId parameter, 2) Environment variables, 3) Fetch from API
@@ -206,30 +205,6 @@ export async function getFISalesData(
       },
     });
 
-    // Handle 401 Unauthorized - token expired, refresh and retry once
-    if (response.status === 401) {
-      console.log("Token expired during initial request, refreshing token...");
-      clearTokenCache();
-      accessToken = await getFortellisAccessToken(true);
-      console.log("Retrying request with refreshed token...");
-      response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Subscription-Id": subscriptionId,
-          "Department-Id": deptId,
-          "Request-Id": generateUniqueRequestId(),
-          Accept: "application/json",
-        },
-      });
-      
-      // If still 401 after refresh, something is wrong with credentials
-      if (response.status === 401) {
-        const errorText = await response.text();
-        throw new Error(`CDK API returned 401 after token refresh: ${errorText}`);
-      }
-    }
-
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`CDK API returned ${response.status}: ${response.statusText} - ${errorText}`);
@@ -249,15 +224,6 @@ export async function getFISalesData(
 
       console.log(`Polling operation status at: ${statusUrl}`);
       return await pollOperationStatus(statusUrl, accessToken, subscriptionId, checkAfterSeconds);
-    } else {
-      // Direct response (shouldn't happen based on the example, but handle it)
-      return Array.isArray(operationResponse)
-        ? operationResponse
-        : operationResponse.items ||
-            operationResponse.inventory ||
-            operationResponse.data ||
-            operationResponse.vehicles ||
-            [];
     }
   } catch (error) {
     console.error("Error fetching from CDK API:", error);
@@ -278,13 +244,15 @@ export async function getFISalesHistoryData(
   subscriptionId?: string | null,
   startDate?: string,
   endDate?: string,
-): Promise<any[]> {
-  // Get access token
-  let accessToken = await getFortellisAccessToken();
+): Promise<any> {
+  // Get access token - always get a fresh one to avoid timing issues
   console.log("Subscription ID:", subscriptionId);
   console.log("Department ID:", departmentId);
   console.log("Start date:", startDate);
   console.log("End date:", endDate);
+  console.log("Fetching fresh access token for history data...");
+  let accessToken = await getFortellisAccessToken();
+  console.log(`Got access token (length: ${accessToken.length}, first 20 chars: ${accessToken.substring(0, 20)}...)`);
 
   // Get subscription and department info
   // Priority: 1) Provided departmentId parameter, 2) Environment variables, 3) Fetch from API
@@ -330,30 +298,6 @@ export async function getFISalesHistoryData(
       },
     });
 
-    // Handle 401 Unauthorized - token expired, refresh and retry once
-    if (response.status === 401) {
-      console.log("Token expired during history request, refreshing token...");
-      clearTokenCache();
-      accessToken = await getFortellisAccessToken(true);
-      console.log("Retrying history request with refreshed token...");
-      response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Subscription-Id": subscriptionId,
-          "Department-Id": deptId,
-          "Request-Id": generateUniqueRequestId(),
-          Accept: "application/json",
-        },
-      });
-      
-      // If still 401 after refresh, something is wrong with credentials
-      if (response.status === 401) {
-        const errorText = await response.text();
-        throw new Error(`CDK API returned 401 after token refresh: ${errorText}`);
-      }
-    }
-
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`CDK API returned ${response.status}: ${response.statusText} - ${errorText}`);
@@ -373,15 +317,6 @@ export async function getFISalesHistoryData(
 
       console.log(`Polling operation status at: ${statusUrl}`);
       return await pollOperationStatus(statusUrl, accessToken, subscriptionId, checkAfterSeconds);
-    } else {
-      // Direct response (shouldn't happen based on the example, but handle it)
-      return Array.isArray(operationResponse)
-        ? operationResponse
-        : operationResponse.items ||
-            operationResponse.inventory ||
-            operationResponse.data ||
-            operationResponse.vehicles ||
-            [];
     }
   } catch (error) {
     console.error("Error fetching historical data from CDK API:", error);
@@ -395,6 +330,6 @@ export async function getFISalesHistoryData(
  */
 export async function getFISalesBulkData(
   departmentId?: string,
-): Promise<any[]> {
+): Promise<any> {
   return getFISalesData("bulk", departmentId);
 }
