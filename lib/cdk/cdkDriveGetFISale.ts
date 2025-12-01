@@ -192,6 +192,7 @@ export async function getFISalesData(
     if(response.status === 401) {
       console.error(await response.text());
       console.log("Token expired, refreshing token...");
+      await new Promise(resolve => setTimeout(resolve, 1000));
       accessToken = await getFortellisAccessToken(true);
       return await getFISalesData(endpointPath, departmentId, subscriptionId, startDate, endDate, retryCount + 1);
     }
@@ -286,7 +287,9 @@ export async function getFISalesHistoryData(
     });
 
     if(response.status === 401) {
+      console.error(await response.text());
       console.log("Token expired, refreshing token...");
+      await new Promise(resolve => setTimeout(resolve, 1000));
       accessToken = await getFortellisAccessToken(true);
       return await getFISalesHistoryData(departmentId, subscriptionId, startDate, endDate, retryCount + 1);
     }
