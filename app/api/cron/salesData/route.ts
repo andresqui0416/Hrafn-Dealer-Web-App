@@ -4,6 +4,7 @@ import { getFISalesData, getFISalesHistoryData } from "@/lib/cdk/cdkDriveGetFISa
 import { storeSalesData } from "@/lib/cdk/storeSalesData";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const prisma = new PrismaClient();
 
