@@ -42,6 +42,7 @@ async function fetchAndStoreBulkData(
   } catch (error: any) {
     console.error(`Error fetching recent data from bulk API:`, error?.message);
     dealerResults.errors++;
+    throw error;
   }
 }
 
