@@ -772,3 +772,13 @@ model SaleVehicle {
   @@index([make, model], map: "idx_sale_veh_make_model")
   @@map("SaleVehicle")
 }
+
+model CrmApiAccessToken {
+  id          String   @id
+  accessToken String   @db.Text
+  expiresAt   DateTime @db.Timestamptz(6)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@map("CrmApiAccessToken")
+}

@@ -1,25 +1,46 @@
-// In-memory token cache
-let tokenCache: {
-  accessToken: string;
-  expiresAt: number;
-} | null = null;
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+const FORTELLIS_TOKEN_ID = "fortellis-token";
+const FIVE_MINUTES_MS = 5 * 60 * 1000;
 
 /**
  * Get Fortellis OAuth2 access token
- * Uses client credentials flow and caches the token to avoid unnecessary requests
+ * Uses client credentials flow and stores the token in database to persist across serverless invocations
  * Refreshes proactively if token expires within 5 minutes
  */
 export async function getFortellisAccessToken(forceRefresh: boolean = false): Promise<string> {
-  const now = Date.now();
-  const FIVE_MINUTES_MS = 5 * 60 * 1000;
-  
-  // Check if we have a valid cached token (unless forcing refresh)
-  // Also refresh proactively if token expires within 5 minutes
-  // if (!forceRefresh && tokenCache && tokenCache.expiresAt > now + FIVE_MINUTES_MS) {
-  //   return tokenCache.accessToken;
-  // }
-  
+  const now = new Date();
+  const fiveMinutesFromNow = new Date(now.getTime() + FIVE_MINUTES_MS);
 
+  // Check if we have a valid token in database (unless forcing refresh)
+  if (!forceRefresh) {
+    try {
+      const tokenRecord = await prisma.crmApiAccessToken.findUnique({
+        where: { id: FORTELLIS_TOKEN_ID },
+      });
+
+      if (tokenRecord && tokenRecord.expiresAt > fiveMinutesFromNow) {
+        console.log(
+          `Using cached Fortellis token (expires at: ${tokenRecord.expiresAt.toISOString()})`,
+        );
+        return tokenRecord.accessToken;
+      }
+
+      // Token exists but expires soon or is expired
+      if (tokenRecord && tokenRecord.expiresAt <= fiveMinutesFromNow) {
+        console.log(
+          `Cached token expires soon or expired (expires at: ${tokenRecord.expiresAt.toISOString()}), refreshing...`,
+        );
+      }
+    } catch (error) {
+      console.error("Error reading token from database:", error);
+      // Continue to fetch new token
+    }
+  }
+
+  // Fetch new token from Fortellis
   const clientId = process.env.FORTELLIS_CLIENT_ID;
   const clientSecret = process.env.FORTELLIS_CLIENT_SECRET;
   const scope = process.env.FORTELLIS_SCOPE || "anonymous";
@@ -66,22 +87,50 @@ export async function getFortellisAccessToken(forceRefresh: boolean = false): Pr
       throw new Error("Access token is empty after trimming");
     }
 
-    // Cache the token (expires_in is typically in seconds, convert to milliseconds)
-    // Subtract 60 seconds as a buffer to account for clock skew
-    const expiresIn = (data.expires_in || 3600) * 1000 - 60000;
-    const tokenCacheData = {
-      accessToken: trimmedToken,
-      expiresAt: Date.now() + expiresIn,
-    }
-    tokenCache = {...tokenCacheData};
+    const expiresInSeconds = data.expires_in || 3600;
+    const expiresInMs = expiresInSeconds * 1000 - 60000; // Subtract 60 seconds buffer
+    const expiresAt = new Date(now.getTime() + expiresInMs);
+
+    // Store token in database (upsert to handle both create and update)
+    await prisma.crmApiAccessToken.upsert({
+      where: { id: FORTELLIS_TOKEN_ID },
+      update: {
+        accessToken: trimmedToken,
+        expiresAt: expiresAt,
+      },
+      create: {
+        id: FORTELLIS_TOKEN_ID,
+        accessToken: trimmedToken,
+        expiresAt: expiresAt,
+      },
+    });
 
     console.log(
-      `Successfully obtained Fortellis access token (preview: \n\n${trimmedToken}\n\n)`,
+      `Successfully obtained and stored Fortellis access token (expires at: ${expiresAt.toISOString()})`,
     );
     return trimmedToken;
   } catch (error) {
     console.error("Error getting Fortellis access token:", error);
     throw error;
+  }
+}
+
+/**
+ * Clear the Fortellis token from database
+ * Useful when token is known to be invalid
+ */
+export async function clearTokenCache(): Promise<void> {
+  try {
+    await prisma.crmApiAccessToken.delete({
+      where: { id: FORTELLIS_TOKEN_ID },
+    });
+    console.log("Fortellis token cleared from database");
+  } catch (error) {
+    // Token might not exist, which is fine
+    if ((error as any)?.code !== "P2025") {
+      // P2025 is "Record not found" error
+      console.error("Error clearing token from database:", error);
+    }
   }
 }
 
