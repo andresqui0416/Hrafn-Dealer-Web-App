@@ -40,6 +40,7 @@ export async function getFortellisAccessToken(forceRefresh: boolean = false): Pr
   try {
     const response = await fetch("https://identity.fortellis.io/oauth2/v1/token", {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
