@@ -15,9 +15,9 @@ export async function getFortellisAccessToken(forceRefresh: boolean = false): Pr
   
   // Check if we have a valid cached token (unless forcing refresh)
   // Also refresh proactively if token expires within 5 minutes
-  if (!forceRefresh && tokenCache && tokenCache.expiresAt > now + FIVE_MINUTES_MS) {
-    return tokenCache.accessToken;
-  }
+  // if (!forceRefresh && tokenCache && tokenCache.expiresAt > now + FIVE_MINUTES_MS) {
+  //   return tokenCache.accessToken;
+  // }
   
 
   const clientId = process.env.FORTELLIS_CLIENT_ID;
