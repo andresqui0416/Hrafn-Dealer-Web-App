@@ -137,7 +137,7 @@ export async function getFISalesData(
   endDate: string,
   retryCount: number = 0,
 ): Promise<any> {
-  if(retryCount > 3) {
+  if(retryCount >= 3) {
     throw new Error("Failed to fetch FI Sales data from CDK API after 3 retries.");
   }
 
@@ -190,6 +190,7 @@ export async function getFISalesData(
     });
 
     if(response.status === 401) {
+      console.error(await response.text());
       console.log("Token expired, refreshing token...");
       accessToken = await getFortellisAccessToken(true);
       return await getFISalesData(endpointPath, departmentId, subscriptionId, startDate, endDate, retryCount + 1);
