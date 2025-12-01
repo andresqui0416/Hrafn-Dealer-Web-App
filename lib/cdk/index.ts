@@ -74,9 +74,8 @@ export async function getFortellisAccessToken(forceRefresh: boolean = false): Pr
     }
     tokenCache = {...tokenCacheData};
 
-    const tokenPreview = trimmedToken.substring(0, 20) + "...";
     console.log(
-      `Successfully obtained Fortellis access token (preview: ${tokenPreview})`,
+      `Successfully obtained Fortellis access token (preview: \n\n${trimmedToken}\n\n)`,
     );
     return trimmedToken;
   } catch (error) {
