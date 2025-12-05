@@ -440,7 +440,7 @@ export default function ServicesPage() {
           </DialogHeader>
 
           {selectedService && (
-            <div className="space-y-6 py-4">
+            <div className="space-y-6 pt-4">
               {/* Service Information */}
               <div className="space-y-4">
                 <div>
