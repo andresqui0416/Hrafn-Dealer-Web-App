@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,6 @@ import {
   faX,
   faPlus,
   faEnvelope,
-  faEnvelopeOpen,
   faClock,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
@@ -49,7 +48,6 @@ type Message = {
 };
 
 export default function InboxPage() {
-  const { user } = useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
@@ -278,7 +276,7 @@ export default function InboxPage() {
               className="cursor-pointer hover:bg-white/5 transition-colors duration-200"
               onClick={() => handleOpenChat(chat)}
             >
-              <CardContent className="p-4 pt-4">
+              <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -306,8 +304,8 @@ export default function InboxPage() {
 
       {/* Create Chat Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="pb-0">
+          <DialogHeader className="px-0">
             <DialogTitle>Create New Chat</DialogTitle>
             <DialogDescription>
               Start a new conversation with support. Provide a subject and your initial message.
@@ -346,7 +344,7 @@ export default function InboxPage() {
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="px-0">
             <Button
               variant="outline"
               onClick={() => setShowCreateDialog(false)}
