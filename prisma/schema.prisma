@@ -154,6 +154,36 @@ model InventoryListing {
   @@map("Inventory")
 }
 
+model Offers {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  brand          String    // e.g., "Audi"
+  year           Int?
+  make           String?   // Vehicle make/model info
+  model          String?
+  modelCode      String?   @map("model_code")
+  trim           String?
+  offerType      String    @map("offer_type") // "lease", "financing", "cash", "combo", etc.
+  offerAmount    Decimal?  @db.Decimal(12, 2) @map("offer_amount")
+  apr            Decimal?  @db.Decimal(8, 4)
+  termMonths     Int?      @map("term_months")
+  cashBack       Decimal?  @db.Decimal(12, 2) @map("cash_back")
+  dueAtSigning   Decimal?  @db.Decimal(12, 2) @map("due_at_signing")
+  monthlyPayment Decimal?  @db.Decimal(12, 2) @map("monthly_payment")
+  milesPerYear   Int?      @map("miles_per_year")
+  expirationDate DateTime? @db.Date @map("expiration_date")
+  terms          String?   @db.Text // Terms of offer as text
+  finePrint      String?   @db.Text @map("fine_print")
+  scrapedAt      DateTime  @default(now()) @map("scraped_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([brand, year, model], map: "idx_offers_brand_year_model")
+  @@index([offerType], map: "idx_offers_offer_type")
+  @@index([expirationDate], map: "idx_offers_expiration")
+  @@index([scrapedAt], map: "idx_offers_scraped_at")
+  @@map("Offers")
+}
+
 model UserDealerRole {
   id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   userId    String   @db.Uuid
