@@ -571,7 +571,7 @@ export default function OffersPage() {
               <div className="border-t border-white/10 pt-4">
                 <h3 className="text-lg font-semibold mb-4">Financial Details</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  {selectedOffer.offerType !== "financing" && selectedOffer.cashBack && (
+                  {selectedOffer.cashBack && (
                     <div>
                       <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                         <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
