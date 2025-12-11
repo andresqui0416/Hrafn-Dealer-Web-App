@@ -292,6 +292,7 @@ export default function OffersPage() {
                 <th className="px-4 py-3 text-left text-sm font-semibold">Model</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Type</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Amount</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Cash Back</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">APR</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Term</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Expires</th>
@@ -315,19 +316,18 @@ export default function OffersPage() {
                     <td className="px-4 py-3 text-sm">{getOfferTypeBadge(offer.offerType)}</td>
                     <td className="px-4 py-3 text-sm">
                       {offer.offerType === "lease" ? (
-                        // For lease, show monthly payment
-                        offer.monthlyPayment ? formatCurrency(offer.monthlyPayment) : offer.cashBack ? formatCurrency(offer.cashBack) : "-"
+                        // For lease, show monthly payment only
+                        offer.monthlyPayment ? formatCurrency(offer.monthlyPayment) : "-"
                       ) : offer.offerType === "financing" ? (
                         // For financing, show "-"
                         "-"
                       ) : (
-                        // For cash offers, show cash back or offer amount
-                        offer.cashBack
-                          ? formatCurrency(offer.cashBack)
-                          : offer.offerAmount
-                            ? formatCurrency(offer.offerAmount)
-                            : "-"
+                        // For cash offers, show offer amount only
+                        offer.offerAmount ? formatCurrency(offer.offerAmount) : "-"
                       )}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {offer.cashBack ? formatCurrency(offer.cashBack) : "-"}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {offer.apr ? `${(offer.apr * 100).toFixed(2)}%` : "-"}
@@ -533,25 +533,39 @@ export default function OffersPage() {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Vehicle</label>
                   <p className="text-base font-medium mt-1">
-                    {selectedOffer.year} {selectedOffer.brand} {selectedOffer.model || ""}
+                    {selectedOffer.year && `${selectedOffer.year} `}
+                    {selectedOffer.brand} {selectedOffer.model || ""}
                     {selectedOffer.trim && ` ${selectedOffer.trim}`}
                   </p>
-                  {selectedOffer.modelCode && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Model Code: {selectedOffer.modelCode}
-                    </p>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
+                  {selectedOffer.make && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Make</label>
+                      <p className="text-sm mt-1">{selectedOffer.make}</p>
+                    </div>
+                  )}
+                  {selectedOffer.modelCode && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Model Code</label>
+                      <p className="text-sm mt-1">{selectedOffer.modelCode}</p>
+                    </div>
+                  )}
+                  {selectedOffer.trim && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Trim</label>
+                      <p className="text-sm mt-1">{selectedOffer.trim}</p>
+                    </div>
+                  )}
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Offer Type</label>
                     <div className="mt-1">{getOfferTypeBadge(selectedOffer.offerType)}</div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Expiration</label>
-                    <p className="text-sm mt-1">
-                      {selectedOffer.expirationDate ? (
+                  {selectedOffer.expirationDate && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Expiration</label>
+                      <p className="text-sm mt-1">
                         <span
                           className={cn(
                             isExpired(selectedOffer.expirationDate) && "text-red-400 line-through"
@@ -559,72 +573,78 @@ export default function OffersPage() {
                         >
                           {formatDate(selectedOffer.expirationDate)}
                         </span>
-                      ) : (
-                        "No expiration"
-                      )}
-                    </p>
-                  </div>
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Financial Details */}
-              <div className="border-t border-white/10 pt-4">
-                <h3 className="text-lg font-semibold mb-4">Financial Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {selectedOffer.cashBack && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
-                        Cash Back
-                      </label>
-                      <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.cashBack)}</p>
-                    </div>
-                  )}
-                  {selectedOffer.offerType !== "financing" && selectedOffer.offerAmount && !selectedOffer.cashBack && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
-                        Offer Amount
-                      </label>
-                      <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.offerAmount)}</p>
-                    </div>
-                  )}
-                  {selectedOffer.apr && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">APR</label>
-                      <p className="text-lg font-semibold mt-1">
-                        {(selectedOffer.apr * 100).toFixed(2)}%
-                      </p>
-                    </div>
-                  )}
-                  {selectedOffer.termMonths && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Term</label>
-                      <p className="text-lg font-semibold mt-1">{selectedOffer.termMonths} months</p>
-                    </div>
-                  )}
-                  {selectedOffer.dueAtSigning && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Due at Signing</label>
-                      <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.dueAtSigning)}</p>
-                    </div>
-                  )}
-                  {selectedOffer.offerType !== "financing" && selectedOffer.monthlyPayment && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Monthly Payment</label>
-                      <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.monthlyPayment)}</p>
-                    </div>
-                  )}
-                  {selectedOffer.milesPerYear && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Miles/Year</label>
-                      <p className="text-lg font-semibold mt-1">
-                        {selectedOffer.milesPerYear.toLocaleString()}
-                      </p>
-                    </div>
-                  )}
+              {(selectedOffer.cashBack !== null ||
+                selectedOffer.offerAmount !== null ||
+                selectedOffer.apr !== null ||
+                selectedOffer.termMonths !== null ||
+                selectedOffer.dueAtSigning !== null ||
+                selectedOffer.monthlyPayment !== null ||
+                selectedOffer.milesPerYear !== null) && (
+                <div className="border-t border-white/10 pt-4">
+                  <h3 className="text-lg font-semibold mb-4">Financial Details</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectedOffer.cashBack !== null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
+                          Cash Back
+                        </label>
+                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.cashBack)}</p>
+                      </div>
+                    )}
+                    {selectedOffer.offerAmount !== null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
+                          Offer Amount
+                        </label>
+                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.offerAmount)}</p>
+                      </div>
+                    )}
+                    {selectedOffer.apr !== null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">APR</label>
+                        <p className="text-lg font-semibold mt-1">
+                          {(selectedOffer.apr * 100).toFixed(2)}%
+                        </p>
+                      </div>
+                    )}
+                    {selectedOffer.termMonths !== null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Term</label>
+                        <p className="text-lg font-semibold mt-1">{selectedOffer.termMonths} months</p>
+                      </div>
+                    )}
+                    {selectedOffer.dueAtSigning !== null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Due at Signing</label>
+                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.dueAtSigning)}</p>
+                      </div>
+                    )}
+                    {selectedOffer.monthlyPayment !== null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Monthly Payment</label>
+                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.monthlyPayment)}</p>
+                      </div>
+                    )}
+                    {selectedOffer.milesPerYear !== null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Miles/Year</label>
+                        <p className="text-lg font-semibold mt-1">
+                          {selectedOffer.milesPerYear.toLocaleString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Terms and Conditions */}
               {(selectedOffer.terms || selectedOffer.finePrint) && (
@@ -633,13 +653,17 @@ export default function OffersPage() {
                   {selectedOffer.terms && (
                     <div className="mb-4">
                       <label className="text-sm font-medium text-muted-foreground">Description</label>
-                      <div className="text-sm mt-1 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: selectedOffer.terms }}></div>
+                      <div className="text-sm mt-1 whitespace-pre-wrap">
+                        <div dangerouslySetInnerHTML={{ __html: selectedOffer.terms }}></div>
+                      </div>
                     </div>
                   )}
                   {selectedOffer.finePrint && (
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Fine Print</label>
-                      <div className="text-sm mt-1 whitespace-pre-wrap text-muted-foreground" dangerouslySetInnerHTML={{ __html: selectedOffer.finePrint }}></div>
+                      <div className="text-sm mt-1 whitespace-pre-wrap text-muted-foreground">
+                        <div dangerouslySetInnerHTML={{ __html: selectedOffer.finePrint }}></div>
+                      </div>
                     </div>
                   )}
                 </div>
