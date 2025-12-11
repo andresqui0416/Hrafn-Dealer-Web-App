@@ -368,10 +368,23 @@ export async function scrapeOffersFromLucid() {
           let offerAmount: number | null = null;
           let terms: string | null = null;
 
+          // Helper function to extract inner text from HTML, removing superscripts but keeping structure
+          function extractInnerText(html: string): string {
+            return html
+              .replace(/<sup[^>]*>[\s\S]*?<\/sup>/gi, "") // Remove superscript disclaimers
+              .replace(/<br\s*\/?>/gi, " ") // Replace <br> with space
+              .replace(/<[^>]+>/g, "") // Remove all HTML tags
+              .replace(/\s+/g, " ") // Normalize whitespace
+              .trim();
+          }
+
+          // Collect all spec parts for building the combined description
+          const specParts: string[] = [];
+
           for (const specHtml of specContainers) {
             // Extract eyebrow (label) - look for p with Spec_eyebrow class
             const eyebrowMatch = specHtml.match(/<p[^>]*class="[^"]*Spec_eyebrow__[^"]*"[^>]*>([^<]+)<\/p>/i);
-            const eyebrow = eyebrowMatch ? eyebrowMatch[1].trim().toLowerCase() : "";
+            const eyebrow = eyebrowMatch ? eyebrowMatch[1].trim() : "";
 
             // Extract headline (value) - look for h2 with Typography_headline class
             // Handle superscript tags and other nested elements
@@ -397,39 +410,51 @@ export async function scrapeOffersFromLucid() {
             for (const pattern of descPatterns) {
               const descMatch = specHtml.match(pattern);
               if (descMatch && descMatch[1]) {
-                // Remove all HTML tags and replace with spaces, then clean up whitespace
-                description = descMatch[1]
-                  .replace(/<br\s*\/?>/gi, " ")
-                  .replace(/<sup[^>]*>[\s\S]*?<\/sup>/gi, "") // Remove superscript disclaimers
-                  .replace(/<[^>]+>/g, " ")
-                  .replace(/\s+/g, " ")
-                  .trim();
+                // Extract inner text, keeping structure but removing HTML
+                description = extractInnerText(descMatch[1]);
                 break; // Use first match
               }
             }
 
-            // Parse based on eyebrow and offer type
-            if (eyebrow === "from" && offerType === "lease") {
+            // Build the combined text for this spec container
+            let specText = "";
+            if (eyebrow && headline) {
+              specText = `${eyebrow} ${headline}`;
+            } else if (headline) {
+              specText = headline;
+            }
+            
+            if (description) {
+              if (specText) {
+                specText = `${specText} ${description}`;
+              } else {
+                specText = description;
+              }
+            }
+
+            // Add to spec parts if we have text
+            if (specText) {
+              specParts.push(specText);
+            }
+
+            // Parse based on eyebrow and offer type (use lowercase for comparison)
+            const eyebrowLower = eyebrow.toLowerCase();
+            if (eyebrowLower === "from" && offerType === "lease") {
               // Monthly payment for lease
               monthlyPayment = parseNumber(headline);
               termMonths = extractTermMonths(description) || termMonths;
               dueAtSigning = extractDueAtSigning(description) || dueAtSigning;
-              if (description) {
-                terms = (terms ? terms + " " : "") + description;
-              }
-            } else if (eyebrow === "apr" && offerType === "financing") {
+            } else if (eyebrowLower === "apr" && offerType === "financing") {
               // APR for finance
               apr = parseNumber(headline);
               termMonths = extractTermMonths(description) || termMonths;
-              if (description) {
-                terms = (terms ? terms + " " : "") + description;
-              }
-            } else if ((eyebrow === "from" || eyebrow === "") && offerType === "cash") {
+            } else if ((eyebrowLower === "from" || eyebrowLower === "") && offerType === "cash") {
               // Cash price - handle both "from" and empty eyebrow (might be the main price)
               const price = parseNumber(headline);
               if (price && !offerAmount) {
                 offerAmount = price;
               }
+              // Check description for credits (e.g., "Plus $12,500 Air Credit")
               if (description) {
                 const creditPatterns = [
                   /(?:plus|including)\s+\$([\d,]+)/i,  // "Plus $12,500" or "Including $12,500"
@@ -447,17 +472,17 @@ export async function scrapeOffersFromLucid() {
                     }
                   }
                 }
-                terms = (terms ? terms + " " : "") + description;
               }
-            } else if (eyebrow === "including" || eyebrow === "plus") {
-              // Discounts or credits
+            } else if (eyebrowLower === "including" || eyebrowLower === "plus") {
+              // Discounts or credits - this applies to ALL offer types (lease, finance, cash)
               const amount = parseNumber(headline);
               if (amount) {
-                if (offerType === "lease" || offerType === "cash" || offerType === "financing") {
+                // Set cashback for all offer types when we see "Including" or "Plus"
+                // For financing offers, "Plus" indicates cashback (e.g., "Plus $7,500 Air Credits")
+                // For lease offers, "Including" indicates total discounts (e.g., "Including $16,500 in total discounts")
+                // Always set cashback if we have an amount, but prefer "Plus" for financing if both exist
+                if (eyebrowLower === "plus" || !cashBack) {
                   cashBack = amount;
-                }
-                if (description) {
-                  terms = (terms ? terms + " " : "") + `${headline} ${description}`;
                 }
               }
             } else if (offerType === "cash" && headline) {
@@ -484,21 +509,35 @@ export async function scrapeOffersFromLucid() {
                     }
                   }
                 }
-                terms = (terms ? terms + " " : "") + description;
               }
             }
           }
 
+          // Build the combined description from all spec parts
+          // Format: Join all parts with double newline, or single space for cash offers
+          if (specParts.length > 0) {
+            if (offerType === "cash") {
+              // For cash offers, combine into a single line: "From $79,900 Plus $12,500 Air Credit discount for Cash Purchases"
+              terms = specParts.join(" ");
+            } else {
+              // For lease and finance, use double newline: "From $599/mo for 36 months...\n\nIncluding $16,500..."
+              terms = specParts.join("\n\n");
+            }
+          }
+
           // Only create offer if we have meaningful data
-          // Log what we found for debugging (especially for cash offers)
-          if (offerType === "cash") {
-            console.log(`Cash offer for ${model} ${year}:`, {
+          // Log what we found for debugging (especially for cash and financing offers)
+          if (offerType === "cash" || offerType === "financing") {
+            const logData: any = {
               offerAmount,
               cashBack,
               specContainersCount: specContainers.length,
               hasOfferAmount: !!offerAmount,
               hasCashBack: !!cashBack,
-            });
+            };
+            if (offerType === "financing") {
+              logData.apr = apr;
+            }
           }
           
           const hasValidData =
