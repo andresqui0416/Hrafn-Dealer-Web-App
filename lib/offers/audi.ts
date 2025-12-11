@@ -139,43 +139,43 @@ export async function scrapeOffersFromAudi() {
       const BATCH_SIZE = 10; // Process 10 offers at a time
       for (let i = 0; i < offers.length; i += BATCH_SIZE) {
         const batch = offers.slice(i, i + BATCH_SIZE);
-        await prisma.$transaction(
-          async (tx) => {
-            for (const offer of batch) {
-              try {
-                // Create new offer (public data, no dealer ownership)
-                await tx.offers.create({
-                  data: {
-                    brand: offer.brand,
-                    year: offer.year,
-                    make: offer.make,
-                    model: offer.model,
-                    modelCode: offer.modelCode,
-                    trim: offer.trim,
-                    offerType: offer.offerType,
-                    offerAmount: offer.offerAmount,
-                    apr: offer.apr,
-                    termMonths: offer.termMonths,
-                    cashBack: offer.cashBack,
-                    dueAtSigning: offer.dueAtSigning,
-                    monthlyPayment: offer.monthlyPayment,
-                    terms: offer.terms,
-                    finePrint: offer.finePrint,
-                    expirationDate: offer.expirationDate,
-                    scrapedAt: offer.scrapedAt,
-                  },
-                });
-              } catch (err: any) {
-                // Log but don't fail on individual record errors
-                console.error("Error storing offer:", err?.message || err);
-              }
-            }
-          },
-          {
-            maxWait: 10000, // Maximum time to wait for a transaction slot
-            timeout: 30000, // Maximum time the transaction can run (30 seconds)
-          },
-        );
+        try {
+          await prisma.$transaction(
+            async (tx) => {
+              // Create new offers (public data, no dealer ownership) using createMany
+              await tx.offers.createMany({
+                data: batch.map((offer) => ({
+                  brand: offer.brand,
+                  year: offer.year,
+                  make: offer.make,
+                  model: offer.model,
+                  modelCode: offer.modelCode,
+                  trim: offer.trim,
+                  offerType: offer.offerType,
+                  offerAmount: offer.offerAmount,
+                  apr: offer.apr,
+                  termMonths: offer.termMonths,
+                  cashBack: offer.cashBack,
+                  dueAtSigning: offer.dueAtSigning,
+                  monthlyPayment: offer.monthlyPayment,
+                  milesPerYear: offer.milesPerYear || null,
+                  terms: offer.terms,
+                  finePrint: offer.finePrint,
+                  expirationDate: offer.expirationDate,
+                  scrapedAt: offer.scrapedAt,
+                })),
+                skipDuplicates: true, // Skip duplicates if any
+              });
+            },
+            {
+              maxWait: 10000, // Maximum time to wait for a transaction slot
+              timeout: 30000, // Maximum time the transaction can run (30 seconds)
+            },
+          );
+        } catch (err: any) {
+          // Log but don't fail on batch errors
+          console.error("Error storing Audi offer batch:", err?.message || err);
+        }
       }
     }
 
