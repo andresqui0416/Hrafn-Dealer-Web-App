@@ -37,7 +37,7 @@ export async function GET(_request: NextRequest) {
       kia: { success: false, totalOffers: 0, error: "" },
     };
 
-    // // Scrape Audi offers
+    // Scrape Audi offers
     try {
       const audiResult = (await scrapeOffersFromAudi()) as {
         success: boolean;
@@ -54,7 +54,7 @@ export async function GET(_request: NextRequest) {
       results.audi.error = error?.message || "Failed to scrape Audi offers";
     }
 
-    // // Scrape Mazda offers
+    // Scrape Mazda offers
     try {
       const mazdaResult = (await scrapeOffersFromMazda()) as {
         success: boolean;

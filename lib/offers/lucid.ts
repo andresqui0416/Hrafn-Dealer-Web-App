@@ -568,7 +568,7 @@ export async function scrapeOffersFromLucid() {
               modelCode: null,
               trim: null,
               offerType,
-              offerAmount: offerType === "lease" ? monthlyPayment : offerAmount,
+              offerAmount: null, // Don't set from monthlyPayment - keep them separate
               apr: apr ? apr / 100 : null, // Convert percentage to decimal
               termMonths,
               cashBack,
