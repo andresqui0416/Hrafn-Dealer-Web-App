@@ -249,7 +249,7 @@ export async function scrapeOffersFromMBUSA() {
                 modelCode,
                 trim,
                 offerType: "lease",
-                offerAmount: monthlyPayment,
+                offerAmount: null,
                 apr: null,
                 termMonths: leaseTermMonths,
                 cashBack: null,

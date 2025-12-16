@@ -45,6 +45,7 @@ type Offer = {
   apr: number | null;
   termMonths: number | null;
   cashBack: number | null;
+  tradeDiscount: number | null;
   dueAtSigning: number | null;
   monthlyPayment: number | null;
   milesPerYear: number | null;
@@ -293,6 +294,7 @@ export default function OffersPage() {
                 <th className="px-4 py-3 text-left text-sm font-semibold">Type</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Amount</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Cash Back</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Trade Discount</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">APR</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Term</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Expires</th>
@@ -328,6 +330,9 @@ export default function OffersPage() {
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {offer.cashBack ? formatCurrency(offer.cashBack) : "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {offer.tradeDiscount ? formatCurrency(offer.tradeDiscount) : "-"}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {offer.apr ? `${(offer.apr * 100).toFixed(2)}%` : "-"}
@@ -581,6 +586,7 @@ export default function OffersPage() {
 
               {/* Financial Details */}
               {(selectedOffer.cashBack !== null ||
+                selectedOffer.tradeDiscount !== null ||
                 selectedOffer.offerAmount !== null ||
                 selectedOffer.apr !== null ||
                 selectedOffer.termMonths !== null ||
@@ -590,15 +596,6 @@ export default function OffersPage() {
                 <div className="border-t border-white/10 pt-4">
                   <h3 className="text-lg font-semibold mb-4">Financial Details</h3>
                   <div className="grid grid-cols-2 gap-4">
-                    {selectedOffer.cashBack !== null && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                          <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
-                          Cash Back
-                        </label>
-                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.cashBack)}</p>
-                      </div>
-                    )}
                     {selectedOffer.offerAmount !== null && (
                       <div>
                         <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -608,12 +605,10 @@ export default function OffersPage() {
                         <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.offerAmount)}</p>
                       </div>
                     )}
-                    {selectedOffer.apr !== null && (
+                    {selectedOffer.monthlyPayment !== null && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">APR</label>
-                        <p className="text-lg font-semibold mt-1">
-                          {(selectedOffer.apr * 100).toFixed(2)}%
-                        </p>
+                        <label className="text-sm font-medium text-muted-foreground">Monthly Payment</label>
+                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.monthlyPayment)}</p>
                       </div>
                     )}
                     {selectedOffer.termMonths !== null && (
@@ -628,10 +623,30 @@ export default function OffersPage() {
                         <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.dueAtSigning)}</p>
                       </div>
                     )}
-                    {selectedOffer.monthlyPayment !== null && (
+                    {selectedOffer.cashBack !== null && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Monthly Payment</label>
-                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.monthlyPayment)}</p>
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
+                          Cash Back
+                        </label>
+                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.cashBack)}</p>
+                      </div>
+                    )}
+                    {selectedOffer.tradeDiscount !== null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
+                          Trade Discount
+                        </label>
+                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.tradeDiscount)}</p>
+                      </div>
+                    )}
+                    {selectedOffer.apr !== null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">APR</label>
+                        <p className="text-lg font-semibold mt-1">
+                          {(selectedOffer.apr * 100).toFixed(2)}%
+                        </p>
                       </div>
                     )}
                     {selectedOffer.milesPerYear !== null && (

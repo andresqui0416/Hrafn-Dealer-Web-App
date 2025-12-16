@@ -85,7 +85,7 @@ export async function scrapeOffersFromMazda() {
 							modelCode,
 							trim: trimCode || null,
 							offerType: "lease",
-							offerAmount: monthlyPayment,
+							offerAmount: null,
 							apr: null,
 							termMonths,
 							cashBack: cashBack,
@@ -121,7 +121,7 @@ export async function scrapeOffersFromMazda() {
 							modelCode,
 							trim: trimCode || null,
 							offerType,
-							offerAmount: cashBack || null,
+							offerAmount: null,
 							apr: apr ? apr / 100 : null, // Convert percentage to decimal (5.9 -> 0.059)
 							termMonths,
 							cashBack,

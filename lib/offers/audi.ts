@@ -70,13 +70,9 @@ export async function scrapeOffersFromAudi() {
         offerType = "cash"; // Credit bonuses are cash offers
       }
 
-      // Extract offer amount - use creditBonus for credit offers, monthlyPayment for lease/finance
+      // Don't populate offerAmount from creditBonus or monthlyPayment - keep them separate
+      // offerAmount should only be set if explicitly extracted from the offer content
       let offerAmount: number | null = null;
-      if (offer.creditBonus && offer.creditBonus > 0) {
-        offerAmount = offer.creditBonus;
-      } else if (offer.monthlyPayment && offer.monthlyPayment > 0) {
-        offerAmount = offer.monthlyPayment;
-      }
 
       // Create offer record
       offers.push({

@@ -380,26 +380,28 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
       
       if (offerType === "lease") {
         monthlyPayment = extractMonthlyPayment(finalTitle);
-        offerAmount = monthlyPayment;
         termMonths = extractTermMonths(finalHeading);
         dueAtSigning = extractDueAtSigning(finalDescription);
         bonusCash = extractBonusCash(finalHeading);
         cashBack = bonusCash;
+        // Don't set offerAmount from monthlyPayment - keep them separate
+        offerAmount = null;
       } else if (offerType === "financing") {
         apr = extractApr(finalTitle);
         termMonths = extractTermMonths(finalHeading);
         bonusCash = extractBonusCash(finalHeading);
         cashBack = bonusCash;
+        offerAmount = null;
       } else if (offerType === "cash") {
         cashBack = extractCashAmount(finalTitle);
-        offerAmount = cashBack;
+        // Don't set offerAmount from cashBack - keep them separate
+        offerAmount = null;
         // Also check includedCashOffers for total amount
         if (offer.includedCashOffers && Array.isArray(offer.includedCashOffers)) {
           // Try to extract total from included offers
           const totalMatch = finalTitle.match(/(?:up\s+to\s+)?\$([\d,]+)/i);
           if (totalMatch) {
             cashBack = parseNumber(totalMatch[1]);
-            offerAmount = cashBack;
           }
         }
       }
