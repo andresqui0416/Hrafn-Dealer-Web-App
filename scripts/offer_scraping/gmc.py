@@ -29,38 +29,22 @@ except ImportError:
     print("Error: requests is not installed. Please install it with: pip install requests")
     sys.exit(1)
 
-try:
-    from openai import OpenAI
-except ImportError:
-    print("Warning: openai is not installed. OpenAI classification will be disabled.")
-    print("Install it with: pip install openai")
-    OpenAI = None
-
-
 class GMCScraper:
-    def __init__(self, api_url: str = None, openai_api_key: str = None):
+    def __init__(self, api_url: str = None):
         """
         Initialize GMC scraper
         
         Args:
             api_url: API endpoint URL to send scraped data to
-            openai_api_key: OpenAI API key for classification and extraction
         """
         self.api_url = api_url or os.getenv(
             "OFFERS_SCRAPER_API_URL",
             "http://localhost:3000/api/offers/scrape"
         )
-        self.openai_api_key = openai_api_key or os.getenv("OPENAI_API_KEY")
-        self.openai_client = None
-        if OpenAI and self.openai_api_key:
-            try:
-                self.openai_client = OpenAI(api_key=self.openai_api_key)
-                print("OpenAI client initialized for classification")
-            except Exception as e:
-                print(f"Warning: Failed to initialize OpenAI client: {e}")
         self.driver = None
         self.offers = []
         self.brand = "GMC"
+        self.api_data = None
 
     def setup_driver(self, headless: bool = True):
         """Setup Chrome driver with options"""
@@ -150,94 +134,231 @@ class GMCScraper:
             pass
         return None
 
-    def classify_and_extract_with_openai(self, text: str, offer_type_hint: str = None) -> Optional[Dict[str, Any]]:
-        if not self.openai_client or not text:
+    def extract_years_from_text(self, text: str) -> List[int]:
+        """Extract years from text, handling '&' separator (e.g., '2025 & 2026' or '2025&nbsp;&amp; 2026')"""
+        if not text:
+            return []
+        years = []
+        # Handle HTML entities - decode them first
+        # Replace &nbsp; with space, &amp; with &, then normalize
+        text = text.replace('&nbsp;', ' ').replace('&amp;', '&').replace('&', ' ')
+        # Normalize whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        # Find all 4-digit years (20XX format)
+        matches = re.findall(r'\b(20\d{2})\b', text)
+        for match in matches:
+            try:
+                year = int(match)
+                if 2020 <= year <= 2030:  # Reasonable range
+                    years.append(year)
+            except:
+                pass
+        return sorted(list(set(years)))  # Remove duplicates and sort
+
+    def extract_cash_back(self, text: str) -> Optional[float]:
+        """Extract cash back or purchase allowance from text"""
+        if not text:
             return None
-        print(f"Classifying and extracting with OpenAI: {text[:20]}...")
+        
+        # Clean HTML entities first
+        text = text.replace('&nbsp;', ' ').replace('&amp;', '&')
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        # Look for patterns like:
+        # "$X,XXX cash back"
+        # "$X,XXX off"
+        # "$X,XXX discount"
+        patterns = [
+            r'\$([\d,]+)\s+(?:cash\s+back|off|discount)',  # "$X,XXX cash back"
+            r'\$([\d,]+)\s+Purchase\s+Allowance',  # "$X,XXX Purchase Allowance"
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                try:
+                    return self.parse_number(match.group(1))
+                except:
+                    pass
+        return None
+
+    def fetch_api_data(self) -> Optional[Dict]:
+        """Fetch offer data from GMC API"""
         try:
-            print(f"Classifying and extracting with OpenAI: {text[:20]}...")
-            prompt = f"""You are a data extraction assistant for vehicle offers.
-                        Analyze the following vehicle offer text and extract structured information.
+            print("Fetching data from GMC API...")
+            url = "https://cws.gm.com/cof-cws/v2/currentoffers/US/en/95556?make=gmc&quantumHostname=www.gmc.com"
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+            self.api_data = data
+            print(f"Fetched {len(data.get('results', []))} offers from API")
+            return data
+        except Exception as e:
+            print(f"Error fetching API data: {e}")
+            return None
 
-                        Return a JSON object with the following fields:
-                        - offerType: one of "lease", "financing", or "cash" (if the text looks like a "featured" banner, map it to the closest of these three)
-                        - monthlyPayment: monthly payment amount as number, or null
-                        - termMonths: lease/finance term in months as integer, or null
-                        - dueAtSigning: amount due at signing as number, or null
-                        - apr: APR rate as decimal (e.g., 0.029 for 2.9%), or null
-                        - offerAmount: cash offer amount or total discount as number, or null
-                        - expirationDate: expiration date in YYYY-MM-DD format, or null
-                        - cashBack: cash back amount as number, or null
-                        - milesPerYear: miles per year for lease as integer, or null
+    def process_api_offers(self) -> List[Dict[str, Any]]:
+        """Process regular offers from API data"""
+        offers = []
+        
+        if not self.api_data:
+            return offers
 
-                        Also extract vehicle information when possible:
-                        - vehicleYear: 4-digit model year as number (e.g., 2025), or null
-                        - vehicleModel: vehicle model name (e.g., "Sierra 1500"), or null
-                        - vehicleModelCode: internal model code or line name if mentioned (e.g., "SIERRA-1500"), or null
-                        - vehicleTrim: trim or package name (e.g., "Denali", "Elevation"), or null
+        results = self.api_data.get("results", [])
+        
+        for result in results:
+            # Skip featured offers (they'll be handled separately)
+            if result.get("offerType") == "Featured Offer":
+                continue
 
-                        Offer text:
-                        {text}
+            try:
+                offer = self.extract_regular_offer(result)
+                if offer:
+                    offers.append(offer)
+            except Exception as e:
+                print(f"Error processing API offer: {e}")
+                continue
 
-                        {f"Hint: This appears to be a {offer_type_hint} offer." if offer_type_hint else ""}
-                        """
+        return offers
 
-            response = self.openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You extract structured JSON from vehicle offer text. Always respond with a single valid JSON object, no markdown, no comments.",
-                    },
-                    {"role": "user", "content": prompt},
-                ],
-                temperature=0.1,
-                max_tokens=400,
-                response_format={"type": "json_object"},
+    def extract_regular_offer(self, result: Dict) -> Optional[Dict[str, Any]]:
+        """Extract offer data from API result"""
+        try:
+            # Extract basic vehicle information
+            brand = "GMC"
+            year = int(result.get("modelYear", 0)) if result.get("modelYear") else None
+            model = result.get("displayName") or result.get("carline") or None
+            carline = result.get("carline") or None
+            trims = result.get("trims", [])
+            trim = ", ".join(trims) if trims else None
+
+            # Map offer type
+            offer_type = "cash"
+            if result.get("offerType") == "Lease":
+                offer_type = "lease"
+            elif result.get("offerType") == "Finance":
+                offer_type = "financing"
+            elif result.get("offerType") == "Cash":
+                offer_type = "cash"
+
+            # Extract offer details from offerText
+            offer_text = result.get("offerText", {})
+            body_text = offer_text.get("body", {}).get("text", "")
+            footer_text = offer_text.get("footer", {}).get("text", "")
+
+            # Extract financial details
+            monthly_payment = self.extract_monthly_payment(body_text)
+            term_months = self.extract_term_months(body_text)
+            due_at_signing = self.extract_due_at_signing(body_text)
+            apr = self.extract_apr(body_text) or self.extract_apr(footer_text)
+            
+            # Extract cashBack for cash offers
+            cash_back = None
+            if offer_type == "cash":
+                cash_back_match = re.search(r'\$([\d,]+)\s+(?:cash\s+back|off|discount)', body_text, re.IGNORECASE)
+                if cash_back_match:
+                    cash_back = self.parse_number(cash_back_match.group(1))
+
+            # Extract expiration date
+            expiration_date = self.parse_expiration_date(result.get("endEffDate"))
+
+            # Build terms and fine print
+            terms = body_text.strip() if body_text else None
+            fine_print = footer_text.strip() if footer_text else None
+
+            # Only create offer if we have meaningful data
+            has_valid_data = (
+                (offer_type == "lease" and monthly_payment) or
+                (offer_type == "financing" and apr is not None) or
+                (offer_type == "cash" and cash_back is not None)
             )
 
-            # When response_format=json_object is used, the content should already be JSON
-            result_text = response.choices[0].message.content.strip()
-            
-            import json
-            extracted = json.loads(result_text)
-            
-            # Validate and normalize the extracted data
-            if "offerType" in extracted and extracted["offerType"] is not None:
-                offer_type = str(extracted["offerType"]).lower().strip()
-                # Map any unexpected/featured-like labels to one of the three core types
-                if offer_type not in ["lease", "financing", "cash"]:
-                    if "lease" in offer_type:
-                        offer_type = "lease"
-                    elif "financ" in offer_type or "apr" in offer_type:
-                        offer_type = "financing"
-                    elif "cash" in offer_type or "rebate" in offer_type or "bonus" in offer_type:
-                        offer_type = "cash"
-                    else:
-                        # Default based on fields present
-                        if extracted.get("monthlyPayment"):
-                            offer_type = "lease"
-                        elif extracted.get("apr"):
-                            offer_type = "financing"
-                        else:
-                            offer_type = "cash"
-                extracted["offerType"] = offer_type
-            
-            # Convert APR from percentage to decimal if needed
-            if extracted.get("apr") is not None:
-                apr = extracted["apr"]
-                if isinstance(apr, (int, float)) and apr > 1:
-                    extracted["apr"] = apr / 100
-            
-            return extracted
-            
-        except json.JSONDecodeError as e:
-            print(f"      Warning: Failed to parse OpenAI JSON response: {e}")
-            print(f"      Raw OpenAI response was: {result_text!r}")
-            return None
+            if not has_valid_data:
+                return None
+
+            offer = {
+                "brand": brand,
+                "year": year,
+                "make": brand,
+                "model": model,
+                "modelCode": carline,
+                "trim": trim,
+                "offerType": offer_type,
+                "offerAmount": None,
+                "apr": apr,
+                "termMonths": term_months,
+                "cashBack": cash_back,
+                "dueAtSigning": due_at_signing,
+                "monthlyPayment": monthly_payment,
+                "milesPerYear": None,
+                "expirationDate": expiration_date,
+                "terms": terms,
+                "finePrint": fine_print,
+            }
+
+            return offer
+
         except Exception as e:
-            print(f"      Warning: OpenAI extraction failed: {e}")
+            print(f"Error extracting regular offer: {e}")
+            import traceback
+            traceback.print_exc()
             return None
+
+    def get_unique_models_from_api(self) -> List[Dict]:
+        """Get unique models from API data"""
+        if not self.api_data:
+            return []
+        
+        api_results = self.api_data.get("results", [])
+        unique_models = {}
+        
+        for result in api_results:
+            # Skip featured offers from API
+            if result.get("offerType") == "Featured Offer":
+                continue
+                
+            carline = result.get("carline") or ""
+            bodystyle = result.get("bodystyle") or carline  # Use bodystyle, fallback to carline
+            # Use carline and bodystyle as the unique key
+            model_key = f"{carline}:{bodystyle}".upper()
+            model_year = result.get("modelYear")
+            
+            if model_key and model_key not in unique_models:
+                unique_models[model_key] = {
+                    "displayName": result.get("displayName"),
+                    "carline": carline,
+                    "bodystyle": bodystyle,
+                    "modelYear": model_year,
+                    "trims": result.get("trims", []),
+                }
+        
+        return list(unique_models.values())
+
+    def merge_offer_data_with_model(self, featured: Dict, model_info: Dict) -> Dict:
+        """Merge featured offer data with model info from API"""
+        merged = featured.copy()
+        
+        # Use API model info for vehicle details
+        featured_year = featured.get("year")
+        if featured_year:
+            merged["year"] = featured_year
+        elif model_info.get("modelYear"):
+            try:
+                merged["year"] = int(model_info.get("modelYear"))
+            except:
+                merged["year"] = None
+        else:
+            merged["year"] = None
+            
+        # Use displayName as model, carline as modelCode
+        merged["model"] = model_info.get("displayName") or featured.get("model")
+        merged["modelCode"] = model_info.get("carline") or None
+        merged["trim"] = ", ".join(model_info.get("trims", [])) if model_info.get("trims") else None
+        
+        # Keep featured offer financial terms (APR, cash back, expiration)
+        # These are already set in featured dict
+
+        return merged
 
     def normalize_offer(self, offer: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
@@ -345,555 +466,367 @@ class GMCScraper:
         # The API will handle None values appropriately
         return normalized
 
-    def scrape_offers_from_website(self) -> List[Dict[str, Any]]:
-        """
-        Scrape offers from GMC website using Selenium ChromeDriver
-        Scrapes both featured offers and regular lease/finance offers
-        """
-        offers = []
+    def scrape_featured_offers(self, unique_models: List[Dict] = None) -> List[Dict[str, Any]]:
+        """Scrape featured offers from GMC website, finding offers for each model by displayName"""
+        featured_offers = []
         
         if not self.driver:
-            print("Driver not initialized")
-            return offers
-        
+            print("ChromeDriver not initialized, cannot scrape featured offers")
+            return featured_offers
+
+        if not unique_models:
+            print("No model set provided, cannot scrape featured offers")
+            return featured_offers
+
         try:
-            # Navigate to GMC offers page with postal code
+            print("Scraping featured offers from GMC website...")
             url = "https://www.gmc.com/current-offers#?vehicleType=all&requestedPostalcode=95556&postalcode=95556"
-            print(f"Navigating to {url}")
             self.driver.get(url)
-            
-            # Wait for page to load and offers to render
-            print("Waiting for page to load...")
-            time.sleep(10)  # Initial wait for page load
-            
-            # Wait for panels that contain vehicle/offer groupings to appear
+            time.sleep(5)  # Wait for page to load
+
+            # Wait for offer containers to load
             try:
-                WebDriverWait(self.driver, 30).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "gmwc-collapsable-panel"))
+                WebDriverWait(self.driver, 15).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "gmst-co-offer-details"))
                 )
-                print("Collapsable panels loaded")
             except TimeoutException:
-                print("Timeout waiting for gmwc-collapsable-panel elements")
-                return offers
-            
-            # Wait for offers to render (they load dynamically)
-            print("Waiting for offers to render...")
-            time.sleep(10)  # Increased wait time for dynamic content
-            
-            # Scroll to load all content - scroll multiple times to trigger lazy loading
-            print("Scrolling to load all offers...")
-            for i in range(3):
-                self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                time.sleep(2)
-                self.driver.execute_script("window.scrollTo(0, 0);")
-                time.sleep(1)
-            
-            # Final wait after scrolling
-            time.sleep(3)
-            
-            # Scrape offers grouped by vehicle from gmwc-collapsable-panel elements
-            # Only look at panels that live inside the main results group container.
-            print("Scraping offers from gmwc-collapsable-panel elements inside .gmst-co-result-group...")
+                print("Timeout waiting for offers to load")
+                return featured_offers
+
+            # Expand all collapsed panels to ensure featured offers are visible
             try:
-                panels = self.driver.find_elements(
-                    By.CSS_SELECTOR, ".gmst-co-result-group gmwc-collapsable-panel"
+                time.sleep(2)
+                all_panels = self.driver.find_elements(
+                    By.CSS_SELECTOR,
+                    "gmwc-collapsable-panel"
                 )
-                print(f"Found {len(panels)} gmwc-collapsable-panel elements")
-                total_containers = 0
-
-                for panel_idx, panel in enumerate(panels):
+                print(f"Found {len(all_panels)} total panels")
+                
+                expanded_count = 0
+                for panel in all_panels:
                     try:
-                        # Vehicle-level info from attributes (year will be inferred per child offer)
-                        carline = panel.get_attribute("carline") or ""
-                        bodystyle = panel.get_attribute("bodystyle") or ""
-
-                        print(
-                            f"  Processing panel {panel_idx + 1}/{len(panels)}: "
-                            f"carline='{carline}', bodystyle='{bodystyle}'"
-                        )
-
-                        # Derive base model/modelCode/trim from attributes
-                        base_model_code = carline or None
-                        # Model name: carline turned into a nicer form (don't combine with bodystyle)
-                        base_model = None
-                        if carline:
-                            base_model = carline.replace("-", " ").title()
-
-                        # Within this panel, find all child offer containers.
-                        # The actual text is inside ".gmst-co-offer-item-grid-details-container"
-                        # which lives under ".gmst-offer-detail-container > .offer-detail-container".
-                        offer_containers = panel.find_elements(
-                            By.CSS_SELECTOR,
-                            ".gmst-offer-detail-container > .offer-detail-container",
-                        )
-                        total_containers += len(offer_containers)
-                        print(
-                            f"    Found {len(offer_containers)} offer-detail-container children in this panel"
-                        )
-
-                        for idx, container in enumerate(offer_containers):
+                        class_attr = panel.get_attribute("class") or ""
+                        if "collapsed" in class_attr.lower():
                             try:
-                                print(
-                                    f"    Processing offer-detail-container {idx + 1}/{len(offer_containers)} "
-                                    f"in panel {panel_idx + 1}"
+                                header_button = panel.find_element(
+                                    By.CSS_SELECTOR,
+                                    ".gmwc-collapsable-panel-header, .gmst-co-offer-show-hide, button[title*='Show']"
                                 )
-                                # Prefer the inner grid container text if present.
-                                # Use JavaScript to read innerText/textContent so we can get
-                                # collapsed/hidden text as well (Selenium .text only returns visible text).
-                                full_text = ""
+                                if header_button:
+                                    self.driver.execute_script("arguments[0].click();", header_button)
+                                    expanded_count += 1
+                                    time.sleep(0.3)
+                            except:
                                 try:
-                                    grid = container.find_element(
-                                        By.CSS_SELECTOR,
-                                        ".gmst-co-offer-item-grid-details-container",
-                                    )
-                                    full_text = (
-                                        self.driver.execute_script(
-                                            "return (arguments[0].innerText || arguments[0].textContent || '').trim();",
-                                            grid,
-                                        )
-                                        or ""
-                                    )
-                                except Exception:
+                                    header = panel.find_element(By.CSS_SELECTOR, ".gmwc-collapsable-panel-header")
+                                    self.driver.execute_script("arguments[0].click();", header)
+                                    expanded_count += 1
+                                    time.sleep(0.3)
+                                except:
                                     pass
-
-                                # Fallback to container text via JS
-                                if not full_text:
-                                    full_text = (
-                                        self.driver.execute_script(
-                                            "return (arguments[0].innerText || arguments[0].textContent || '').trim();",
-                                            container,
-                                        )
-                                        or ""
-                                    )
-
-                                # Remove button/link label text (Copy Link, Print Offers, etc.) from full_text
-                                if full_text:
-                                    try:
-                                        button_elems = container.find_elements(
-                                            By.CSS_SELECTOR,
-                                            "button, a, .gmst-co-offer-copy, .gmst-co-offer-print",
-                                        )
-                                        button_texts = set()
-                                        for btn in button_elems:
-                                            try:
-                                                btn_text = (
-                                                    self.driver.execute_script(
-                                                        "return (arguments[0].innerText || arguments[0].textContent || '').trim();",
-                                                        btn,
-                                                    )
-                                                    or ""
-                                                )
-                                                if btn_text:
-                                                    button_texts.add(btn_text)
-                                            except Exception:
-                                                continue
-
-                                        for bt in button_texts:
-                                            if bt and bt in full_text:
-                                                full_text = full_text.replace(bt, " ")
-
-                                        # Also remove generic banner labels like "FEATURED OFFER" or "LEASE OFFER"
-                                        banner_patterns = [
-                                            r"\bFEATURED\s+OFFER\b",
-                                            r"\bLEASE\b",
-                                        ]
-                                        for pattern in banner_patterns:
-                                            full_text = re.sub(
-                                                pattern, " ", full_text, flags=re.IGNORECASE
-                                            )
-
-                                        # Remove separator lines like "_____________________"
-                                        full_text = re.sub(r"_{3,}", "\n", full_text)
-
-                                        # Normalize multiple spaces to single space, but preserve newlines
-                                        # Replace multiple spaces/tabs with single space, but keep newlines
-                                        full_text = re.sub(r"[ \t]+", " ", full_text)  # Normalize spaces/tabs
-                                        full_text = re.sub(r"\n\s*\n\s*\n+", "\n\n", full_text)  # Normalize multiple newlines to max 2
-                                        full_text = full_text.strip()
-                                    except Exception:
-                                        pass
-
-                                if not full_text:
-                                    print("      Skipping empty container (no visible text)")
-                                    continue
-
-                                # Try to get a headline/title for this offer and prepend it to the text
-                                headline_text = ""
-                                try:
-                                    headline_elem = container.find_element(
-                                        By.CSS_SELECTOR,
-                                        ".gmst-co-offer-item-title, .panel-title, h1, h2, h3",
-                                    )
-                                    headline_text = headline_elem.text.strip()
-                                except Exception:
-                                    headline_text = ""
-
-                                combined_text = (
-                                    f"{headline_text}\n{full_text}"
-                                    if headline_text
-                                    else full_text
-                                )
-
-                                # Send combined text to OpenAI to classify and extract offer + vehicle data
-                                openai_data = self.classify_and_extract_with_openai(
-                                    combined_text
-                                )
-
-                                # If OpenAI fails, fall back to lightweight regex extraction
-                                if not openai_data:
-                                    print(
-                                        "      OpenAI did not return structured data, falling back to regex extraction"
-                                    )
-                                    openai_data = {}
-                                    # Basic numeric extraction from the combined text
-                                    fallback_monthly = self.extract_monthly_payment(
-                                        combined_text
-                                    )
-                                    fallback_term = self.extract_term_months(
-                                        combined_text
-                                    )
-                                    fallback_due = self.extract_due_at_signing(
-                                        combined_text
-                                    )
-                                    fallback_apr = self.extract_apr(combined_text)
-
-                                    # Try to extract cash back amounts from various patterns
-                                    cashback_amount = None
-                                    # Check for "PURCHASE ALLOWANCE" first
-                                    purchase_allowance_match = re.search(
-                                        r"\$([\d,]+)\s*PURCHASE\s+ALLOWANCE",
-                                        combined_text,
-                                        re.IGNORECASE,
-                                    )
-                                    if purchase_allowance_match:
-                                        cashback_amount = self.parse_number(
-                                            purchase_allowance_match.group(1)
-                                        )
-                                    else:
-                                        # Check for "Average Finance Savings" style
-                                        savings_match = re.search(
-                                            r"\$([\d,]+)\s*(?:Average\s+Finance\s+Savings|Finance\s+Savings|Total\s+Savings)",
-                                            combined_text,
-                                            re.IGNORECASE,
-                                        )
-                                        if savings_match:
-                                            cashback_amount = self.parse_number(
-                                                savings_match.group(1)
-                                            )
-
-                                    # Infer offerType from what we found
-                                    inferred_type = None
-                                    if fallback_monthly is not None:
-                                        inferred_type = "lease"
-                                    elif fallback_apr is not None:
-                                        # Financing if APR is present
-                                        inferred_type = "financing"
-                                    else:
-                                        # If there isn't APR, it's cash
-                                        inferred_type = "cash"
-
-                                    openai_data["offerType"] = inferred_type
-                                    openai_data["monthlyPayment"] = fallback_monthly
-                                    openai_data["termMonths"] = fallback_term
-                                    openai_data["dueAtSigning"] = fallback_due
-                                    openai_data["apr"] = fallback_apr
-                                    # For savings-style offers, set cashBack but don't put it in offerAmount
-                                    if cashback_amount is not None:
-                                        openai_data["cashBack"] = cashback_amount
-                                    else:
-                                        openai_data["cashBack"] = None
-                                    # Don't set offerAmount from monthlyPayment or cashBack - keep them separate
-                                    openai_data["offerAmount"] = None
-                                    openai_data["expirationDate"] = None
-                                    openai_data["milesPerYear"] = None
-
-                                    # If we still couldn't infer an offer type, skip this container
-                                    if not openai_data["offerType"]:
-                                        print(
-                                            "      Regex fallback could not infer offer type, skipping"
-                                        )
-                                        continue
-
-                                # Vehicle info: prefer panel attributes for model, get year ONLY from headline
-                                year = None
-                                model = base_model
-                                model_code = base_model_code
-                                trim = None
-
-                                vehicleTrim = openai_data.get("vehicleTrim") or None
-                                if vehicleTrim:
-                                    trim = vehicleTrim
-
-                                # Extract trade discount / "Total Value" style amounts from text
-                                trade_discount = None
-                                try:
-                                    total_val_match = re.search(
-                                        r"\$([\d,]+)\s*Total\s+Value",
-                                        combined_text,
-                                        re.IGNORECASE,
-                                    )
-                                    if total_val_match:
-                                        trade_discount = self.parse_number(
-                                            total_val_match.group(1)
-                                        )
-                                except Exception:
-                                    trade_discount = None
-
-                                # Handle multi-year headlines like "2025 & 2026 GMC ACADIA MODELS"
-                                # ONLY check headline_text for years (not combined_text or full_text)
-                                # If there's an "&" in the headline, extract all years and create separate offers
-                                years_in_headline = []
-                                try:
-                                    if headline_text:
-                                        # Check if headline contains "&" (indicates multiple years)
-                                        has_ampersand = "&" in headline_text
-                                        
-                                        # Extract all years from headline
-                                        years_in_headline = list(
-                                            {
-                                                int(y)
-                                                for y in re.findall(
-                                                    r"\b(20[2-3]\d)\b", headline_text
-                                                )
-                                            }
-                                        )
-                                        years_in_headline.sort()
-                                        
-                                        # If there's an "&" but we only found one year, try to find a second one
-                                        # This handles edge cases where one year might be in a different format
-                                        if has_ampersand and len(years_in_headline) == 1:
-                                            # Try to find another year pattern (e.g., "26" might mean "2026")
-                                            # Look for 2-digit years near the "&"
-                                            parts = headline_text.split("&")
-                                            if len(parts) == 2:
-                                                # Check both sides of the "&"
-                                                for part in parts:
-                                                    # Look for 4-digit years
-                                                    year_matches = re.findall(r"\b(20[2-3]\d)\b", part)
-                                                    for y in year_matches:
-                                                        year_int = int(y)
-                                                        if year_int not in years_in_headline:
-                                                            years_in_headline.append(year_int)
-                                                years_in_headline.sort()
-                                except Exception:
-                                    years_in_headline = []
-
-                                # If we found multiple years (or there's an "&" indicating multiple years), create separate offers
-                                if len(years_in_headline) > 1:
-                                    # Create one offer per year (all other fields stay the same)
-                                    for yr in years_in_headline:
-                                        raw_offer = {
-                                            "brand": self.brand,
-                                            "year": yr,
-                                            "make": self.brand,
-                                            "model": model,
-                                            "modelCode": model_code,
-                                            "trim": trim,
-                                            "offerType": openai_data.get("offerType"),
-                                            "offerAmount": openai_data.get("offerAmount"),
-                                            "apr": openai_data.get("apr"),
-                                            "termMonths": openai_data.get("termMonths"),
-                                            "cashBack": openai_data.get("cashBack"),
-                                            "tradeDiscount": trade_discount,
-                                            "dueAtSigning": openai_data.get("dueAtSigning"),
-                                            "monthlyPayment": openai_data.get("monthlyPayment"),
-                                            "milesPerYear": openai_data.get("milesPerYear"),
-                                            "expirationDate": openai_data.get("expirationDate"),
-                                            "terms": full_text,
-                                            "finePrint": None,
-                                        }
-
-                                        normalized = self.normalize_offer(raw_offer)
-                                        if normalized:
-                                            offers.append(normalized)
-                                            print(
-                                                f"      ✓ Extracted multi-year offer: {normalized.get('offerType')} "
-                                                f"- {normalized.get('year')} {normalized.get('model')}"
-                                            )
-                                        else:
-                                            print(
-                                                f"      Normalized multi-year offer was invalid for year {yr}, skipping"
-                                            )
-
-                                    # We are done with this container, move to the next one
-                                    continue
-
-                                # If no multi-year headline, infer a single year from headline only
-                                if years_in_headline:
-                                    year = years_in_headline[0]
-
-                                # Build a raw offer dict using OpenAI output + vehicle info
-                                raw_offer = {
-                                    "brand": self.brand,
-                                    "year": year,
-                                    "make": self.brand,
-                                    "model": model,
-                                    "modelCode": model_code,
-                                    "trim": trim,
-                                    "offerType": openai_data.get("offerType"),
-                                    "offerAmount": openai_data.get("offerAmount"),
-                                    "apr": openai_data.get("apr"),
-                                    "termMonths": openai_data.get("termMonths"),
-                                    "cashBack": openai_data.get("cashBack"),
-                                    "tradeDiscount": trade_discount,
-                                    "dueAtSigning": openai_data.get("dueAtSigning"),
-                                    "monthlyPayment": openai_data.get("monthlyPayment"),
-                                    "milesPerYear": openai_data.get("milesPerYear"),
-                                    "expirationDate": openai_data.get("expirationDate"),
-                                    "terms": full_text,
-                                    "finePrint": None,
-                                }
-
-                                normalized = self.normalize_offer(raw_offer)
-                                if normalized:
-                                    offers.append(normalized)
-                                    print(
-                                        f"      ✓ Extracted offer: {normalized.get('offerType')} "
-                                        f"- {normalized.get('year')} {normalized.get('model')}"
-                                    )
-                                else:
-                                    # More detailed message already printed in normalize_offer
-                                    pass
-
-                            except Exception as e:
-                                print(
-                                    f"      ✗ Error processing offer-detail-container {idx + 1} "
-                                    f"in panel {panel_idx + 1}: {e}"
-                                )
-                                continue
-
                     except Exception as e:
-                        print(f"  ✗ Error processing panel {panel_idx + 1}: {e}")
+                        print(f"      Error expanding panel: {e}")
+                        continue
+                
+                if expanded_count > 0:
+                    print(f"Expanded {expanded_count} collapsed panels")
+                    time.sleep(2)
+            except Exception as e:
+                print(f"Note: Could not expand panels: {e}")
+
+            # Find all featured offer containers
+            all_featured_containers = self.driver.find_elements(
+                By.CSS_SELECTOR, 
+                ".gmst-co-offer-item-grid-featured-offer, gmst-vehicle-offers-featured"
+            )
+
+            print(f"Found {len(all_featured_containers)} total featured offer containers")
+
+            # Normalize displayName for matching (remove "GMC" prefix if present)
+            def normalize_model_name(name: str) -> str:
+                if not name:
+                    return ""
+                name = str(name).upper().strip()
+                # Remove "GMC" prefix
+                name = re.sub(r'^GMC\s+', '', name)
+                # Remove "Models" suffix if present
+                name = re.sub(r'\s+MODELS?$', '', name)
+                return name.strip()
+            
+            # Track processed containers to avoid duplicates
+            processed_container_ids = set()
+            
+            # For each model, find featured offer containers that match its carline and bodystyle
+            for model_info in unique_models:
+                carline = model_info.get("carline")
+                bodystyle = model_info.get("bodystyle")
+                display_name = model_info.get("displayName")
+                
+                if not carline:
+                    print(f"\n  Skipping model (no carline): {display_name}")
+                    continue
+                
+                print(f"\n  Searching for featured offers for model: {display_name} (carline: {carline}, bodystyle: {bodystyle})")
+                
+                # Find containers that match carline and bodystyle attributes
+                matching_containers = []
+                
+                for container in all_featured_containers:
+                    try:
+                        # Get unique identifier for container to avoid duplicates
+                        try:
+                            container_id = container.get_attribute("id") or container.get_attribute("data-dtm") or ""
+                            if not container_id:
+                                location = container.location
+                                container_id = f"{location['x']}_{location['y']}"
+                        except:
+                            container_text_preview = (container.text or "")[:100]
+                            container_id = str(hash(container_text_preview))
+                        
+                        # Skip if already processed
+                        if container_id in processed_container_ids:
+                            continue
+                        
+                        # Check carline and bodystyle attributes on the container or its parent elements
+                        model_found = False
+                        
+                        # First, check the container itself (for gmst-vehicle-offers-featured elements)
+                        container_carline = container.get_attribute("carline")
+                        container_bodystyle = container.get_attribute("bodystyle")
+                        
+                        if container_carline and container_bodystyle:
+                            # Match both carline and bodystyle
+                            if (container_carline.lower() == carline.lower() and 
+                                container_bodystyle.lower() == bodystyle.lower()):
+                                model_found = True
+                        elif container_carline:
+                            # If only carline is present, match it
+                            if container_carline.lower() == carline.lower():
+                                model_found = True
+                        
+                        # If not found, check parent elements or data attributes
+                        if not model_found:
+                            try:
+                                # Check for data-carline and data-bodystyle attributes on child elements
+                                data_carline_elems = container.find_elements(
+                                    By.CSS_SELECTOR,
+                                    f"[data-carline='{carline}'], [data-carline='{carline.lower()}']"
+                                )
+                                if data_carline_elems:
+                                    # Also check bodystyle if available
+                                    if bodystyle:
+                                        data_bodystyle_elems = container.find_elements(
+                                            By.CSS_SELECTOR,
+                                            f"[data-bodystyle='{bodystyle}'], [data-bodystyle='{bodystyle.lower()}']"
+                                        )
+                                        if data_bodystyle_elems:
+                                            model_found = True
+                                    else:
+                                        # If no bodystyle specified, just match carline
+                                        model_found = True
+                            except Exception as e:
+                                print(f"      Error checking data attributes: {e}")
+                                pass
+                        
+                        # If still not found, check parent panel for carline/bodystyle
+                        if not model_found:
+                            try:
+                                # Find parent panel element
+                                parent_panel = container.find_element(
+                                    By.XPATH,
+                                    "./ancestor::gmwc-collapsable-panel[1]"
+                                )
+                                if parent_panel:
+                                    panel_carline = parent_panel.get_attribute("carline")
+                                    panel_bodystyle = parent_panel.get_attribute("bodystyle")
+                                    
+                                    if panel_carline and panel_bodystyle:
+                                        if (panel_carline.lower() == carline.lower() and 
+                                            panel_bodystyle.lower() == bodystyle.lower()):
+                                            model_found = True
+                                    elif panel_carline:
+                                        if panel_carline.lower() == carline.lower():
+                                            model_found = True
+                            except Exception as e:
+                                # Parent panel not found or error - that's okay
+                                pass
+                        
+                        if model_found:
+                            matching_containers.append((container, container_id))
+                            print(f"    Found featured offer container for {display_name} (matched by carline/bodystyle)")
+                    except Exception as e:
+                        print(f"      Error checking container: {e}")
+                        continue
+                
+                # Extract featured offers from matching containers for this model
+                print(f"    Found {len(matching_containers)} matching containers for {display_name}")
+                for i, (container, container_id) in enumerate(matching_containers):
+                    # Skip if already processed
+                    if container_id in processed_container_ids:
+                        print(f"    Skipping container {i+1} (already processed)")
+                        continue
+                    
+                    try:
+                        print(f"    Extracting offer {i+1}/{len(matching_containers)} for {display_name}...")
+                        featured_offer = self.extract_featured_offer(container, model_info)
+                        if featured_offer:
+                            # Mark container as processed
+                            processed_container_ids.add(container_id)
+                            
+                            print(f"    Successfully extracted featured offer for {display_name}")
+                            # Merge model info with featured offer
+                            merged_offer = self.merge_offer_data_with_model(featured_offer, model_info)
+                            
+                            # Handle multiple offers (multiple years)
+                            if featured_offer.get("multiple"):
+                                print(f"    Found multiple offers (years): {[o.get('year') for o in featured_offer['offers']]}")
+                                # Merge each offer in the multiple offers
+                                for offer in featured_offer["offers"]:
+                                    merged = self.merge_offer_data_with_model(offer, model_info)
+                                    featured_offers.append(merged)
+                            else:
+                                print(f"    Added single featured offer for {display_name} (year: {merged_offer.get('year')})")
+                                featured_offers.append(merged_offer)
+                        else:
+                            print(f"    Warning: extract_featured_offer returned None for container {i+1}")
+                    except Exception as e:
+                        print(f"    Error extracting featured offer for {display_name}: {e}")
+                        import traceback
+                        traceback.print_exc()
                         continue
 
-            except Exception as e:
-                print(f"Error scraping from .offer-detail-container elements: {e}")
-                import traceback
-                traceback.print_exc()
-            
-            print(f"\nTotal containers processed: {total_containers}")
-            print(f"Total offers scraped: {len(offers)}")
-            if total_containers > len(offers):
-                print(f"  ({total_containers - len(offers)} containers were filtered out during normalization)")
-                
+            print(f"\nExtracted {len(featured_offers)} total featured offers")
+            return featured_offers
+
         except Exception as e:
-            print(f"Error scraping from website: {e}")
+            print(f"Error scraping featured offers: {e}")
             import traceback
             traceback.print_exc()
-        
-        return offers
+            return featured_offers
 
-    def extract_featured_offer(self, featured_element) -> Optional[Dict[str, Any]]:
+    def extract_featured_offer(self, container, model_info: Dict = None) -> Optional[Dict[str, Any]]:
         """
-        Extract data from a featured offer element (gmst-vehicle-offers-featured)
-        Featured offers are typically financing offers with APR information
+        Extract data from a featured offer container
+        Checks for "&" in headline for multiple years
         """
         try:
-            # Get attributes from the element
-            year_attr = featured_element.get_attribute("year")
-            carline = featured_element.get_attribute("carline")
-            bodystyle = featured_element.get_attribute("bodystyle")
-            offer_url = featured_element.get_attribute("offerurl")
+            print(f"      Extracting featured offer from container...")
             
-            if not carline:
-                return None
+            # Extract year information from headline (e.g., "2025 GMC CANYON MODELS" or "2025 & 2026 GMC CANYON MODELS")
+            years = []
+            headline_text = ""
             
-            # Extract model name and year from headline/title (e.g., "2025 GMC CANYON MODELS")
-            model_name = None
-            year = None
-            try:
-                headline = featured_element.find_element(
-                    By.CSS_SELECTOR, "h1.q-headline, .q-headline.q-display2, h1"
-                )
-                headline_text = headline.text.strip()
-                
-                # Extract year from title (usually at the start, e.g., "2025 GMC CANYON MODELS")
-                year_match = re.search(r'^(\d{4})\s+', headline_text)
-                if year_match:
-                    year = int(year_match.group(1))
-                elif year_attr:
-                    try:
-                        year = int(year_attr)
-                    except:
-                        pass
-                
-                # Extract model from headline (e.g., "2025 GMC CANYON MODELS" -> "Canyon")
-                if "GMC" in headline_text:
-                    parts = headline_text.split()
-                    for i, part in enumerate(parts):
-                        if part.upper() == "GMC" and i + 1 < len(parts):
-                            model_name = parts[i + 1].title()
+            # Look for headline elements (q-headline, q-display2)
+            headline_elements = container.find_elements(
+                By.CSS_SELECTOR,
+                ".q-headline, h1.q-headline, .q-display2, h1.q-display2"
+            )
+            
+            for headline_elem in headline_elements:
+                try:
+                    headline_text = headline_elem.text.strip()
+                    if headline_text:
+                        # Check if headline contains "&" (indicates multiple years)
+                        has_ampersand = "&" in headline_text or "&amp;" in headline_text or "&nbsp;" in headline_text
+                        
+                        # Extract all years from headline
+                        extracted_years = self.extract_years_from_text(headline_text)
+                        if extracted_years:
+                            years = extracted_years
+                            print(f"      Found years from headline: {headline_text} -> {years}")
                             break
-                if not model_name:
-                    model_name = carline.replace("-", " ").title()
-            except:
-                model_name = carline.replace("-", " ").title()
-                # Fallback to attribute if title extraction failed
-                if year_attr:
-                    try:
-                        year = int(year_attr)
-                    except:
-                        pass
-            
-            # Extract all text from featured offer for OpenAI analysis
-            featured_text = ""
-            try:
-                text_elements = featured_element.find_elements(
-                    By.CSS_SELECTOR, ".q-display3, .q-text, .q-body1, p, span, h1, h2, h3"
-                )
-                for elem in text_elements:
-                    text = elem.text.strip()
-                    if text:
-                        featured_text += text + " "
-                featured_text = featured_text.strip()
-            except Exception as e:
-                print(f"      Error extracting text: {e}")
-            
-            # Try OpenAI extraction for featured offers
-            openai_extracted_featured = None
-            if featured_text and self.openai_client:
-                try:
-                    openai_extracted_featured = self.classify_and_extract_with_openai(
-                        featured_text,
-                        offer_type_hint="featured"
-                    )
-                    if openai_extracted_featured:
-                        print(f"      ✓ Used OpenAI to extract featured offer data")
                 except Exception as e:
-                    print(f"      Warning: OpenAI extraction error: {e}")
-            
-            # Extract APR - use OpenAI if available, otherwise use regex
-            apr_text = None
-            apr_value = None
-            if openai_extracted_featured and openai_extracted_featured.get("apr"):
-                apr_value = openai_extracted_featured.get("apr")
-                if apr_value:
-                    apr_text = f"{apr_value * 100}% APR" if apr_value < 1 else f"{apr_value}% APR"
-            else:
-                try:
-                    # Look in all text elements
-                    text_elements = featured_element.find_elements(
-                        By.CSS_SELECTOR, ".q-display3, .q-text, .q-body1, p, span"
-                    )
-                    for elem in text_elements:
-                        text = elem.text.strip()
-                        if not text:
-                            continue
-                        # Check if it contains APR or percentage
-                        if "APR" in text.upper() or ("%" in text and any(c.isdigit() for c in text)):
-                            apr_text = text
-                            apr_value = self.extract_apr(text)
-                            if apr_value:
-                                break
-                except Exception as e:
-                    print(f"      Error extracting APR: {e}")
+                    print(f"      Error extracting year from headline: {e}")
                     pass
             
-            # Extract terms/fine print from disclosure
-            terms = None
+            # If no years found in headline, try container text
+            if not years:
+                container_text = container.text
+                years = self.extract_years_from_text(container_text)
+                if years:
+                    print(f"      Found years from container text: {years}")
+            
+            # Don't extract model name from HTML - it will come from API model info when matching
+            model = None
+
+            # Extract APR from display elements (q-display3 contains APR)
+            apr = None
+            display_elements = container.find_elements(
+                By.CSS_SELECTOR,
+                ".q-display3, .q-text, .q-body1, p, span"
+            )
+            
+            for elem in display_elements:
+                try:
+                    elem_text = elem.text.strip()
+                    if not elem_text:
+                        continue
+                    # Check if it contains APR or percentage
+                    if "APR" in elem_text.upper() or ("%" in elem_text and any(c.isdigit() for c in elem_text)):
+                        apr = self.extract_apr(elem_text)
+                        if apr is not None:
+                            print(f"      Found APR: {elem_text} -> {apr}")
+                            break
+                except Exception as e:
+                    print(f"      Error extracting APR: {e}")
+                    continue
+            
+            # Extract cash back if present
+            cash_back = None
+            container_text = container.text
+            cash_back = self.extract_cash_back(container_text)
+            if cash_back is not None:
+                print(f"      Found cash back: ${cash_back}")
+
+            # Extract full description/text from container
+            full_text = ""
+            try:
+                full_text = (
+                    self.driver.execute_script(
+                        "return (arguments[0].innerText || arguments[0].textContent || '').trim();",
+                        container,
+                    )
+                    or ""
+                )
+            except Exception as e:
+                print(f"      Error getting full text via JavaScript: {e}")
+                full_text = container.text or ""
+
+            # Clean up the text
+            if full_text:
+                try:
+                    # Remove button/link text
+                    button_elems = container.find_elements(
+                        By.CSS_SELECTOR,
+                        "button, a, .gb-disclosure button"
+                    )
+                    button_texts = set()
+                    for btn in button_elems:
+                        try:
+                            btn_text = btn.text.strip()
+                            if btn_text and len(btn_text) < 50:
+                                button_texts.add(btn_text)
+                        except:
+                            continue
+
+                    for bt in button_texts:
+                        if bt and bt in full_text:
+                            full_text = full_text.replace(bt, " ")
+
+                    # Remove disclosure markers
+                    full_text = re.sub(r'\s*\*\s*', ' ', full_text)
+                    full_text = re.sub(r'_{3,}', '\n', full_text)
+                    full_text = re.sub(r'[ \t]+', ' ', full_text)
+                    full_text = re.sub(r'\n\s*\n\s*\n+', '\n\n', full_text)
+                    full_text = full_text.strip()
+                except Exception as e:
+                    print(f"      Error cleaning text: {e}")
+
+            # Extract expiration date and fine print from disclosures
+            expiration_date = None
             fine_print = None
             try:
-                disclosure = featured_element.find_element(
+                disclosure = container.find_element(
                     By.CSS_SELECTOR, "gb-disclosures"
                 )
                 disclosure_data = disclosure.get_attribute("disclosure-data")
@@ -901,7 +834,6 @@ class GMCScraper:
                     import json
                     try:
                         disclosure_json = json.loads(disclosure_data)
-                        # Extract content from all disclosures
                         disclosure_texts = []
                         for key, value in disclosure_json.items():
                             if isinstance(value, dict) and "content" in value:
@@ -910,330 +842,132 @@ class GMCScraper:
                                     disclosure_texts.append(content)
                         if disclosure_texts:
                             fine_print = " ".join(disclosure_texts)
+                            # Look for expiration date in fine print
+                            exp_match = re.search(r'by\s+(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})', fine_print, re.IGNORECASE)
+                            if exp_match:
+                                month, day, year_str = exp_match.groups()
+                                year_int = int(year_str)
+                                if year_int < 100:
+                                    year_int += 2000 if year_int < 50 else 1900
+                                expiration_date = f"{year_int}-{int(month):02d}-{int(day):02d}"
                     except json.JSONDecodeError:
                         pass
             except:
                 pass
-            
-            # Extract expiration date from fine print if available
-            expiration_date = None
-            if fine_print:
-                # Look for patterns like "Take new retail delivery by 1/2/26" or "by 1-2-2026"
-                exp_match = re.search(r'by\s+(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})', fine_print, re.IGNORECASE)
-                if exp_match:
-                    month, day, year_str = exp_match.groups()
-                    year_int = int(year_str)
-                    if year_int < 100:
-                        year_int += 2000 if year_int < 50 else 1900
-                    expiration_date = f"{year_int}-{int(month):02d}-{int(day):02d}"
-            
-            # Determine offer type - use OpenAI classification if available
-            if openai_extracted_featured and openai_extracted_featured.get("offerType"):
-                offer_type = openai_extracted_featured["offerType"]
-            else:
-                # Default: featured offers are usually financing
-                offer_type = "financing" if apr_value else "cash"
-            
-            # Build offer data
-            year_int = None
-            if year:
-                try:
-                    year_int = int(year)
-                except:
-                    pass
-            
-            offer = {
-                "brand": self.brand,
-                "year": year_int,
-                "make": self.brand,
-                "model": model_name,
-                "modelCode": carline,
-                "trim": None,
-                "offerType": offer_type,
-                "offerAmount": None,
-                "apr": apr_value,
-                "termMonths": None,
-                "cashBack": None,
-                "dueAtSigning": None,
-                "monthlyPayment": None,
-                "milesPerYear": None,
-                "expirationDate": openai_extracted_featured.get("expirationDate") if openai_extracted_featured else expiration_date,
-                "terms": apr_text or f"Featured offer for {model_name}",
-                "finePrint": fine_print,
-            }
-            
-            return offer
-            
-        except Exception as e:
-            print(f"      Error extracting featured offer: {e}")
-            import traceback
-            traceback.print_exc()
-            return None
 
-    def extract_regular_offer(self, offer_item, container) -> Optional[Dict[str, Any]]:
-        """
-        Extract data from a regular offer item (lease, finance, cash)
-        """
-        try:
-            # Get carline, bodystyle, year from container
-            carline = container.get_attribute("carline")
-            bodystyle = container.get_attribute("bodystyle")
-            
-            # Extract offer type from title or data attribute
-            offer_type_str = None
-            try:
-                offer_type_elem = offer_item.find_element(
-                    By.CSS_SELECTOR, ".gmst-co-offer-type-item-title"
-                )
-                offer_type_str = offer_type_elem.text.strip()
-            except:
-                pass
-            
-            # Also check data-offertype attribute
-            try:
-                disclosure_elem = offer_item.find_element(
-                    By.CSS_SELECTOR, "[data-offertype]"
-                )
-                offer_type_str = disclosure_elem.get_attribute("data-offertype")
-            except:
-                pass
-            
-            # Map offer type
-            offer_type = "cash"
-            if offer_type_str:
-                offer_type_lower = offer_type_str.lower()
-                if "lease" in offer_type_lower:
-                    offer_type = "lease"
-                elif "finance" in offer_type_lower or "apr" in offer_type_lower:
-                    offer_type = "financing"
-                elif "cash" in offer_type_lower:
-                    offer_type = "cash"
-            
-            # Extract title/model name and year from title element
-            model_name = None
-            year = None
-            try:
-                title_elem = offer_item.find_element(
-                    By.CSS_SELECTOR, ".gmst-co-offer-item-title"
-                )
-                title_text = title_elem.text.strip()
-                model_name = title_text
-                
-                # Extract year from title (usually at the start, e.g., "2026 GMC Canyon Short Crew 2WD Elevation")
-                year_match = re.search(r'^(\d{4})\s+', title_text)
-                if year_match:
-                    year = int(year_match.group(1))
+            # Determine offer type: if APR exists, set as financing, otherwise set as cash
+            if apr is not None:
+                offer_type = "financing"
+            else:
+                offer_type = "cash"
+
+            # Use full_text as terms (description)
+            terms = full_text if full_text else None
+
+            # Create offer(s) - one for each year if multiple years
+            offers = []
+            if not years:
+                # If no years found, try to match from API data
+                years = [None]  # Will be matched later
+                print(f"      No years found, will match from API data")
+            else:
+                if len(years) > 1:
+                    print(f"      Found multiple years: {years} - creating {len(years)} separate offers")
                 else:
-                    # Try to find year anywhere in the title
-                    year_match = re.search(r'\b(\d{4})\b', title_text)
-                    if year_match:
-                        year_candidate = int(year_match.group(1))
-                        # Validate year is reasonable (between 2020 and 2030)
-                        if 2020 <= year_candidate <= 2030:
-                            year = year_candidate
-            except:
-                pass
-            
-            # Fallback: try to get year from container or parent elements
-            if not year:
-                try:
-                    # Check if container has year attribute
-                    year_attr = container.get_attribute("year")
-                    if year_attr:
-                        try:
-                            year = int(year_attr)
-                        except:
-                            pass
-                except:
-                    pass
-            
-            # Extract offer body text
-            body_text = None
-            try:
-                body_elem = offer_item.find_element(
-                    By.CSS_SELECTOR, ".gmst-co-offer-item-offer-body"
-                )
-                body_text = body_elem.text.strip()
-            except:
-                pass
-            
-            # Extract fine print/disclosure - try multiple selectors
-            fine_print = None
-            try:
-                disclosure_elem = offer_item.find_element(
-                    By.CSS_SELECTOR, ".gmst-co-offer-item-offer-disclosure"
-                )
-                fine_print = disclosure_elem.text.strip()
-            except:
-                # Try alternative selector
-                try:
-                    disclosure_elem = offer_item.find_element(
-                        By.CSS_SELECTOR, "[data-offertype]"
-                    )
-                    fine_print = disclosure_elem.text.strip()
-                except:
-                    pass
-            
-            # Combine body text and fine print for extraction
-            combined_text = ""
-            if body_text:
-                combined_text += body_text + " "
-            if fine_print:
-                combined_text += fine_print
-            
-            # Try OpenAI extraction first, fallback to regex
-            openai_extracted_regular = None
-            if combined_text and self.openai_client:
-                try:
-                    openai_extracted_regular = self.classify_and_extract_with_openai(
-                        combined_text, 
-                        offer_type_hint=offer_type
-                    )
-                    if openai_extracted_regular:
-                        print(f"      ✓ Used OpenAI to extract offer data")
-                except Exception as e:
-                    print(f"      Warning: OpenAI extraction error: {e}")
-            
-            # Extract offer details - use OpenAI results if available, otherwise use regex
-            cash_back = None
-            miles_per_year = None
-            expiration_date_openai = None
-            
-            if openai_extracted_regular:
-                monthly_payment = openai_extracted_regular.get("monthlyPayment")
-                term_months = openai_extracted_regular.get("termMonths")
-                due_at_signing = openai_extracted_regular.get("dueAtSigning")
-                apr = openai_extracted_regular.get("apr")
-                offer_amount = openai_extracted_regular.get("offerAmount")
-                cash_back = openai_extracted_regular.get("cashBack")
-                miles_per_year = openai_extracted_regular.get("milesPerYear")
-                expiration_date_openai = openai_extracted_regular.get("expirationDate")
-                
-                # Update offer type if OpenAI classified it differently
-                if openai_extracted_regular.get("offerType") and openai_extracted_regular["offerType"] != offer_type:
-                    offer_type = openai_extracted_regular["offerType"]
+                    print(f"      Found single year: {years[0]}")
+
+            for year in years:
+                offer = {
+                    "brand": self.brand,
+                    "year": year,
+                    "make": self.brand,
+                    "model": model or None,
+                    "modelCode": None,  # Will be matched from API
+                    "trim": None,
+                    "offerType": offer_type,
+                    "offerAmount": None,
+                    "apr": apr,
+                    "termMonths": None,
+                    "cashBack": cash_back,
+                    "dueAtSigning": None,
+                    "monthlyPayment": None,
+                    "milesPerYear": None,
+                    "expirationDate": expiration_date,
+                    "terms": terms,
+                    "finePrint": fine_print,
+                    "isFeatured": True,
+                }
+                offers.append(offer)
+
+            # Return first offer if single year, or all if multiple
+            if len(offers) == 1:
+                return offers[0]
             else:
-                # Fallback to regex extraction
-                monthly_payment = self.extract_monthly_payment(combined_text) if combined_text else None
-                term_months = self.extract_term_months(combined_text) if combined_text else None
-                due_at_signing = self.extract_due_at_signing(combined_text) if combined_text else None
-                apr = self.extract_apr(combined_text) if combined_text else None
-                offer_amount = None
-            
-            # Extract offer ID if available
-            offer_id = None
-            try:
-                # Try to find parent with offerid attribute
-                parent = offer_item.find_element(By.XPATH, "./ancestor::div[@offerid]")
-                offer_id = parent.get_attribute("offerid")
-            except:
-                # Try alternative: look for offer-detail-container
-                try:
-                    parent = offer_item.find_element(By.XPATH, "./ancestor::div[contains(@class, 'offer-detail-container')]")
-                    offer_id = parent.get_attribute("offerid")
-                except:
-                    pass
-            
-            # Extract expiration date - use OpenAI result if available, otherwise parse from fine print
-            expiration_date = expiration_date_openai if expiration_date_openai else None
-            if not expiration_date and fine_print:
-                # Look for patterns like "Take new retail delivery by 01-02-2026" or "by 1/2/26"
-                exp_patterns = [
-                    r'by\s+(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})',
-                    r'delivery\s+by\s+(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})',
-                    r'(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})',
-                ]
-                for pattern in exp_patterns:
-                    exp_match = re.search(pattern, fine_print, re.IGNORECASE)
-                    if exp_match:
-                        month, day, year_str = exp_match.groups()
-                        try:
-                            year_int = int(year_str)
-                            if year_int < 100:
-                                year_int += 2000 if year_int < 50 else 1900
-                            expiration_date = f"{year_int}-{int(month):02d}-{int(day):02d}"
-                            break
-                        except:
-                            pass
-            
-            # Don't populate offerAmount from monthlyPayment, cashBack, or cash-related text - keep them separate
-            # offerAmount should only be set if explicitly extracted from the offer content
-            
-            # Extract trim from model name if available
-            trim = None
-            if model_name:
-                # Common trim patterns: SLT, Denali, Elevation, AT4, SLE, Pro, Base, etc.
-                trim_patterns = [
-                    r'\b(SLT|Denali|Elevation|AT4|SLE|Pro|Base|Premium|Luxury|Limited|Sport)\b',
-                    r'\b(2X|3X|4X|EV)\b',  # For electric vehicles
-                ]
-                for pattern in trim_patterns:
-                    trim_match = re.search(pattern, model_name, re.IGNORECASE)
-                    if trim_match:
-                        trim = trim_match.group(1)
-                        break
-            
-            # Build offer data
-            if not carline:
-                return None
-            
-            # Clean up model name - remove year if present
-            clean_model_name = model_name or carline.replace("-", " ").title()
-            if clean_model_name and year:
-                # Remove year from model name if it's at the start
-                clean_model_name = re.sub(rf'^{year}\s+', '', clean_model_name, flags=re.IGNORECASE)
-                clean_model_name = clean_model_name.strip()
-            
-            offer = {
-                "brand": self.brand,
-                "year": year,
-                "make": self.brand,
-                "model": clean_model_name,
-                "modelCode": carline,
-                "trim": trim,
-                "offerType": offer_type,
-                "offerAmount": offer_amount,
-                "apr": apr,
-                "termMonths": term_months,
-                "cashBack": cash_back,
-                "dueAtSigning": due_at_signing,
-                "monthlyPayment": monthly_payment,
-                "milesPerYear": miles_per_year,
-                "expirationDate": expiration_date,
-                "terms": body_text,
-                "finePrint": fine_print,
-            }
-            
-            return offer
-            
+                # Return list indicator - will be handled by caller
+                return {"multiple": True, "offers": offers}
+
         except Exception as e:
-            print(f"      Error extracting regular offer: {e}")
+            print(f"Error extracting featured offer: {e}")
             import traceback
             traceback.print_exc()
             return None
 
-    def scrape(self, use_website: bool = True) -> List[Dict[str, Any]]:
+    def scrape(self) -> List[Dict[str, Any]]:
         """
         Main scraping method
-        
-        Args:
-            use_website: If True, scrape from website using ChromeDriver. Otherwise, use API.
-        
-        Returns:
-            List of offer dictionaries
+        Fetches API data and scrapes featured offers from website
         """
-        # We only support website scraping for GMC now; ignore use_website flag
         offers = []
-        if not self.setup_driver():
-            print("Failed to setup driver, cannot scrape offers")
+        
+        # Step 1: Fetch API data
+        api_data = self.fetch_api_data()
+        if not api_data:
+            print("Failed to fetch API data")
             return offers
 
-        print("Scraping from website using ChromeDriver...")
-        offers = self.scrape_offers_from_website()
-        if self.driver:
-            self.driver.quit()
+        # Step 2: Process regular offers from API
+        print("Processing regular offers from API...")
+        regular_offers = self.process_api_offers()
+        offers.extend(regular_offers)
+        print(f"Processed {len(regular_offers)} regular offers")
+
+        # Step 3: Make model sets from API data
+        print("\nCreating model sets from API data...")
+        unique_models = self.get_unique_models_from_api()
+        print(f"Created model set with {len(unique_models)} unique models")
         
+        # Step 4: Scrape featured offers from website
+        if not self.setup_driver():
+            print("Failed to setup driver, skipping featured offers")
+            self.offers = offers
+            return offers
+
+        try:
+            featured_offers = self.scrape_featured_offers(unique_models)
+            print(f"\nScraped {len(featured_offers)} featured offers from website")
+            
+            if featured_offers:
+                # Featured offers are already matched to models during scraping
+                offers.extend(featured_offers)
+                print(f"Added {len(featured_offers)} featured offers (already matched to models)")
+                print(f"Total offers after adding featured: {len(offers)}")
+            else:
+                print("No featured offers found to add")
+        finally:
+            if self.driver:
+                self.driver.quit()
+
         self.offers = offers
+        
+        # Print summary
+        regular_count = len(regular_offers)
+        featured_count = len(offers) - regular_count
+        print(f"\n=== Scraping Summary ===")
+        print(f"Regular offers from API: {regular_count}")
+        print(f"Featured offers from website: {featured_count}")
+        print(f"Total offers: {len(offers)}")
+        print("=======================\n")
+        
         return offers
 
     def send_to_api(self) -> bool:
@@ -1313,7 +1047,7 @@ def main():
     args = parser.parse_args()
     
     scraper = GMCScraper(api_url=args.api_url)
-    offers = scraper.scrape(use_website=True)
+    offers = scraper.scrape()
     
     print(f"\nScraped {len(offers)} offers")
     
