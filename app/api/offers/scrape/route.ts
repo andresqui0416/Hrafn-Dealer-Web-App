@@ -6,48 +6,12 @@ export const revalidate = 0;
 
 const prisma = new PrismaClient();
 
-/**
- * Generic API endpoint to receive scraped offer data from Python scrapers
- * POST /api/offers/scrape
- * 
- * Accepts normalized offer data from any brand/manufacturer.
- * All data normalization should be done on the Python script side.
- * 
- * Body:
- * {
- *   "offers": [
- *     {
- *       "brand": "GMC",
- *       "year": 2025,
- *       "make": "GMC",
- *       "model": "Sierra 1500",
- *       "modelCode": "sierra-1500",
- *       "trim": "Elevation",
- *       "offerType": "lease",
- *       "offerAmount": 289.0,
- *       "apr": null,
- *       "termMonths": 24,
- *       "cashBack": null,
- *       "tradeDiscount": null,
- *       "dueAtSigning": 3629.0,
- *       "monthlyPayment": 289.0,
- *       "milesPerYear": null,
- *       "expirationDate": "2026-01-02",
- *       "terms": "...",
- *       "finePrint": "..."
- *     }
- *   ],
- *   "scrapedAt": "2025-01-15T10:30:00Z",
- *   "source": "python_scraper",
- *   "brand": "GMC"  // Optional: if provided, will delete existing offers for this brand
- * }
- */
 export async function POST(request: NextRequest) {
   try {
     await prisma.$connect();
 
     const body = await request.json();
-    const { offers, scrapedAt, source, brand } = body;
+    const { offers, source, brand } = body;
 
     if (!offers || !Array.isArray(offers)) {
       return NextResponse.json(
@@ -65,32 +29,20 @@ export async function POST(request: NextRequest) {
 
     console.log(`Received ${offers.length} offers from ${source || "unknown source"}`);
 
-    // Determine which brands to delete existing offers for
-    const brandsToDelete = new Set<string>();
+    // Delete existing offers for the brand from request
     if (brand) {
-      brandsToDelete.add(brand);
-    } else {
-      // Extract unique brands from offers
-      for (const offer of offers) {
-        if (offer.brand) {
-          brandsToDelete.add(offer.brand);
-        }
-      }
-    }
-
-    // Delete existing offers for the brand(s) before storing new ones
-    for (const brandToDelete of brandsToDelete) {
       const deleteResult = await prisma.offers.deleteMany({
         where: {
-          brand: brandToDelete,
+          brand: brand,
         },
       });
-      console.log(`Deleted ${deleteResult.count} existing ${brandToDelete} offers`);
+      console.log(`Deleted ${deleteResult.count} existing ${brand} offers`);
     }
 
     // Validate offers - Python script should have normalized everything, but do basic validation
     const validOffers: any[] = [];
-    const scrapedAtDate = scrapedAt ? new Date(scrapedAt) : new Date();
+    // Set scrapedAt timestamp on backend (not from Python script)
+    const scrapedAtDate = new Date();
 
     for (const offer of offers) {
       // Basic validation - Python script should have done full normalization
@@ -193,7 +145,7 @@ export async function POST(request: NextRequest) {
                   terms: offer.terms,
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
-                  scrapedAt: offer.scrapedAt,
+                  scrapedAt: scrapedAtDate,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });
@@ -211,15 +163,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const brandsList = Array.from(brandsToDelete).join(", ");
-
     return NextResponse.json({
       success: true,
       received: offers.length,
       validated: validOffers.length,
       stored: storedCount,
-      brands: brandsList,
-      message: `Successfully stored ${storedCount} offers for ${brandsList}`,
+      brand: brand || null,
+      message: `Successfully stored ${storedCount} offers${brand ? ` for ${brand}` : ""}`,
     });
   } catch (error: any) {
     console.error("Error processing offers:", error?.message || error);

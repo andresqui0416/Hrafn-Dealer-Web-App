@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const skip = (page - 1) * limit;
-    
+
     // Get filters from query params
     const brand = searchParams.get("brand");
     const year = searchParams.get("year");
@@ -53,6 +53,9 @@ export async function GET(request: NextRequest) {
       prisma.offers.findMany({
         where,
         orderBy: [
+          { brand: "asc" },
+          { model: "asc" },
+          { year: "desc" },
           { expirationDate: "asc" }, // Show expiring soon first
           { scrapedAt: "desc" }, // Then most recently scraped
         ],
@@ -79,12 +82,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching offers:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
 }
-
