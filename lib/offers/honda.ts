@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 
 const fetchOfferData = async (zipCode: string = "95556") => {
   const url = `https://automobiles.honda.com/platform/api/v1/specials?zipCode=${zipCode}`;
-  console.log(`Fetching Honda offers from: ${url}`);
 
   const response = await fetch(url, {
     method: "GET",

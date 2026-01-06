@@ -119,7 +119,7 @@ export async function scrapeOffersFromAudi() {
       // }
     }
 
-    console.log("Offers:", offers.length);
+    console.log("Audi Offers found:", offers.length);
     
     // Delete all existing offers for this brand first
     const brand = offers.length > 0 ? offers[0].brand : "Audi";

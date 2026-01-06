@@ -38,7 +38,6 @@ const fetchModelInfos = async () => {
 
 const fetchOfferData = async (modelInfo: any) => {
   const url = `https://www.jeep.com/hostd/api/incentives/offers/targetMedium/Preferred-Offers/zip/95556/vehicle/${modelInfo.modelYearCode}`;
-  console.log(url);
   const requestOptions = {
     method: "GET",
     redirect: "follow" as RequestRedirect,
