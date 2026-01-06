@@ -112,7 +112,6 @@ export async function scrapeOffersFromLucid() {
     
     // First, check if the class exists in the HTML
     const hasOffersCard = html.includes("OffersCard_offersCard");
-    console.log("HTML contains 'OffersCard_offersCard':", hasOffersCard);
     
     if (!hasOffersCard) {
       // Try alternative class names or patterns
@@ -125,7 +124,6 @@ export async function scrapeOffersFromLucid() {
       let foundAlternative = false;
       for (const pattern of alternativePatterns) {
         if (pattern.test(html)) {
-          console.log("Found alternative pattern:", pattern);
           foundAlternative = true;
           break;
         }
@@ -133,8 +131,6 @@ export async function scrapeOffersFromLucid() {
       
       if (!foundAlternative) {
         console.error("No offer card class found in HTML");
-        console.log("HTML length:", html.length);
-        console.log("HTML sample (first 5000 chars):", html.substring(0, 5000));
         return { success: false, error: "No offer card class found in HTML" };
       }
     }
@@ -200,10 +196,7 @@ export async function scrapeOffersFromLucid() {
       // Log more details for debugging
       if (hasOffersCard) {
         const index = html.indexOf("OffersCard_offersCard");
-        console.log("Context around first match:", html.substring(Math.max(0, index - 300), index + 800));
       }
-      console.log("HTML length:", html.length);
-      console.log("HTML sample (first 5000 chars):", html.substring(0, 5000));
       return { success: false, error: "No offer cards found in HTML" };
     }
 
@@ -212,7 +205,6 @@ export async function scrapeOffersFromLucid() {
     const offers: any[] = [];
     const scrapedAt = new Date();
 
-    console.log("Processing", offerCardsFinal.length, "offer cards");
     // Process each offer card
     for (const cardHtml of offerCardsFinal) {
       try {
@@ -226,7 +218,6 @@ export async function scrapeOffersFromLucid() {
 
         if (!model || !year) {
           console.warn("Skipping offer card - missing model or year", { model, year });
-          console.log("Card HTML sample:", cardHtml.substring(0, 500));
           continue;
         }
 
@@ -238,8 +229,6 @@ export async function scrapeOffersFromLucid() {
         // Look for p tag with class containing OffersCard_paymentType__
         const paymentTypePattern = /<p[^>]*class="[^"]*OffersCard_paymentType__[^"]*"[^>]*>([^<]+)<\/p>/gi;
         const paymentTypeMatches = Array.from(cardHtml.matchAll(paymentTypePattern));
-        
-        console.log(`Found ${paymentTypeMatches.length} payment types for ${model} ${year}`);
         
         for (let i = 0; i < paymentTypeMatches.length; i++) {
           const paymentMatch = paymentTypeMatches[i];
@@ -283,7 +272,6 @@ export async function scrapeOffersFromLucid() {
           if (containerEnd > containerStart) {
             const containerHtml = cardHtml.substring(containerStart, containerEnd);
             offerContainers.push(containerHtml);
-            console.log(`  - Extracted ${paymentType} offer container (${containerHtml.length} chars)`);
           }
         }
         
@@ -297,8 +285,6 @@ export async function scrapeOffersFromLucid() {
             offerContainers.push(containerMatch[0]);
           }
         }
-        
-        console.log(`Found ${offerContainers.length} offer containers for ${model} ${year}`);
 
         for (const containerHtml of offerContainers) {
           // Extract offer type (Lease, Finance, Cash)

@@ -390,8 +390,6 @@ export async function scrapeOffersFromGMC() {
             (htmlText.trim().length > 30); // At least 30 characters of text content
 
           if (!hasValidData) {
-            console.log(htmlText)
-            console.warn(`Skipping featured ${offerType} offer for ${model} ${year} - insufficient data`);
             continue;
           }
 
@@ -496,7 +494,6 @@ export async function scrapeOffersFromGMC() {
         (offerType === "cash" && (offerAmount !== null || cashBack !== null || tradeDiscount !== null));
 
       if (!hasValidData) {
-        console.warn(`Skipping ${offerType} offer for ${model} ${year} - insufficient data`);
         continue;
       }
 

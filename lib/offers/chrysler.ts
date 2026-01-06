@@ -17,20 +17,18 @@ const fetchModelInfos = async () => {
   }
 
   const data = await response.json();
-  const modelInfos = data.data.targetMediumMapping.flatMap((item: any) => {
-    return item.offerOrder[0].flatMap((card: any) => {
-      return card.modelYearData.map((yearData: any) => {
-        return {
-          key: yearData.authoring.url,
-          year: yearData.modelData.year,
-          brand: yearData.modelData.brand,
-          vehicle: yearData.modelData.vehicle,
-          modelYearCode: yearData.modelData.modelYearCode,
-          displayName: yearData.modelData.display,
-          msrp: yearData.modelData.msrp,
-          ccode: yearData.modelData.ccode,
-        };
-      });
+  const modelInfos = data.vehicleSelector.vehicleSelectorGrids[0].vehicleSelectorCards.flatMap((card: any) => {
+    return card.modelYearData.map((yearData: any) => {
+      return {
+        key: yearData.authoring.url,
+        year: yearData.modelData.year,
+        brand: yearData.modelData.brand,
+        vehicle: yearData.modelData.vehicle,
+        modelYearCode: yearData.modelData.modelYearCode,
+        displayName: yearData.modelData.display,
+        msrp: yearData.modelData.msrp,
+        ccode: yearData.modelData.ccode,
+      };
     });
   });
   return modelInfos;
@@ -38,7 +36,6 @@ const fetchModelInfos = async () => {
 
 const fetChOfferData = async (modelInfo: any) => {
   const url = `https://www.chrysler.com/hostd/api/incentives/offers/targetMedium/iSilo-Inline/zip/95556/vehicle/${modelInfo.modelYearCode}`;
-  console.log(url);
   const requestOptions = {
     method: "GET",
     redirect: "follow" as RequestRedirect,
@@ -166,13 +163,18 @@ export async function scrapeOffersFromChrysler() {
       console.error("Failed to fetch model infos");
       return { success: false, error: "Failed to fetch model infos" };
     }
-    console.log("Model infos fetched successfully:", modelInfos.length);
     const offers = [];
     for (const modelInfo of modelInfos) {
       const offerData = await fetChOfferData(modelInfo);
       offers.push(...offerData);
     }
     if (offers.length > 0) {
+      await prisma.offers.deleteMany({
+        where: {
+          brand: "Chrysler",
+        },
+      });
+      console.log("Deleted all existing Chrysler offers");
       const BATCH_SIZE = 10;
       for (let i = 0; i < offers.length; i += BATCH_SIZE) {
         const batch = offers.slice(i, i + BATCH_SIZE);
@@ -221,7 +223,7 @@ export async function scrapeOffersFromChrysler() {
         }
       }
     }
-    console.log("Offers fetched successfully:", offers.length);
+    console.log("Chrysler Offers found:", offers.length);
     return { success: true, totalOffers: offers.length };
   } catch (error: any) {
     console.error("Error scraping Chrysler offers:", error?.message || error);
