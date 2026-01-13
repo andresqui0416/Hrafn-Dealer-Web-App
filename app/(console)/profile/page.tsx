@@ -312,7 +312,7 @@ export default function ProfilePage() {
             <CardTitle>Change Email</CardTitle>
             <CardDescription>Update your email address</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <form onSubmit={handleEmailSubmit} className="space-y-4">
               {error && (
                 <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
@@ -355,7 +355,7 @@ export default function ProfilePage() {
             <CardTitle>Change Password</CardTitle>
             <CardDescription>Update your password</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
               {error && (
                 <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
@@ -431,7 +431,7 @@ export default function ProfilePage() {
             <CardTitle>Profile Picture</CardTitle>
             <CardDescription>Upload or update your profile picture</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <form onSubmit={handleAvatarSubmit} className="space-y-4">
               {error && (
                 <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
