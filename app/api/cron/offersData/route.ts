@@ -17,6 +17,7 @@ import { scrapeOffersFromPorsche } from "@/lib/offers/porsche";
 import { scrapeOffersFromHonda } from "@/lib/offers/honda";
 import { scrapeOffersFromBMW } from "@/lib/offers/bmw";
 import { scrapeOffersFromVW } from "@/lib/offers/vw";
+import { scrapeOffersFromToyota } from "@/lib/offers/toyota";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -55,6 +56,7 @@ export async function GET(_request: NextRequest) {
       honda: { success: false, totalOffers: 0, error: "" },
       bmw: { success: false, totalOffers: 0, error: "" },
       vw: { success: false, totalOffers: 0, error: "" },
+      toyota: { success: false, totalOffers: 0, error: "" },
     };
 
     // // Scrape Audi offers
@@ -349,21 +351,38 @@ export async function GET(_request: NextRequest) {
     //   results.bmw.error = error?.message || "Failed to scrape BMW offers";
     // }
 
-    // Scrape Volkswagen offers
+    // // Scrape Volkswagen offers
+    // try {
+    //   const vwResult = (await scrapeOffersFromVW()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.vw = {
+    //     success: vwResult.success,
+    //     totalOffers: vwResult.totalOffers || 0,
+    //     error: vwResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Volkswagen offers:", error?.message || error);
+    //   results.vw.error = error?.message || "Failed to scrape Volkswagen offers";
+    // }
+
+    // Scrape Toyota offers
     try {
-      const vwResult = (await scrapeOffersFromVW()) as {
+      const toyotaResult = (await scrapeOffersFromToyota()) as {
         success: boolean;
         totalOffers?: number;
         error?: string;
       };
-      results.vw = {
-        success: vwResult.success,
-        totalOffers: vwResult.totalOffers || 0,
-        error: vwResult.error || "",
+      results.toyota = {
+        success: toyotaResult.success,
+        totalOffers: toyotaResult.totalOffers || 0,
+        error: toyotaResult.error || "",
       };
     } catch (error: any) {
-      console.error("Error scraping Volkswagen offers:", error?.message || error);
-      results.vw.error = error?.message || "Failed to scrape Volkswagen offers";
+      console.error("Error scraping Toyota offers:", error?.message || error);
+      results.toyota.error = error?.message || "Failed to scrape Toyota offers";
     }
 
     const totalOffers =
@@ -384,7 +403,8 @@ export async function GET(_request: NextRequest) {
       results.porsche.totalOffers+
       results.honda.totalOffers+
       results.bmw.totalOffers+
-      results.vw.totalOffers;
+      results.vw.totalOffers+
+      results.toyota.totalOffers;
 
     const allSuccess =
       results.audi.success &&
@@ -404,7 +424,8 @@ export async function GET(_request: NextRequest) {
       results.porsche.success &&
       results.honda.success &&
       results.bmw.success &&
-      results.vw.success;
+      results.vw.success &&
+      results.toyota.success;
 
     return NextResponse.json({
       success: allSuccess,
