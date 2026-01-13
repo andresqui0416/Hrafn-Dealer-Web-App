@@ -283,9 +283,9 @@ export async function scrapeOffersFromToyota() {
           const modules = contentWithModules?.fields?.modules;
           
           if (Array.isArray(modules)) {
-            for (const module of modules) {
-              if (module?.type === "featuredVehicles" && Array.isArray(module.featuredVehicles)) {
-                for (const featuredVehicle of module.featuredVehicles) {
+            for (const moduleItem of modules) {
+              if (moduleItem?.type === "featuredVehicles" && Array.isArray(moduleItem.featuredVehicles)) {
+                for (const featuredVehicle of moduleItem.featuredVehicles) {
                   if (Array.isArray(featuredVehicle.offers)) {
                     offers.push(...featuredVehicle.offers);
                   }
