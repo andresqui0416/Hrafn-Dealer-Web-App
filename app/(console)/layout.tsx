@@ -1,7 +1,8 @@
 "use client";
-import Link from "next/link";
-import { ReactNode, useState } from "react";
+
+import { ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -11,110 +12,86 @@ import {
   faChartLine,
   faChartGantt,
   faBars,
-  faXmark,
+  faX,
+  faInbox,
+  faDollarSign,
 } from "@fortawesome/free-solid-svg-icons";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "@/contexts/theme-context";
+import Image from "next/image";
+
 export default function ConsoleLayout({ children }: Readonly<{ children: ReactNode }>) {
-  const sidebarWidth = 260;
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { sidebarOpen, setSidebarOpen } = useTheme();
+
+  const navItems = [
+    { href: "/overview", label: "Overview", icon: faChartLine },
+    { href: "/inventory", label: "Inventory", icon: faCar },
+    { href: "/offers", label: "Offers", icon: faChartGantt },
+    { href: "/sales", label: "Sales", icon: faDollarSign },
+    { href: "/chat", label: "AI Agent", icon: faComments },
+    { href: "/inbox", label: "Inbox", icon: faInbox },
+    { href: "/settings", label: "Settings", icon: faGear },
+  ];
+
   return (
-    <div className="relative">
-      {/* Sidebar: drawer on mobile, fixed on md+ */}
+    <div className="bg-background">
+      {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-[65px] z-30 h-[calc(100vh-65px)] border-r border-white/10 bg-background/90 backdrop-blur transition-transform duration-200 md:translate-x-0",
-          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          "fixed h-full lg:h-[calc(100vh-65px)] top-0 lg:top-[65px] left-0 bottom-0 z-50 w-64 bg-background border-r border-white/10 transform transition-transform duration-200 ease-in-out lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
-        style={{ width: sidebarWidth }}
       >
-        <div className="h-full overflow-y-auto p-4">
-          <nav className="space-y-1 text-sm">
-            <Link
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center rounded px-3 py-2 hover:bg-white/10",
-                pathname === "/dashboard" && "bg-white/10",
-              )}
-              href="/dashboard"
-            >
-              <FontAwesomeIcon icon={faChartLine} />
-              <span className="ml-2">Overview</span>
-            </Link>
-            <Link
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center rounded px-3 py-2 hover:bg-white/10",
-                pathname === "/inventory" && "bg-white/10",
-              )}
-              href="/inventory"
-            >
-              <FontAwesomeIcon icon={faCar} />
-              <span className="ml-2">Inventory</span>
-            </Link>
-            <Link
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center rounded px-3 py-2 hover:bg-white/10",
-                pathname === "/offers" && "bg-white/10",
-              )}
-              href="/offers"
-            >
-              <FontAwesomeIcon icon={faChartGantt} />
-              <span className="ml-2">Offers</span>
-            </Link>
-            <Link
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center rounded px-3 py-2 hover:bg-white/10",
-                pathname === "/chat" && "bg-white/10",
-              )}
-              href="/chat"
-            >
-              <FontAwesomeIcon icon={faComments} />
-              <span className="ml-2">AI Agent</span>
-            </Link>
-            <Link
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center rounded px-3 py-2 hover:bg-white/10",
-                pathname === "/settings" && "bg-white/10",
-              )}
-              href="/settings"
-            >
-              <FontAwesomeIcon icon={faGear} />
-              <span className="ml-2">Settings</span>
-            </Link>
-          </nav>
+        <div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10 h-[65px]">
+          <Link href="/" onClick={() => setSidebarOpen(false)}>
+            <div className="flex items-center gap-3">
+              <Image src="/logo.png" alt="Hrafn AI" width={32} height={32} />
+              <span className="text-lg font-semibold text-foreground">Hrafn AI</span>
+            </div>
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden cursor-pointer hover:bg-white/10 transition-colors duration-200"
+          >
+            <FontAwesomeIcon icon={faX} className="h-4 w-4" />
+          </Button>
         </div>
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setSidebarOpen(false)}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium cursor-pointer transition-colors duration-200",
+                pathname === item.href
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-white/10 hover:text-foreground"
+              )}
+            >
+              <FontAwesomeIcon icon={item.icon} className="h-4 w-4" />
+              {item.label}
+            </Link>
+          ))}
+        </nav>
       </aside>
 
-      {/* Mobile backdrop */}
-      {mobileOpen && (
-        <button
-          aria-label="Close sidebar"
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 z-20 bg-black/40 md:hidden"
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      <div className="px-4 md:ml-[260px]">
-        <div className="sticky top-[65px] z-10 border-b border-white/10 bg-background/70 backdrop-blur">
-          <div className="mx-auto flex h-12 w-full max-w-6xl items-center justify-between px-2 md:px-4">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                aria-label="Open sidebar"
-                className="inline-flex h-8 w-8 items-center justify-center rounded md:hidden hover:bg-white/10"
-                onClick={() => setMobileOpen((v) => !v)}
-              >
-                <FontAwesomeIcon icon={mobileOpen ? faXmark : faBars} />
-              </button>
-              <h1 className="text-base font-semibold">Console</h1>
-            </div>
-          </div>
-        </div>
-
-        <main className="mx-auto w-full max-w-6xl py-6">{children}</main>
+      {/* Main content */}
+      <div className="flex-1 flex flex-col lg:ml-64">
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-6xl mx-auto">{children}</div>
+        </main>
       </div>
     </div>
   );

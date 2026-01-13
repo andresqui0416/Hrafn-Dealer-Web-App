@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE IF NOT EXISTS "inventory_listings" (
+CREATE TABLE IF NOT EXISTS "Inventory" (
     "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     "dealerId" uuid NOT NULL,
     "vin" text NOT NULL,
@@ -20,23 +20,23 @@ CREATE TABLE IF NOT EXISTS "inventory_listings" (
 );
 
 -- CreateIndex
-CREATE INDEX IF NOT EXISTS "idx_inv_dealer" ON "inventory_listings"("dealerId");
+CREATE INDEX IF NOT EXISTS "idx_inv_dealer" ON "Inventory"("dealerId");
 
 -- CreateIndex
-CREATE INDEX IF NOT EXISTS "idx_inv_make_model" ON "inventory_listings"("make", "model");
+CREATE INDEX IF NOT EXISTS "idx_inv_make_model" ON "Inventory"("make", "model");
 
 -- AddForeignKey
-ALTER TABLE "inventory_listings" ADD CONSTRAINT "fk_inv_dealer" FOREIGN KEY ("dealerId") REFERENCES "Dealer"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "Inventory" ADD CONSTRAINT "fk_inv_dealer" FOREIGN KEY ("dealerId") REFERENCES "Dealer"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- Trigger to maintain updated_at
-DROP TRIGGER IF EXISTS trg_inventory_listings_updated_at ON "inventory_listings";
-CREATE TRIGGER trg_inventory_listings_updated_at BEFORE UPDATE ON "inventory_listings"
+DROP TRIGGER IF EXISTS trg_inventory_updated_at ON "Inventory";
+CREATE TRIGGER trg_inventory_updated_at BEFORE UPDATE ON "Inventory"
 FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 
 -- Enable RLS
-ALTER TABLE "inventory_listings" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Inventory" ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: allow access only for matching dealer_id
-DROP POLICY IF EXISTS "inventory_listings_select" ON "inventory_listings";
-CREATE POLICY "inventory_listings_select" ON "inventory_listings"
+DROP POLICY IF EXISTS "inventory_select" ON "Inventory";
+CREATE POLICY "inventory_select" ON "Inventory"
   FOR SELECT USING ("dealerId" = auth_dealer_id());

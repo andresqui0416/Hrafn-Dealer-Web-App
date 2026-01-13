@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faUser, faGear, faSignOut } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faUser, faGear, faSignOut, faChartLine } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,8 +22,6 @@ export function UserAvatar() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
-    router.refresh();
   };
 
   if (loading) {
@@ -57,39 +56,57 @@ export function UserAvatar() {
           variant="ghost"
           className="relative flex items-center gap-2 h-auto p-1 focus-visible:outline-none active:outline-none active:ring-0 active:ring-offset-0 data-[state=closed]:outline-none data-[state=closed]:ring-0 data-[state=closed]:ring-offset-0"
         >
-          <div className="flex items-center justify-center bg-primary rounded-full h-8 w-8">
-            <FontAwesomeIcon icon={faUser} className="h-3 w-3 text-muted-foreground" />
-          </div>
-          <div className="flex h-8 w-8 items-center justify-center  text-primary-foreground text-sm font-medium">
-            {initials}
-          </div>
+          {user.avatar ? (
+            <Image
+              src={user.avatar}
+              alt={user.name || "User avatar"}
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-full object-cover border-2 border-white/10"
+              unoptimized
+            />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center bg-primary rounded-full text-primary-foreground text-sm font-medium">
+              {initials}
+            </div>
+          )}
           <FontAwesomeIcon icon={faChevronDown} className="h-3 w-3 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 bg-background" align="end">
-        <DropdownMenuLabel className="py-2">
+      <DropdownMenuContent className="w-56 bg-background py-1" align="end">
+        <DropdownMenuLabel className="px-2 py-1.5">
           <p className="text-sm font-medium">{user.email}</p>
           {/* <p className="text-xs text-muted-foreground">{user.role}</p> */}
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuSeparator className="bg-white/10 my-0.5" />
+        <DropdownMenuItem
+          onClick={() => router.push("/overview")}
+          className="py-1.5 hover:bg-white/10"
+        >
+          <FontAwesomeIcon icon={faChartLine} className="h-3 w-3 text-muted-foreground" />
+          <div className="text-sm font-medium ml-2">Overview</div>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-white/10 my-0.5" />
+
         <DropdownMenuItem
           onClick={() => router.push("/profile")}
-          className="py-2 hover:bg-white/10"
+          className="py-1.5 hover:bg-white/10"
         >
           <FontAwesomeIcon icon={faUser} className="h-3 w-3 text-muted-foreground" />
           <div className="text-sm font-medium ml-2">Profile</div>
         </DropdownMenuItem>
+
         <DropdownMenuItem
           onClick={() => router.push("/settings")}
-          className="py-2 hover:bg-white/10"
+          className="py-1.5 hover:bg-white/10"
         >
           <FontAwesomeIcon icon={faGear} className="h-3 w-3 text-muted-foreground" />
           <div className="text-sm font-medium ml-2">Settings</div>
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuSeparator className="bg-white/10 my-0.5" />
         <DropdownMenuItem
           onClick={handleLogout}
-          className="text-destructive py-2 hover:bg-white/10"
+          className="text-destructive py-1.5 hover:bg-white/10"
         >
           <FontAwesomeIcon icon={faSignOut} className="h-3 w-3 text-muted-foreground" />
           <div className="text-sm font-medium ml-2">Log out</div>

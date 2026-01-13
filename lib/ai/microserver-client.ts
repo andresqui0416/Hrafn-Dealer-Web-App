@@ -64,21 +64,25 @@ export async function generateSQLMicroserver(
     const data: SQLResponse = await response.json();
     let sql = data.sql;
 
+    const whereClause = `"dealerId" = '${dealerId}'`;
+
     // Replace :dealerId placeholder or add WHERE clause if missing
     if (sql.includes(":dealerId")) {
       sql = sql.replace(/:dealerId/g, `'${dealerId}'`);
-    } else if (sql.toLowerCase().includes("from inventory_listings")) {
+    } else if (sql.toLowerCase().includes('from "Inventory"') || sql.toLowerCase().includes('from Inventory')) {
       // Add dealerId filter if missing
       const whereMatch = sql.match(/where\s+/i);
       if (!whereMatch) {
         // Add WHERE clause
         sql = sql.replace(
-          /from\s+inventory_listings/i,
-          `FROM inventory_listings WHERE "dealerId" = '${dealerId}'`
+          /from\s+"Inventory"/i,
+          `FROM "Inventory" WHERE ${whereClause}`
         );
       } else {
-        // Add dealerId to existing WHERE clause
-        sql = sql.replace(/where\s+/i, `WHERE "dealerId" = '${dealerId}' AND `);
+        // Add dealerId to existing WHERE clause if not already present
+        if (!sql.includes(`"dealerId"`)) {
+          sql = sql.replace(/where\s+/i, `WHERE ${whereClause} AND `);
+        }
       }
     }
 

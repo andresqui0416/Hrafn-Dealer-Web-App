@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS "Dealer" (
 CREATE TABLE IF NOT EXISTS "User" (
   "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   "email" text UNIQUE NOT NULL,
+  "name" text NOT NULL,
   "passwordHash" text NOT NULL,
+  "avatar" text,
   "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
   "updatedAt" timestamp with time zone NOT NULL DEFAULT now()
 );
