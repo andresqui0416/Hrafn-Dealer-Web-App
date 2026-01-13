@@ -40,8 +40,8 @@ export default function LoginPage() {
       // Dispatch auth event to update UI
       window.dispatchEvent(new Event("auth:login"));
 
-      // Redirect to dashboard on success
-      router.push("/dashboard");
+      // Redirect to app management page on success
+      router.push("/overview");
       router.refresh();
     } catch (err) {
       setError("Network error. Please try again.");
@@ -74,12 +74,14 @@ export default function LoginPage() {
               </label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                autoComplete="email"
               />
             </div>
             <div className="space-y-2">
@@ -88,22 +90,32 @@ export default function LoginPage() {
               </label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                autoComplete="current-password"
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            <Link href="/" className="hover:underline">
-              Back to home
-            </Link>
+          <div className="mt-4 text-center text-sm text-muted-foreground space-y-2">
+            <div>
+              Don&apos;t have an account?{" "}
+              <Link href="/signup" className="hover:underline text-primary">
+                Sign up
+              </Link>
+            </div>
+            <div>
+              <Link href="/" className="hover:underline">
+                Back to home
+              </Link>
+            </div>
           </div>
         </CardContent>
       </Card>

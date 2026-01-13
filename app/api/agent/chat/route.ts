@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserFromRequest } from "@/lib/auth/getUser";
-import {
-  classifyIntent,
-  generateSQLFromNaturalLanguage,
-  formatDataResultsAsNaturalLanguage,
-  generateGeneralResponse,
-} from "@/lib/ai";
+import { openai, generateSQLFromNaturalLanguage } from "@/lib/ai";
 import { PrismaClient } from "@prisma/client";
 import { performance } from "perf_hooks";
 
 const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
-
-
 
 function validateSQL(sql: string): void {
   const trimmed = sql.trim().toUpperCase();
@@ -60,107 +52,151 @@ async function executeSQL(sql: string): Promise<any[]> {
 
 export async function POST(req: NextRequest) {
   try {
-    // Get authenticated user
-    const userStart = performance.now();
-    const user = getUserFromRequest(req);
-    const userTime = performance.now() - userStart;
-    console.log(
-      `[getUser] ${userTime.toFixed(2)}ms - userId: ${user?.userId}, dealerId: ${user?.dealerId}`,
-    );
+    // Get userId from middleware-set header (guaranteed to exist by auth middleware)
+    const userId = req.headers.get("x-user-id")!;
 
-    if (!user || !user.dealerId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const body = await req.json();
+    const messages = Array.isArray(body?.messages) ? body.messages : [];
+
+    if (!messages.length) {
+      return NextResponse.json({ error: "messages array is required" }, { status: 400 });
     }
 
-    const { message } = await req.json();
-    const safeMessage = typeof message === "string" ? message.trim() : "";
+    const lastUser = [...messages].reverse().find((m) => m.role === "user");
+    const safeMessage =
+      typeof lastUser?.content === "string" ? lastUser.content.trim() : "";
 
     if (!safeMessage) {
-      return NextResponse.json({ error: "Message is required" }, { status: 400 });
+      return NextResponse.json({ error: "Last user message is required" }, { status: 400 });
     }
 
-    // Classify intent
-    const intentStart = performance.now();
-    const intent = await classifyIntent(safeMessage);
-    const intentTime = performance.now() - intentStart;
-    console.log(`[classifyIntent] ${intentTime.toFixed(2)}ms - intent: ${intent}`);
+    // Get user's dealer (needed for data tools)
+    const userDealerRole = await prisma.userDealerRole.findFirst({
+      where: { userId },
+      select: { dealerId: true },
+      orderBy: { createdAt: "asc" },
+    });
 
-    if (intent === "data_query") {
-      try {
-        // Generate SQL
-        const sqlStart = performance.now();
-        const sql = await generateSQLFromNaturalLanguage(safeMessage, user.dealerId);
-        const sqlTime = performance.now() - sqlStart;
-        console.log(`[generateSQL] ${sqlTime.toFixed(2)}ms - sql: ${sql}`);
+    const dealerId = userDealerRole?.dealerId;
 
-        // Execute SQL
-        const executeStart = performance.now();
-        const results = await executeSQL(sql);
-        const executeTime = performance.now() - executeStart;
-        console.log(`[executeSQL] ${executeTime.toFixed(2)}ms - results: ${results.length} rows`);
+    // Define tools the model can call (Responses API function tool)
+    const tools: any[] = [
+      {
+        type: "function",
+        name: "run_data_query",
+        description:
+          "Run a safe SELECT-only SQL query against the database for this user's dealer. Use this for questions about inventory (available vehicles, stock), sales data (deals, revenue, commissions, sold vehicles), or any other data queries.",
+        parameters: {
+          type: "object",
+          properties: {
+            question: {
+              type: "string",
+              description:
+                "Natural language question about data, e.g. 'Show me all Toyota vehicles' (inventory), 'What is the total revenue this year?' (sales), 'How many cars are available?' (inventory), 'Show me sales from last month' (sales).",
+            },
+          },
+          required: ["question"],
+        },
+      },
+    ];
 
-        // Format results
-        const formatStart = performance.now();
-        const reply = await formatDataResultsAsNaturalLanguage(sql, results, safeMessage);
-        const formatTime = performance.now() - formatStart;
-        console.log(
-          `[formatResults] ${formatTime.toFixed(2)}ms - reply length: ${reply.length} chars`,
-        );
-
-        return NextResponse.json({ reply });
-      } catch (sqlError) {
-        console.error("SQL query error:", sqlError);
-        const errorMessage = sqlError instanceof Error ? sqlError.message : "Unknown error";
-        const errorResponseStart = performance.now();
-        const reply = await generateGeneralResponse(
-          `I tried to find that information, but encountered an issue: ${errorMessage}. Could you rephrase your question? For example, you could ask "Show me all Toyota vehicles" or "How many cars are available?"`,
-        );
-        const errorResponseTime = performance.now() - errorResponseStart;
-        console.log(
-          `[errorResponse] ${errorResponseTime.toFixed(2)}ms - reply length: ${reply.length} chars`,
-        );
-
-        return NextResponse.json({ reply });
+    async function runDataQuery(question: string) {
+      if (!dealerId) {
+        throw new Error("No dealer found for user");
       }
-    } else {
-      // Handle general questions with AI
-      // Get dealer context
-      const dealerStart = performance.now();
-      const dealer = await prisma.dealer.findUnique({
-        where: { id: user.dealerId },
-      });
-      const dealerTime = performance.now() - dealerStart;
-      console.log(
-        `[getDealer] ${dealerTime.toFixed(2)}ms - dealer: ${dealer?.name || "not found"}`,
-      );
 
-      // Get inventory count
-      const countStart = performance.now();
-      const inventoryCountResult = await prisma.$queryRawUnsafe<[{ count: bigint }]>(
-        `SELECT COUNT(*)::int as count FROM inventory_listings WHERE "dealerId" = '${user.dealerId}'::uuid`,
-      );
-      const inventoryCount = inventoryCountResult[0] ? Number(inventoryCountResult[0].count) : 0;
-      const countTime = performance.now() - countStart;
-      console.log(`[getInventoryCount] ${countTime.toFixed(2)}ms - count: ${inventoryCount}`);
+      // The SQL generator now has both inventory and sales schema built-in
+      // It will automatically determine which tables to use based on the question
+      const sqlStart = performance.now();
+      const sql = await generateSQLFromNaturalLanguage(question, dealerId);
+      const sqlTime = performance.now() - sqlStart;
+      console.log(`[generateSQL] ${sqlTime.toFixed(2)}ms - sql: ${sql}`);
 
-      // Generate general response
-      const context = {
-        dealerName: dealer?.name || "your dealership",
-        inventoryCount,
-      };
+      const executeStart = performance.now();
+      const results = await executeSQL(sql);
+      const executeTime = performance.now() - executeStart;
+      console.log(`[executeSQL] ${executeTime.toFixed(2)}ms - results: ${results.length} rows`);
 
-      const generalResponseStart = performance.now();
-      const reply = await generateGeneralResponse(safeMessage, context);
-      const generalResponseTime = performance.now() - generalResponseStart;
-      console.log(
-        `[generateGeneralResponse] ${generalResponseTime.toFixed(2)}ms - reply length: ${reply.length} chars`,
-      );
-
-      return NextResponse.json({ reply });
+      return { sql, results };
     }
+
+    // Build input for Responses API: system + full conversation from client
+    const input: any[] = [
+      {
+        role: "system",
+        content:
+          "You are Hrafn's AI sales assistant for car dealerships. You help dealers understand their inventory, sales performance, revenue, commissions, and answer questions about the business. You can call the run_data_query tool to query both inventory data (available vehicles, stock) and sales data (completed deals, revenue, commissions, sold vehicles). The tool automatically determines whether to query inventory or sales tables based on the question.",
+      },
+      ...messages.map((m: any) => ({
+        role: m.role,
+        content: m.content,
+      })),
+    ];
+
+    // First Responses call: let the model decide whether to call tools
+    let response: any = await openai.responses.create({
+      model: process.env.OPENAI_MODEL || "gpt-4.1",
+      input,
+      tools,
+      tool_choice: "auto",
+    });
+
+    // Handle tool call (data query - handles both inventory and sales)
+    const firstOutput = response.output?.[0];
+    console.log("firstOutput", JSON.stringify(firstOutput, null, 2));
+
+    if (firstOutput?.type === "function_call" && firstOutput.name === "run_data_query") {
+      console.log("Tool called: run_data_query, arguments:", firstOutput.arguments);
+
+      // In Responses API, arguments may come as a JSON string; normalize to object
+      const rawArgs = firstOutput.arguments;
+      const parsedArgs =
+        typeof rawArgs === "string" ? JSON.parse(rawArgs) : (rawArgs || {});
+      const question = parsedArgs.question || safeMessage;
+
+      let toolResult: any;
+      try {
+        toolResult = await runDataQuery(question);
+      } catch (err) {
+        console.error("SQL tool error:", err);
+        return NextResponse.json(
+          {
+            reply:
+              "I tried to look up that data but ran into an issue with the database. Please try rephrasing or ask a different question.",
+          },
+          { status: 200 },
+        );
+      }
+
+      // Second Responses call: feed tool result back to the model to generate final answer
+      // Responses API doesn't support "tool" role, so we pass the result as a "user" message
+      const toolResultJson = JSON.stringify(
+        toolResult,
+        (_, value) => (typeof value === "bigint" ? Number(value) : value),
+      );
+
+      const followupInput: any[] = [
+        ...input,
+        {
+          role: "user",
+          content: `The run_data_query tool was called and returned the following results:\n\n${toolResultJson}\n\nPlease provide a friendly, natural language response explaining these results to the user.`,
+        },
+      ];
+
+      response = await openai.responses.create({
+        model: process.env.OPENAI_MODEL || "gpt-4.1",
+        input: followupInput,
+      });
+    }
+
+    const finalOutput = response.output?.[0];
+    const finalText =
+      (finalOutput as any)?.content?.[0]?.text?.trim?.() ??
+      "I'm here to help! How can I assist you today?";
+
+    return NextResponse.json({ reply: finalText });
   } catch (error) {
     console.error("Chat agent error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
       {
         reply: `I apologize, but I encountered an issue while processing your request. Could you please try rephrasing your question? If the problem persists, feel free to ask me something else and I'll do my best to help!`,

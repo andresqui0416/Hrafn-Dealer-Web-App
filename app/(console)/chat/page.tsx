@@ -16,7 +16,7 @@ export default function ChatPage() {
     {
       id: crypto.randomUUID(),
       role: "assistant",
-      content: "Hi! I’m your Hrafn AI Agent. How can I help today?",
+      content: "Hi! I'm your Hrafn AI Agent. How can I help today?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -37,14 +37,20 @@ export default function ChatPage() {
       role: "user",
       content: trimmed,
     };
-    setMessages((prev) => [...prev, userMsg]);
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
     setInput("");
 
     try {
       const res = await fetch("/api/agent/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({
+          messages: nextMessages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
       });
       const data = await res.json();
       const assistantMsg: ChatMessage = {
@@ -120,6 +126,8 @@ export default function ChatPage() {
 
       <div className="mt-3 flex items-end gap-2">
         <textarea
+          id="chatMessage"
+          name="chatMessage"
           className="min-h-[44px] w-full resize-none rounded-md border border-white/10 bg-transparent p-3 text-sm outline-none focus:ring-1 focus:ring-white/20"
           placeholder={user ? "Type your message..." : "Please login to chat"}
           disabled={!user || sending}
