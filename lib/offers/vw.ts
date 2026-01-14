@@ -25,7 +25,7 @@ function extractCashBack(text: string | null | undefined): number | null {
       /\$([\d,]+)\s+(?:Customer|Conquest|College\s+Graduate|Military|Veterans)\s+Bonus/i,
       /\$([\d,]+)\s+Bonus/i,
     ];
-    
+
     for (const pattern of patterns) {
       const match = text.match(pattern);
       if (match && match[1]) {
@@ -102,7 +102,10 @@ export async function scrapeOffersFromVW() {
     const data = await response.json();
 
     if (!data?.data?.offers || !Array.isArray(data.data.offers)) {
-      console.error("Unexpected API response structure:", JSON.stringify(data, null, 2).substring(0, 1000));
+      console.error(
+        "Unexpected API response structure:",
+        JSON.stringify(data, null, 2).substring(0, 1000),
+      );
       return { success: false, error: "Unexpected API response structure" };
     }
 
@@ -117,18 +120,24 @@ export async function scrapeOffersFromVW() {
       }
 
       // Extract model information from arrays (take first element)
-      const modelCode = Array.isArray(offer.dealCarModel) && offer.dealCarModel.length > 0 
-        ? offer.dealCarModel[0] 
-        : null;
-      const modelName = Array.isArray(offer.dealCarModelName) && offer.dealCarModelName.length > 0 
-        ? offer.dealCarModelName[0] 
-        : null;
-      const year = Array.isArray(offer.dealCarYear) && offer.dealCarYear.length > 0 
-        ? parseInt(String(offer.dealCarYear[0]), 10) 
-        : null;
-      const trim = Array.isArray(offer.dealCarTrim) && offer.dealCarTrim.length > 0 
-        ? offer.dealCarTrim[0] === "all" ? null : offer.dealCarTrim[0]
-        : null;
+      const modelCode =
+        Array.isArray(offer.dealCarModel) && offer.dealCarModel.length > 0
+          ? offer.dealCarModel[0]
+          : null;
+      const modelName =
+        Array.isArray(offer.dealCarModelName) && offer.dealCarModelName.length > 0
+          ? offer.dealCarModelName[0]
+          : null;
+      const year =
+        Array.isArray(offer.dealCarYear) && offer.dealCarYear.length > 0
+          ? parseInt(String(offer.dealCarYear[0]), 10)
+          : null;
+      const trim =
+        Array.isArray(offer.dealCarTrim) && offer.dealCarTrim.length > 0
+          ? offer.dealCarTrim[0] === "all"
+            ? null
+            : offer.dealCarTrim[0]
+          : null;
 
       // Determine offer type from dealOfferTypes array
       let offerType = "cash";
@@ -161,9 +170,10 @@ export async function scrapeOffersFromVW() {
         cashBack = extractCashBack(offer.dealTitle || offer.dealLegal || "");
       } else if (offerType === "lease") {
         // For lease offers, use dealPricePerMonth
-        monthlyPayment = offer.dealPricePerMonth !== null && offer.dealPricePerMonth !== undefined
-          ? parseNumber(offer.dealPricePerMonth)
-          : null;
+        monthlyPayment =
+          offer.dealPricePerMonth !== null && offer.dealPricePerMonth !== undefined
+            ? parseNumber(offer.dealPricePerMonth)
+            : null;
         // Extract term from dealTerm, or from dealSubtitle/dealLegal if dealTerm is null
         if (offer.dealTerm !== null && offer.dealTerm !== undefined) {
           termMonths = parseInt(String(offer.dealTerm), 10);

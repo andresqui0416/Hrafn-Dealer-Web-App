@@ -43,7 +43,7 @@ export async function scrapeOffersFromAudi() {
     // Extract offer data from each offer
     for (const offer of data.data.usCustomerOffers) {
       const modelDetail = offer.offerModelDetail || {};
-      
+
       // Parse dates from format "20251202" (YYYYMMDD)
       let expirationDate: Date | null = null;
       if (offer.programToDate) {
@@ -87,8 +87,10 @@ export async function scrapeOffersFromAudi() {
         apr: offer.aprRate && offer.aprRate > 0 ? offer.aprRate : null,
         termMonths: offer.term && offer.term > 0 ? offer.term : null,
         cashBack: offer.creditBonus && offer.creditBonus > 0 ? offer.creditBonus : null,
-        dueAtSigning: offer.totalDueAtSign && offer.totalDueAtSign > 0 ? offer.totalDueAtSign : null,
-        monthlyPayment: offer.monthlyPayment && offer.monthlyPayment > 0 ? offer.monthlyPayment : null,
+        dueAtSigning:
+          offer.totalDueAtSign && offer.totalDueAtSign > 0 ? offer.totalDueAtSign : null,
+        monthlyPayment:
+          offer.monthlyPayment && offer.monthlyPayment > 0 ? offer.monthlyPayment : null,
         expirationDate,
         terms: offer.programShortDescription || null,
         finePrint: offer.offerDisclaimer || null,
@@ -120,7 +122,7 @@ export async function scrapeOffersFromAudi() {
     }
 
     console.log("Audi Offers found:", offers.length);
-    
+
     // Delete all existing offers for this brand first
     const brand = offers.length > 0 ? offers[0].brand : "Audi";
     await prisma.offers.deleteMany({
@@ -178,6 +180,9 @@ export async function scrapeOffersFromAudi() {
     return { success: true, totalOffers: offers.length };
   } catch (error: any) {
     console.error("Error scraping Audi offers:", error);
-    return { success: false, error: error?.message || "Internal server error while scraping Audi offers" };
+    return {
+      success: false,
+      error: error?.message || "Internal server error while scraping Audi offers",
+    };
   }
 }

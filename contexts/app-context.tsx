@@ -45,9 +45,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ selectedApp, setSelectedApp }}>
-      {children}
-    </AppContext.Provider>
+    <AppContext.Provider value={{ selectedApp, setSelectedApp }}>{children}</AppContext.Provider>
   );
 }
 
@@ -58,4 +56,3 @@ export function useApp() {
   }
   return context;
 }
-

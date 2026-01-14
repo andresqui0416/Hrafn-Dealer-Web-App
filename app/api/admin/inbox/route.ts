@@ -5,7 +5,6 @@ const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
 
-
 export async function POST(request: NextRequest) {
   try {
     // Get adminId from middleware-set header (guaranteed to exist by auth middleware)
@@ -18,7 +17,7 @@ export async function POST(request: NextRequest) {
     if (!userId || !subject || !content) {
       return NextResponse.json(
         { error: "User ID, subject, and content are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -76,4 +75,3 @@ export async function POST(request: NextRequest) {
     await prisma.$disconnect();
   }
 }
-

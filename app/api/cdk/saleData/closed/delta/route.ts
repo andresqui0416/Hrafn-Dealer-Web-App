@@ -16,8 +16,10 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const departmentId = searchParams.get("departmentId");
-    const startDate = searchParams.get("startDate") as string || (new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString());
-    const endDate = searchParams.get("endDate") as string || (new Date(Date.now()).toISOString());
+    const startDate =
+      (searchParams.get("startDate") as string) ||
+      new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+    const endDate = (searchParams.get("endDate") as string) || new Date(Date.now()).toISOString();
 
     const dealerDepartment = await prisma.dealerDepartment.findUnique({
       where: { id: departmentId as string },
@@ -35,10 +37,19 @@ export async function GET(request: NextRequest) {
     }
 
     if (!dealerDepartment.service.subscriptionId) {
-      return NextResponse.json({ error: "Dealer service subscription ID not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Dealer service subscription ID not found" },
+        { status: 404 },
+      );
     }
 
-    const data = await getFISalesData("closed/delta", departmentId as string, dealerDepartment.service.subscriptionId as string, startDate as string, endDate as string);
+    const data = await getFISalesData(
+      "closed/delta",
+      departmentId as string,
+      dealerDepartment.service.subscriptionId as string,
+      startDate as string,
+      endDate as string,
+    );
 
     return NextResponse.json({
       success: true,
@@ -53,8 +64,7 @@ export async function GET(request: NextRequest) {
         success: false,
         error: errorMessage,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

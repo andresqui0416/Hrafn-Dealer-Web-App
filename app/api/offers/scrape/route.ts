@@ -16,14 +16,14 @@ export async function POST(request: NextRequest) {
     if (!offers || !Array.isArray(offers)) {
       return NextResponse.json(
         { success: false, error: "Invalid request: 'offers' must be an array" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (offers.length === 0) {
       return NextResponse.json(
         { success: false, error: "Invalid request: 'offers' array is empty" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -59,13 +59,11 @@ export async function POST(request: NextRequest) {
         (offer.offerType === "lease" && offer.monthlyPayment) ||
         (offer.offerType === "financing" && offer.apr !== null) ||
         (offer.offerType === "cash" &&
-          (offer.offerAmount !== null ||
-            offer.cashBack !== null ||
-            offer.tradeDiscount !== null));
+          (offer.offerAmount !== null || offer.cashBack !== null || offer.tradeDiscount !== null));
 
       if (!hasValidData) {
         console.warn(
-          `Skipping ${offer.offerType} offer for ${offer.model} ${offer.year} - insufficient data`
+          `Skipping ${offer.offerType} offer for ${offer.model} ${offer.year} - insufficient data`,
         );
         continue;
       }
@@ -73,40 +71,43 @@ export async function POST(request: NextRequest) {
       // Store as-is (Python script should have normalized all types)
       validOffers.push({
         brand: String(offer.brand),
-        year: offer.year !== null && offer.year !== undefined ? parseInt(String(offer.year), 10) : null,
+        year:
+          offer.year !== null && offer.year !== undefined ? parseInt(String(offer.year), 10) : null,
         make: offer.make ? String(offer.make) : offer.brand,
         model: offer.model ? String(offer.model) : null,
         modelCode: offer.modelCode ? String(offer.modelCode) : null,
         trim: offer.trim ? String(offer.trim) : null,
         offerType: String(offer.offerType),
-        offerAmount: offer.offerAmount !== null && offer.offerAmount !== undefined
-          ? parseFloat(String(offer.offerAmount))
-          : null,
-        apr: offer.apr !== null && offer.apr !== undefined
-          ? parseFloat(String(offer.apr))
-          : null,
-        termMonths: offer.termMonths !== null && offer.termMonths !== undefined
-          ? parseInt(String(offer.termMonths), 10)
-          : null,
-        cashBack: offer.cashBack !== null && offer.cashBack !== undefined
-          ? parseFloat(String(offer.cashBack))
-          : null,
+        offerAmount:
+          offer.offerAmount !== null && offer.offerAmount !== undefined
+            ? parseFloat(String(offer.offerAmount))
+            : null,
+        apr: offer.apr !== null && offer.apr !== undefined ? parseFloat(String(offer.apr)) : null,
+        termMonths:
+          offer.termMonths !== null && offer.termMonths !== undefined
+            ? parseInt(String(offer.termMonths), 10)
+            : null,
+        cashBack:
+          offer.cashBack !== null && offer.cashBack !== undefined
+            ? parseFloat(String(offer.cashBack))
+            : null,
         tradeDiscount:
           offer.tradeDiscount !== null && offer.tradeDiscount !== undefined
             ? parseFloat(String(offer.tradeDiscount))
             : null,
-        dueAtSigning: offer.dueAtSigning !== null && offer.dueAtSigning !== undefined
-          ? parseFloat(String(offer.dueAtSigning))
-          : null,
-        monthlyPayment: offer.monthlyPayment !== null && offer.monthlyPayment !== undefined
-          ? parseFloat(String(offer.monthlyPayment))
-          : null,
-        milesPerYear: offer.milesPerYear !== null && offer.milesPerYear !== undefined
-          ? parseInt(String(offer.milesPerYear), 10)
-          : null,
-        expirationDate: offer.expirationDate
-          ? new Date(offer.expirationDate)
-          : null,
+        dueAtSigning:
+          offer.dueAtSigning !== null && offer.dueAtSigning !== undefined
+            ? parseFloat(String(offer.dueAtSigning))
+            : null,
+        monthlyPayment:
+          offer.monthlyPayment !== null && offer.monthlyPayment !== undefined
+            ? parseFloat(String(offer.monthlyPayment))
+            : null,
+        milesPerYear:
+          offer.milesPerYear !== null && offer.milesPerYear !== undefined
+            ? parseInt(String(offer.milesPerYear), 10)
+            : null,
+        expirationDate: offer.expirationDate ? new Date(offer.expirationDate) : null,
         terms: offer.terms ? String(offer.terms) : null,
         finePrint: offer.finePrint ? String(offer.finePrint) : null,
         scrapedAt: scrapedAtDate,
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest) {
             {
               maxWait: 10000, // Maximum time to wait for a transaction slot
               timeout: 30000, // Maximum time the transaction can run (30 seconds)
-            }
+            },
           );
           storedCount += batch.length;
         } catch (err: any) {
@@ -178,10 +179,9 @@ export async function POST(request: NextRequest) {
         success: false,
         error: error?.message || "Internal server error while processing offers",
       },
-      { status: 500 }
+      { status: 500 },
     );
   } finally {
     await prisma.$disconnect();
   }
 }
-

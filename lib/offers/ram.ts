@@ -65,10 +65,9 @@ const fetchOfferData = async (modelInfo: any) => {
     }
     return item.offerOrder
       .map((offer: any) => {
-        
         // Determine offer type
         let offerType: string | null = null;
-        switch(offer.label) {
+        switch (offer.label) {
           case "Lease":
             offerType = "lease";
             break;
@@ -225,12 +224,10 @@ export async function scrapeOffersFromRAM() {
       }
     }
     return { success: true, totalOffers: offers.length };
-  }
-  catch (err: any) {
+  } catch (err: any) {
     console.error("Error scraping RAM offers:", err?.message || err);
     return { success: false, error: err?.message || err };
-  }
-  finally {
+  } finally {
     await prisma.$disconnect();
   }
 }

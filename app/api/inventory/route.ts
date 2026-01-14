@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const skip = (page - 1) * limit;
-    
+
     // Get all status values from query params (can be multiple)
     const statusValues = searchParams.getAll("status");
 
@@ -66,12 +66,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching inventory:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
 }
-

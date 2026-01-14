@@ -40,7 +40,7 @@ export default function ConsoleLayout({ children }: Readonly<{ children: ReactNo
       <aside
         className={cn(
           "fixed h-full lg:h-[calc(100vh-65px)] top-0 lg:top-[65px] left-0 bottom-0 z-50 w-64 bg-background border-r border-white/10 transform transition-transform duration-200 ease-in-out lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
         <div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10 h-[65px]">
@@ -69,7 +69,7 @@ export default function ConsoleLayout({ children }: Readonly<{ children: ReactNo
                 "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium cursor-pointer transition-colors duration-200",
                 pathname === item.href
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-white/10 hover:text-foreground"
+                  : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
               )}
             >
               <FontAwesomeIcon icon={item.icon} className="h-4 w-4" />

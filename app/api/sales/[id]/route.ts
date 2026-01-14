@@ -7,10 +7,7 @@ const prisma = new PrismaClient();
 export const dynamic = "force-dynamic";
 
 // GET full sale data details
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const userId = request.headers.get("x-user-id")!;
     const dealerId = await getUserDealer(userId);
@@ -54,4 +51,3 @@ export async function GET(
     await prisma.$disconnect();
   }
 }
-

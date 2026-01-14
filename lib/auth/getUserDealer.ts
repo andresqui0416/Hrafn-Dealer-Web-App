@@ -27,4 +27,3 @@ export async function getUserDealers(userId: string): Promise<string[]> {
 
   return userDealerRoles.map((role) => role.dealerId);
 }
-

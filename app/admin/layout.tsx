@@ -69,7 +69,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 bg-background border-r border-white/10 transform transition-transform duration-200 ease-in-out lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex flex-col h-full">
@@ -94,7 +94,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium cursor-pointer transition-colors duration-200",
                   pathname === item.href
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-white/10 hover:text-foreground"
+                    : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
                 )}
               >
                 <FontAwesomeIcon icon={item.icon} className="h-4 w-4" />
@@ -149,4 +149,3 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     </div>
   );
 }
-

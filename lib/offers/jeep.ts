@@ -35,7 +35,6 @@ const fetchModelInfos = async () => {
   return modelInfos;
 };
 
-
 const fetchOfferData = async (modelInfo: any) => {
   const url = `https://www.jeep.com/hostd/api/incentives/offers/targetMedium/Preferred-Offers/zip/95556/vehicle/${modelInfo.modelYearCode}`;
   const requestOptions = {
@@ -89,8 +88,8 @@ const fetchOfferData = async (modelInfo: any) => {
           if (aprProgram) {
             apr = aprProgram.apr / 100;
             termMonths = aprProgram.term;
-          }else {
-            console.log(offerInfo.programValues)
+          } else {
+            console.log(offerInfo.programValues);
           }
         }
 
@@ -174,7 +173,10 @@ export async function scrapeOffersFromJeep() {
         const offerData = await fetchOfferData(modelInfo);
         offers.push(...offerData);
       } catch (err: any) {
-        console.error(`Error fetching offers for model ${modelInfo.modelYearCode}:`, err?.message || err);
+        console.error(
+          `Error fetching offers for model ${modelInfo.modelYearCode}:`,
+          err?.message || err,
+        );
       }
     }
     if (offers.length > 0) {

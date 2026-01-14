@@ -36,7 +36,6 @@ export const revalidate = 0;
  */
 export async function GET(_request: NextRequest) {
   try {
-
     const results = {
       audi: { success: false, totalOffers: 0, error: "" },
       mazda: { success: false, totalOffers: 0, error: "" },
@@ -394,16 +393,16 @@ export async function GET(_request: NextRequest) {
       results.kia.totalOffers +
       results.cadillac.totalOffers +
       results.gmc.totalOffers +
-      results.buick.totalOffers+
-      results.chevrolet.totalOffers+
-      results.chrysler.totalOffers+
-      results.jeep.totalOffers+
-      results.ram.totalOffers+
-      results.dodge.totalOffers+
-      results.porsche.totalOffers+
-      results.honda.totalOffers+
-      results.bmw.totalOffers+
-      results.vw.totalOffers+
+      results.buick.totalOffers +
+      results.chevrolet.totalOffers +
+      results.chrysler.totalOffers +
+      results.jeep.totalOffers +
+      results.ram.totalOffers +
+      results.dodge.totalOffers +
+      results.porsche.totalOffers +
+      results.honda.totalOffers +
+      results.bmw.totalOffers +
+      results.vw.totalOffers +
       results.toyota.totalOffers;
 
     const allSuccess =

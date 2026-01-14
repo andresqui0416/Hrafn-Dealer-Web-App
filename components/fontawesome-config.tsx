@@ -9,4 +9,3 @@ export function FontAwesomeConfig() {
   // This component just ensures the config is set
   return null;
 }
-

@@ -71,7 +71,7 @@ interface HyundaiOffer {
 export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
   try {
     const url = `https://www.hyundaiusa.com/var/hyundai/services/incentiveAws.featuredOfferByZip.service?brand=hyundai&zip=${zipCode}`;
-    
+
     const response = await fetch(url, {
       method: "GET",
       redirect: "follow",
@@ -89,7 +89,7 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
 
     const text = await response.text();
     let data: any;
-    
+
     try {
       data = JSON.parse(text);
     } catch (parseError) {
@@ -108,23 +108,23 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
     // Process each data item (typically one per state/region)
     for (const dataItem of data.data) {
       const years = dataItem.years || [];
-      
+
       // Process each year
       for (const yearData of years) {
         const modelYear = yearData.modelYear;
         const vehicles = yearData.vehicles || [];
-        
+
         // Process each vehicle
         for (const vehicle of vehicles) {
           const modelName = vehicle.modelName || "";
           const modelGroupCode = vehicle.modelGroupCode || null;
           const cardOrder = vehicle.cardOrder || {};
-          
+
           // Process lease1 offer
           if (cardOrder.lease1) {
             const lease1 = cardOrder.lease1;
             const dueAtSigning = extractDueAtSigning(lease1.header || lease1.shortDescription);
-            
+
             offers.push({
               brand: "Hyundai",
               year: modelYear,
@@ -146,12 +146,12 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               scrapedAt,
             });
           }
-          
+
           // Process lease2 offer
           if (cardOrder.lease2) {
             const lease2 = cardOrder.lease2;
             const dueAtSigning = extractDueAtSigning(lease2.header || lease2.shortDescription);
-            
+
             offers.push({
               brand: "Hyundai",
               year: modelYear,
@@ -173,12 +173,12 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               scrapedAt,
             });
           }
-          
+
           // Process lowApr (financing) offer
           if (cardOrder.lowApr) {
             const lowApr = cardOrder.lowApr;
             const apr = lowApr.apr !== undefined && lowApr.apr !== null ? lowApr.apr / 100 : null;
-            
+
             offers.push({
               brand: "Hyundai",
               year: modelYear,
@@ -200,11 +200,11 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               scrapedAt,
             });
           }
-          
+
           // Process savings (cash) offer
           if (cardOrder.savings) {
             const savings = cardOrder.savings;
-            
+
             offers.push({
               brand: "Hyundai",
               year: modelYear,
@@ -294,4 +294,3 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
     };
   }
 }
-

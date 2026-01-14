@@ -59,10 +59,7 @@ export async function PUT(request: NextRequest) {
 
     // Validation
     if (!name || !address) {
-      return NextResponse.json(
-        { error: "Name and address are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Name and address are required" }, { status: 400 });
     }
 
     // Check if name is being changed and if the new name already exists
@@ -83,7 +80,7 @@ export async function PUT(request: NextRequest) {
       if (nameExists) {
         return NextResponse.json(
           { error: "A dealer with this name already exists" },
-          { status: 409 }
+          { status: 409 },
         );
       }
     }
@@ -110,25 +107,21 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     console.error("Update dealer error:", error);
-    
+
     // Handle unique constraint violations
     if (error instanceof Error) {
       if (error.message.includes("Unique constraint") || error.message.includes("unique")) {
         if (error.message.includes("name") || error.message.includes("Dealer")) {
           return NextResponse.json(
             { error: "A dealer with this name already exists" },
-            { status: 409 }
+            { status: 409 },
           );
         }
       }
     }
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
 }
-

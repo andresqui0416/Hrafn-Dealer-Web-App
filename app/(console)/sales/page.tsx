@@ -183,7 +183,10 @@ export default function SalesPage() {
       I: { label: "Intermediate", className: "bg-orange-500/20 text-orange-400" },
       U: { label: "Unwound", className: "bg-red-500/20 text-red-400" },
     };
-    const statusInfo = statusMap[status] || { label: status, className: "bg-gray-500/20 text-gray-400" };
+    const statusInfo = statusMap[status] || {
+      label: status,
+      className: "bg-gray-500/20 text-gray-400",
+    };
     return (
       <span className={cn("px-2 py-1 rounded text-xs font-medium", statusInfo.className)}>
         {statusInfo.label}
@@ -278,8 +281,12 @@ export default function SalesPage() {
                     <td className="px-4 py-3 text-sm">
                       {formatDate(sale.deal?.salesDate || sale.deal?.contractDate || null)}
                     </td>
-                    <td className="px-4 py-3 text-sm">{formatCurrency(sale.deal?.cashPrice ?? null)}</td>
-                    <td className="px-4 py-3 text-sm">{formatCurrency(sale.deal?.grossProfit ?? null)}</td>
+                    <td className="px-4 py-3 text-sm">
+                      {formatCurrency(sale.deal?.cashPrice ?? null)}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {formatCurrency(sale.deal?.grossProfit ?? null)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -290,10 +297,13 @@ export default function SalesPage() {
               <FontAwesomeIcon icon={faSpinner} className="fa-lg animate-spin" />
               <span>Loading sales data...</span>
             </div>
-          ) : salesData.length === 0 && !salesLoading && (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              <span>No sales data found</span>
-            </div>
+          ) : (
+            salesData.length === 0 &&
+            !salesLoading && (
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                <span>No sales data found</span>
+              </div>
+            )
           )}
         </div>
         <div className="px-4 py-3 bg-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm text-muted-foreground">
@@ -305,7 +315,9 @@ export default function SalesPage() {
                 {totalCount !== 1 ? "s" : ""}
               </>
             ) : (
-              <>Showing {salesData.length} sale{salesData.length !== 1 ? "s" : ""}</>
+              <>
+                Showing {salesData.length} sale{salesData.length !== 1 ? "s" : ""}
+              </>
             )}
           </div>
           {totalPages > 1 && (
@@ -328,9 +340,7 @@ export default function SalesPage() {
                 size="sm"
                 onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages || salesLoading}
-                className={cn(
-                  currentPage === totalPages ? "cursor-not-allowed" : "cursor-pointer"
-                )}
+                className={cn(currentPage === totalPages ? "cursor-not-allowed" : "cursor-pointer")}
               >
                 Next
                 <FontAwesomeIcon icon={faChevronRight} className="h-4 w-4 ml-1" />
@@ -341,7 +351,10 @@ export default function SalesPage() {
       </div>
 
       {/* Details Modal */}
-      <Dialog open={selectedSaleId !== null} onOpenChange={(open) => !open && setSelectedSaleId(null)}>
+      <Dialog
+        open={selectedSaleId !== null}
+        onOpenChange={(open) => !open && setSelectedSaleId(null)}
+      >
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Sale Details - {selectedSaleData?.dealNo || "Loading..."}</DialogTitle>
@@ -350,7 +363,10 @@ export default function SalesPage() {
 
           {loadingDetails ? (
             <div className="flex justify-center items-center py-10">
-              <FontAwesomeIcon icon={faSpinner} className="h-6 w-6 animate-spin text-muted-foreground" />
+              <FontAwesomeIcon
+                icon={faSpinner}
+                className="h-6 w-6 animate-spin text-muted-foreground"
+              />
               <span className="ml-2 text-muted-foreground">Loading details...</span>
             </div>
           ) : selectedSaleData ? (
@@ -369,7 +385,9 @@ export default function SalesPage() {
                   </div>
                   <div>
                     <span className="text-muted-foreground">Model:</span>{" "}
-                    {selectedSaleData.vehicle?.modelName || selectedSaleData.vehicle?.model || "N/A"}
+                    {selectedSaleData.vehicle?.modelName ||
+                      selectedSaleData.vehicle?.model ||
+                      "N/A"}
                   </div>
                   <div>
                     <span className="text-muted-foreground">Year:</span>{" "}
@@ -392,7 +410,8 @@ export default function SalesPage() {
                   <h3 className="text-lg font-semibold mb-2">Deal Information</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-muted-foreground">Deal No:</span> {selectedSaleData.dealNo}
+                      <span className="text-muted-foreground">Deal No:</span>{" "}
+                      {selectedSaleData.dealNo}
                     </div>
                     <div>
                       <span className="text-muted-foreground">Status:</span>{" "}
@@ -519,4 +538,3 @@ export default function SalesPage() {
     </div>
   );
 }
-

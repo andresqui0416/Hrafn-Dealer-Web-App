@@ -13,7 +13,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner, faEdit, faTrash, faPlus, faX, faRotateRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSpinner,
+  faEdit,
+  faTrash,
+  faPlus,
+  faX,
+  faRotateRight,
+} from "@fortawesome/free-solid-svg-icons";
 
 type Dealer = {
   id: string;
@@ -82,7 +89,7 @@ export default function DealersPage() {
         setError("Failed to load dealers");
       }
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
+      if (err instanceof Error && err.name === "AbortError") {
         return; // Request was aborted, don't update state
       }
       if (!signal.aborted) {
@@ -101,9 +108,7 @@ export default function DealersPage() {
     setError(null);
 
     try {
-      const url = editingDealer
-        ? `/api/admin/dealers/${editingDealer.id}`
-        : "/api/admin/dealers";
+      const url = editingDealer ? `/api/admin/dealers/${editingDealer.id}` : "/api/admin/dealers";
       const method = editingDealer ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -168,9 +173,9 @@ export default function DealersPage() {
 
     try {
       setDealersLoading(true);
-      const response = await fetch(`/api/admin/dealers/${id}`, { 
-        method: "DELETE", 
-        signal 
+      const response = await fetch(`/api/admin/dealers/${id}`, {
+        method: "DELETE",
+        signal,
       });
       if (response.ok) {
         loadDealers();
@@ -181,7 +186,7 @@ export default function DealersPage() {
         }
       }
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
+      if (err instanceof Error && err.name === "AbortError") {
         return; // Request was aborted, don't update state
       }
       if (!signal.aborted) {
@@ -203,7 +208,6 @@ export default function DealersPage() {
 
   return (
     <div className="space-y-6">
-
       <div className="flex justify-end gap-2">
         {!showForm && (
           <>
@@ -213,9 +217,9 @@ export default function DealersPage() {
               disabled={dealersLoading}
               className="cursor-pointer transition-colors duration-200 disabled:cursor-not-allowed"
             >
-              <FontAwesomeIcon 
-                icon={faRotateRight} 
-                className={`h-4 w-4 mr-2 ${dealersLoading ? 'animate-spin' : ''}`} 
+              <FontAwesomeIcon
+                icon={faRotateRight}
+                className={`h-4 w-4 mr-2 ${dealersLoading ? "animate-spin" : ""}`}
               />
               Refresh
             </Button>
@@ -312,63 +316,70 @@ export default function DealersPage() {
                     <th className="text-center p-4 text-sm font-semibold">Actions</th>
                   </tr>
                 </thead>
-                {!dealersLoading && dealers.length > 0 && (<tbody>
-                  {dealers.map((dealer) => (
-                    <tr
-                      key={dealer.id}
-                      onClick={(e) => handleRowClick(dealer, e)}
-                      className="border-b border-white/5 hover:bg-white/10 transition-colors duration-200 cursor-pointer"
-                    >
-                      <td className="p-4">
-                        <div className="font-medium">{dealer.name}</div>
-                      </td>
-                      <td className="p-4">
-                        <div className="text-sm text-muted-foreground">{dealer.address}</div>
-                      </td>
-                      <td className="p-4">
-                        <div className="text-sm font-medium">
-                          {dealer.userRoles && dealer.userRoles.length > 0
-                            ? dealer.userRoles[0].user.name
-                            : "No owner"}
-                        </div>
-                      </td>
-                      <td className="p-4 text-center">
-                        <span className="text-sm font-medium">
-                          {dealer._count?.inventory || 0}
-                        </span>
-                      </td>
-                      <td className="p-4 text-center">
-                        <span className="text-sm font-medium">{dealer._count?.userRoles || 0}</span>
-                      </td>
-                      <td className="p-4">
-                        <div className="text-sm text-muted-foreground">
-                          {new Date(dealer.createdAt).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex justify-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleEdit(dealer, e)}
-                            className="h-8 w-8 p-0 cursor-pointer hover:bg-primary/20 transition-colors duration-200"
-                          >
-                            <FontAwesomeIcon icon={faEdit} className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleDelete(dealer.id, e)}
-                            className="h-8 w-8 p-0 cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/20 text-red-500 transition-colors duration-200 hover:bg-primary/20"
-                          >
-                            <FontAwesomeIcon icon={faTrash} className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>)}
-                
+                {!dealersLoading && dealers.length > 0 && (
+                  <tbody>
+                    {dealers.map((dealer) => (
+                      <tr
+                        key={dealer.id}
+                        onClick={(e) => handleRowClick(dealer, e)}
+                        className="border-b border-white/5 hover:bg-white/10 transition-colors duration-200 cursor-pointer"
+                      >
+                        <td className="p-4">
+                          <div className="font-medium">{dealer.name}</div>
+                        </td>
+                        <td className="p-4">
+                          <div className="text-sm text-muted-foreground">{dealer.address}</div>
+                        </td>
+                        <td className="p-4">
+                          <div className="text-sm font-medium">
+                            {dealer.userRoles && dealer.userRoles.length > 0
+                              ? dealer.userRoles[0].user.name
+                              : "No owner"}
+                          </div>
+                        </td>
+                        <td className="p-4 text-center">
+                          <span className="text-sm font-medium">
+                            {dealer._count?.inventory || 0}
+                          </span>
+                        </td>
+                        <td className="p-4 text-center">
+                          <span className="text-sm font-medium">
+                            {dealer._count?.userRoles || 0}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="text-sm text-muted-foreground">
+                            {new Date(dealer.createdAt).toLocaleDateString()}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex justify-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+                                handleEdit(dealer, e)
+                              }
+                              className="h-8 w-8 p-0 cursor-pointer hover:bg-primary/20 transition-colors duration-200"
+                            >
+                              <FontAwesomeIcon icon={faEdit} className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+                                handleDelete(dealer.id, e)
+                              }
+                              className="h-8 w-8 p-0 cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/20 text-red-500 transition-colors duration-200 hover:bg-primary/20"
+                            >
+                              <FontAwesomeIcon icon={faTrash} className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                )}
               </table>
               {dealersLoading && (
                 <div className="p-4 text-center">
@@ -387,7 +398,7 @@ export default function DealersPage() {
 
       {/* Dealer Details Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent >
+        <DialogContent>
           <DialogHeader className="border-b-1 px-0 sticky top-0 bg-background">
             <div className="flex items-center justify-between">
               <DialogTitle>Dealer Details</DialogTitle>
@@ -432,7 +443,9 @@ export default function DealersPage() {
               )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Inventory Items</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Inventory Items
+                  </label>
                   <p className="text-base font-medium mt-1">
                     {selectedDealer._count?.inventory || 0}
                   </p>
@@ -492,4 +505,3 @@ export default function DealersPage() {
     </div>
   );
 }
-

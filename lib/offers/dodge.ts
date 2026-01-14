@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-
 const fetchModelInfos = async () => {
   const response = await fetch(
     "https://www.dodge.com/xfragments/dodge-vsp-isilo-master/incentives.dataprops.ISiloVehicleSelector.isilovehicleselector.par.V1765309358341.json",
@@ -37,10 +36,13 @@ const fetchModelInfos = async () => {
 };
 
 const fetchOfferData = async (modelInfo: any) => {
-  const response = await fetch(`https://www.dodge.com/hostd/api/incentives/offers/targetMedium/Preferred-Offers/zip/95556/vehicle/${modelInfo.modelYearCode}`, {
-    method: "GET",
-    redirect: "follow" as RequestRedirect,
-  });
+  const response = await fetch(
+    `https://www.dodge.com/hostd/api/incentives/offers/targetMedium/Preferred-Offers/zip/95556/vehicle/${modelInfo.modelYearCode}`,
+    {
+      method: "GET",
+      redirect: "follow" as RequestRedirect,
+    },
+  );
   if (!response.ok) {
     console.error("Failed to fetch offer data:", response.status);
     return null;
@@ -50,92 +52,94 @@ const fetchOfferData = async (modelInfo: any) => {
     console.warn("No targetMediumMapping found in response data");
     return [];
   }
-  const offers = data.targetMediumMapping.flatMap((item: any) => {
-    if (!item.offerOrder || !Array.isArray(item.offerOrder)) {
-      return [];
-    }
-    return item.offerOrder.map((offer: any) => {
-      let offerType: string | null = null;
-      switch (offer.label) {
-        case "Lease":
-          offerType = "lease";
-          break;
-        case "Finance":
-          offerType = "financing";
-          break;
-        case "Cash":
-          offerType = "cash";
-          break;
-        default:
+  const offers = data.targetMediumMapping
+    .flatMap((item: any) => {
+      if (!item.offerOrder || !Array.isArray(item.offerOrder)) {
+        return [];
+      }
+      return item.offerOrder.map((offer: any) => {
+        let offerType: string | null = null;
+        switch (offer.label) {
+          case "Lease":
+            offerType = "lease";
+            break;
+          case "Finance":
+            offerType = "financing";
+            break;
+          case "Cash":
+            offerType = "cash";
+            break;
+          default:
+            return null;
+        }
+        const offerInfo = data?.offers?.find((info: any) => info.id === offer.id);
+        if (!offerInfo) {
+          console.error("Offer info not found:", offer.id);
           return null;
-      }
-      const offerInfo = data?.offers?.find((info: any) => info.id === offer.id);
-      if (!offerInfo) {
-        console.error("Offer info not found:", offer.id);
-        return null;
-      }
-      let apr: number | null = null;
-      let termMonths: number | null = null;
-      if (offerType === "financing") {
-        const aprProgram = offerInfo.programValues?.find(
-          (pv: any) => pv.displayType === "apr" && typeof pv.apr === "number",
-        );
-        if (aprProgram) {
-          apr = aprProgram.apr / 100;
-          termMonths = aprProgram.term;
         }
-      }
-      let cashBack: number | null = null;
-      if (offerType === "cash") {
-        const cashPrograms = offerInfo.programValues?.filter(
-          (pv: any) => pv.displayType === "cash" && pv.value,
-        );
-        if (cashPrograms && cashPrograms.length > 0) {
-          cashBack = cashPrograms.reduce((sum: number, pv: any) => sum + (pv.value || 0), 0);
+        let apr: number | null = null;
+        let termMonths: number | null = null;
+        if (offerType === "financing") {
+          const aprProgram = offerInfo.programValues?.find(
+            (pv: any) => pv.displayType === "apr" && typeof pv.apr === "number",
+          );
+          if (aprProgram) {
+            apr = aprProgram.apr / 100;
+            termMonths = aprProgram.term;
+          }
         }
-      }
-      let monthlyPayment: number | null = null;
-      let dueAtSigning: number | null = null;
-      let milesPerYear: number | null = null;
-      if (offerType === "lease") {
-        const leaseGroup = offerInfo.groupData?.find((gd: any) => gd.type === "LEASE");
-        if (leaseGroup) {
-          monthlyPayment = leaseGroup.monthlyPmnt ? parseFloat(leaseGroup.monthlyPmnt) : null;
-          dueAtSigning = leaseGroup.dueatSigning ? parseFloat(leaseGroup.dueatSigning) : null;
-          milesPerYear = leaseGroup.mileage || null;
-          termMonths = leaseGroup.numberofPmnts ? parseInt(leaseGroup.numberofPmnts) : null;
+        let cashBack: number | null = null;
+        if (offerType === "cash") {
+          const cashPrograms = offerInfo.programValues?.filter(
+            (pv: any) => pv.displayType === "cash" && pv.value,
+          );
+          if (cashPrograms && cashPrograms.length > 0) {
+            cashBack = cashPrograms.reduce((sum: number, pv: any) => sum + (pv.value || 0), 0);
+          }
         }
-      }
-      const expirationDate = offerInfo.end ? new Date(offerInfo.end).toISOString() : null;
-      
-      // Extract trim from representativeCcode
-      const trim = offer.representativeCcode?.description || null;
-      
-      return {
-        brand: "dodge",
-        year: modelInfo.year,
-        make: "dodge",
-        model: modelInfo.displayName,
-        modelCode: modelInfo.modelYearCode,
-        trim: trim,
-        offerType: offerType,
-        offerAmount: null,
-        apr: apr,
-        termMonths: termMonths,
-        cashBack: cashBack,
-        dueAtSigning: dueAtSigning,
-        monthlyPayment: monthlyPayment,
-        milesPerYear: milesPerYear,
-        terms: offerInfo.offerDescription || null,
-        finePrint: offerInfo.offerDisclaimer
-          ? offerInfo.offerDisclaimer
-              .replace(/&lt;br\/&gt;/gi, "\n")
-              .replace(/<br\s*\/?>/gi, "\n")
-          : null,
-        expirationDate: expirationDate,
-      };
-    });
-  }).filter((offer: any) => offer !== null);
+        let monthlyPayment: number | null = null;
+        let dueAtSigning: number | null = null;
+        let milesPerYear: number | null = null;
+        if (offerType === "lease") {
+          const leaseGroup = offerInfo.groupData?.find((gd: any) => gd.type === "LEASE");
+          if (leaseGroup) {
+            monthlyPayment = leaseGroup.monthlyPmnt ? parseFloat(leaseGroup.monthlyPmnt) : null;
+            dueAtSigning = leaseGroup.dueatSigning ? parseFloat(leaseGroup.dueatSigning) : null;
+            milesPerYear = leaseGroup.mileage || null;
+            termMonths = leaseGroup.numberofPmnts ? parseInt(leaseGroup.numberofPmnts) : null;
+          }
+        }
+        const expirationDate = offerInfo.end ? new Date(offerInfo.end).toISOString() : null;
+
+        // Extract trim from representativeCcode
+        const trim = offer.representativeCcode?.description || null;
+
+        return {
+          brand: "dodge",
+          year: modelInfo.year,
+          make: "dodge",
+          model: modelInfo.displayName,
+          modelCode: modelInfo.modelYearCode,
+          trim: trim,
+          offerType: offerType,
+          offerAmount: null,
+          apr: apr,
+          termMonths: termMonths,
+          cashBack: cashBack,
+          dueAtSigning: dueAtSigning,
+          monthlyPayment: monthlyPayment,
+          milesPerYear: milesPerYear,
+          terms: offerInfo.offerDescription || null,
+          finePrint: offerInfo.offerDisclaimer
+            ? offerInfo.offerDisclaimer
+                .replace(/&lt;br\/&gt;/gi, "\n")
+                .replace(/<br\s*\/?>/gi, "\n")
+            : null,
+          expirationDate: expirationDate,
+        };
+      });
+    })
+    .filter((offer: any) => offer !== null);
   return offers;
 };
 
@@ -167,9 +171,9 @@ export async function scrapeOffersFromDodge() {
           await prisma.$transaction(async (tx) => {
             await tx.offers.createMany({
               data: batch.map((offer) => ({
-                brand: 'dodge',
+                brand: "dodge",
                 year: offer.year ? parseInt(offer.year) : null,
-                make: 'dodge',
+                make: "dodge",
                 model: offer.model,
                 modelCode: offer.modelCode,
                 trim: offer.trim || null,
@@ -199,8 +203,7 @@ export async function scrapeOffersFromDodge() {
   } catch (error: any) {
     console.error("Error scraping Dodge offers:", error?.message || error);
     return { success: false, error: error?.message || "Failed to scrape Dodge offers" };
-  }
-  finally {
+  } finally {
     await prisma.$disconnect();
   }
 }

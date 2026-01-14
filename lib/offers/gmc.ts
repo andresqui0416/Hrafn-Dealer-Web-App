@@ -151,33 +151,39 @@ function extractTextFromHTML(html: string | null | undefined): string {
     if (bodyMatch && bodyMatch[1]) {
       contentHtml = bodyMatch[1];
     }
-    
+
     // Extract only the relevant adv-col section that contains offer content
     // Look for adv-col with q-cc-ag-black-bg class that contains offer text (not buttons)
-    const advColMatches = contentHtml.matchAll(/<adv-col[^>]*class="[^"]*q-cc-ag-black-bg[^"]*"[^>]*>([\s\S]*?)<\/adv-col>/gi);
+    const advColMatches = contentHtml.matchAll(
+      /<adv-col[^>]*class="[^"]*q-cc-ag-black-bg[^"]*"[^>]*>([\s\S]*?)<\/adv-col>/gi,
+    );
     let offerSectionHtml = "";
-    
+
     for (const match of advColMatches) {
       const sectionContent = match[1];
       // Check if this section contains offer content (has h1, p with text, not just buttons)
       // Look for any offer-related content
-      if (sectionContent.includes("<h1") && 
-          (sectionContent.includes("APR") || 
-           sectionContent.includes("Total Value") || 
-           sectionContent.includes("AVERAGE FINANCE SAVINGS") ||
-           sectionContent.includes("PURCHASE ALLOWANCE") ||
-           sectionContent.includes("Purchase Allowance") ||
-           sectionContent.includes("cash back") ||
-           sectionContent.includes("BONUS CASH") ||
-           sectionContent.includes("<p"))) {
+      if (
+        sectionContent.includes("<h1") &&
+        (sectionContent.includes("APR") ||
+          sectionContent.includes("Total Value") ||
+          sectionContent.includes("AVERAGE FINANCE SAVINGS") ||
+          sectionContent.includes("PURCHASE ALLOWANCE") ||
+          sectionContent.includes("Purchase Allowance") ||
+          sectionContent.includes("cash back") ||
+          sectionContent.includes("BONUS CASH") ||
+          sectionContent.includes("<p"))
+      ) {
         offerSectionHtml = sectionContent;
         break; // Use the first matching section
       }
     }
-    
+
     // If no specific section found but we have adv-col with q-cc-ag-black-bg, use the first one
     if (!offerSectionHtml) {
-      const firstAdvColMatch = contentHtml.match(/<adv-col[^>]*class="[^"]*q-cc-ag-black-bg[^"]*"[^>]*>([\s\S]*?)<\/adv-col>/i);
+      const firstAdvColMatch = contentHtml.match(
+        /<adv-col[^>]*class="[^"]*q-cc-ag-black-bg[^"]*"[^>]*>([\s\S]*?)<\/adv-col>/i,
+      );
       if (firstAdvColMatch && firstAdvColMatch[1]) {
         offerSectionHtml = firstAdvColMatch[1];
       } else {
@@ -185,7 +191,7 @@ function extractTextFromHTML(html: string | null | undefined): string {
         offerSectionHtml = contentHtml;
       }
     }
-    
+
     // Remove elements that don't contain useful text content
     let processedHtml = offerSectionHtml
       .replace(/<a[^>]*>[\s\S]*?<\/a>/gi, "") // Remove anchor tags and their content
@@ -197,19 +203,28 @@ function extractTextFromHTML(html: string | null | undefined): string {
       .replace(/<source[^>]*>/gi, "") // Remove source tags
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "") // Remove script tags
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ""); // Remove style tags
-    
+
     // Replace closing tags with newlines to preserve section breaks
     // Prioritize divs with "medium-margin" class to create clear section breaks
-    processedHtml = processedHtml.replace(/<\/div[^>]*class="[^"]*medium-margin[^"]*"[^>]*>/gi, "\n\n");
-    processedHtml = processedHtml.replace(/<\/(div|p|h[1-6]|section|article|header|footer|li|br|adv-col|adv-grid|hr)[^>]*>/gi, "\n");
-    
+    processedHtml = processedHtml.replace(
+      /<\/div[^>]*class="[^"]*medium-margin[^"]*"[^>]*>/gi,
+      "\n\n",
+    );
+    processedHtml = processedHtml.replace(
+      /<\/(div|p|h[1-6]|section|article|header|footer|li|br|adv-col|adv-grid|hr)[^>]*>/gi,
+      "\n",
+    );
+
     // Replace opening tags with newlines
     processedHtml = processedHtml.replace(/<div[^>]*class="[^"]*medium-margin[^"]*"[^>]*>/gi, "\n");
-    processedHtml = processedHtml.replace(/<(div|p|h[1-6]|section|article|header|footer|li|br|adv-col|adv-grid|hr)[^>]*>/gi, "\n");
-    
+    processedHtml = processedHtml.replace(
+      /<(div|p|h[1-6]|section|article|header|footer|li|br|adv-col|adv-grid|hr)[^>]*>/gi,
+      "\n",
+    );
+
     // Remove all remaining HTML tags (span, b, sup, etc.) but preserve text content
     let text = processedHtml.replace(/<[^>]*>/g, " ");
-    
+
     // Decode HTML entities (important for &nbsp; and &amp;)
     text = text
       .replace(/&nbsp;/g, " ")
@@ -221,18 +236,18 @@ function extractTextFromHTML(html: string | null | undefined): string {
       .replace(/&#x27;/g, "'")
       .replace(/&#x2F;/g, "/")
       .replace(/&apos;/g, "'");
-    
+
     // Remove common button/link text patterns
     text = text
       .replace(/\b(INVENTORY|REQUEST DEALER PRICING|BUILD & BUY|BUILD &amp; BUY)\b/gi, "")
       .replace(/\b(move-text)\b/gi, "")
       .replace(/\bFEATURED OFFER\b/gi, ""); // Remove "FEATURED OFFER" label
-    
+
     // Remove standalone asterisks and disclosure markers
     text = text
       .replace(/\s*\*\s*/g, " ") // Remove asterisks used for disclosures
       .replace(/\s*\(\s*\)\s*/g, " "); // Remove empty parentheses
-    
+
     // Normalize whitespace but preserve newlines between sections
     text = text
       .replace(/[ \t]+/g, " ") // Replace multiple spaces/tabs with single space
@@ -240,7 +255,7 @@ function extractTextFromHTML(html: string | null | undefined): string {
       .replace(/\s+\n/g, "\n") // Remove trailing spaces before newlines
       .replace(/\n{3,}/g, "\n\n") // Replace 3+ newlines with double newline
       .trim();
-    
+
     return text;
   } catch (error) {
     console.error("Error extracting text from HTML:", error);
@@ -273,7 +288,10 @@ async function fetchFeaturedOfferHTML(featuredOfferUrl: string): Promise<string 
     const html = await response.text();
     return html;
   } catch (error: any) {
-    console.warn(`Error fetching featured offer HTML from ${featuredOfferUrl}:`, error?.message || error);
+    console.warn(
+      `Error fetching featured offer HTML from ${featuredOfferUrl}:`,
+      error?.message || error,
+    );
     return null;
   }
 }
@@ -342,7 +360,7 @@ export async function scrapeOffersFromGMC() {
           const monthlyPayment = extractMonthlyPayment(htmlText);
           const termMonths = extractTermMonths(htmlText);
           const dueAtSigning = extractDueAtSigning(htmlText);
-          
+
           // Extract cashBack from HTML text (regardless of offer type)
           let cashBack: number | null = null;
           // Look for "PURCHASE ALLOWANCE" pattern first (this is cashback)
@@ -351,7 +369,9 @@ export async function scrapeOffersFromGMC() {
             cashBack = parseNumber(purchaseAllowanceMatch[1]);
           } else {
             // Look for other patterns like "$X,XXX cash back", "$X,XXX off", "$X,XXX discount", or "$X,XXX bonus cash"
-            const cashBackMatch = htmlText.match(/\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i);
+            const cashBackMatch = htmlText.match(
+              /\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i,
+            );
             if (cashBackMatch && cashBackMatch[1]) {
               cashBack = parseNumber(cashBackMatch[1]);
             }
@@ -374,7 +394,10 @@ export async function scrapeOffersFromGMC() {
             // Replace 3+ newlines with double newline (section breaks)
             terms = terms.replace(/\n{3,}/g, "\n\n");
             // Remove leading/trailing newlines from each line
-            terms = terms.split("\n").map(line => line.trim()).join("\n");
+            terms = terms
+              .split("\n")
+              .map((line) => line.trim())
+              .join("\n");
             // Ensure proper spacing: single newline between lines, double newline between sections
             terms = terms.replace(/\n\n+/g, "\n\n").trim();
             terms = terms || null;
@@ -387,7 +410,7 @@ export async function scrapeOffersFromGMC() {
             apr !== null ||
             cashBack !== null ||
             tradeDiscount !== null ||
-            (htmlText.trim().length > 30); // At least 30 characters of text content
+            htmlText.trim().length > 30; // At least 30 characters of text content
 
           if (!hasValidData) {
             continue;
@@ -417,7 +440,10 @@ export async function scrapeOffersFromGMC() {
 
           continue; // Move to next result
         } catch (error: any) {
-          console.warn(`Error processing featured offer for ${model} ${year}:`, error?.message || error);
+          console.warn(
+            `Error processing featured offer for ${model} ${year}:`,
+            error?.message || error,
+          );
           continue;
         }
       }
@@ -467,7 +493,7 @@ export async function scrapeOffersFromGMC() {
       // Don't populate offerAmount from monthlyPayment or cashBack - keep them separate
       // offerAmount should only be set if explicitly extracted from the offer content
       let offerAmount: number | null = null;
-      
+
       // Extract cashBack from body text (regardless of offer type)
       let cashBack: number | null = null;
       // Look for "PURCHASE ALLOWANCE" pattern first (this is cashback)
@@ -477,7 +503,9 @@ export async function scrapeOffersFromGMC() {
         cashBack = parseNumber(purchaseAllowanceMatch[1]);
       } else {
         // Look for other patterns like "$X,XXX cash back", "$X,XXX off", "$X,XXX discount", or "$X,XXX bonus cash"
-        const cashBackMatch = bodyText.match(/\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i);
+        const cashBackMatch = bodyText.match(
+          /\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i,
+        );
         if (cashBackMatch && cashBackMatch[1]) {
           cashBack = parseNumber(cashBackMatch[1]);
         }
@@ -491,7 +519,8 @@ export async function scrapeOffersFromGMC() {
       const hasValidData =
         (offerType === "lease" && monthlyPayment) ||
         (offerType === "financing" && apr !== null) ||
-        (offerType === "cash" && (offerAmount !== null || cashBack !== null || tradeDiscount !== null));
+        (offerType === "cash" &&
+          (offerAmount !== null || cashBack !== null || tradeDiscount !== null));
 
       if (!hasValidData) {
         continue;
@@ -585,4 +614,3 @@ export async function scrapeOffersFromGMC() {
     };
   }
 }
-
