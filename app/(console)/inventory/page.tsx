@@ -58,12 +58,11 @@ export default function InventoryPage() {
     const loadInventory = async () => {
       try {
         setInventoryLoading(true);
-        const statusParam = statusFilter.length > 0 
-          ? `&${statusFilter.map(s => `status=${s}`).join("&")}` 
-          : "";
+        const statusParam =
+          statusFilter.length > 0 ? `&${statusFilter.map((s) => `status=${s}`).join("&")}` : "";
         const response = await fetch(
           `/api/inventory?page=${currentPage}&limit=${itemsPerPage}${statusParam}`,
-          { signal: abortController.signal }
+          { signal: abortController.signal },
         );
         if (response.ok) {
           const data = await response.json();
@@ -76,7 +75,7 @@ export default function InventoryPage() {
         }
       } catch (error) {
         // Ignore abort errors
-        if (error instanceof Error && error.name === 'AbortError') {
+        if (error instanceof Error && error.name === "AbortError") {
           return;
         }
         console.error("Error loading inventory:", error);
@@ -119,76 +118,77 @@ export default function InventoryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold">Inventory</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage your inventory
-          </p>
+          <p className="text-sm text-muted-foreground">Manage your inventory</p>
         </div>
       </div>
 
       <div className="rounded-lg border border-white/10 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-white/5 border-b border-white/10">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">VIN</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Year</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Make</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Model</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Trim</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Price</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Mileage</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">
-                    <div className="flex items-center gap-2 justify-between">
-                      <span>Status</span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            className="h-4 w-4 flex items-center justify-center cursor-pointer hover:text-foreground transition-colors"
-                            onClick={(e) => e.stopPropagation()}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-white/5 border-b border-white/10">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-semibold">VIN</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Year</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Make</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Model</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Trim</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Price</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Mileage</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">
+                  <div className="flex items-center gap-2 justify-between">
+                    <span>Status</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className="h-4 w-4 flex items-center justify-center cursor-pointer hover:text-foreground transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <FontAwesomeIcon
+                            icon={faFilter}
+                            className="h-3 w-3 text-muted-foreground hover:text-foreground"
+                            title="Filter by status"
+                          />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-48 bg-background text-foreground"
+                      >
+                        <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {statusOptions.map((option) => (
+                          <DropdownMenuCheckboxItem
+                            key={option.value}
+                            checked={statusFilter.includes(option.value)}
+                            onCheckedChange={() => handleStatusToggle(option.value)}
+                            className="cursor-pointer"
                           >
-                            <FontAwesomeIcon 
-                              icon={faFilter} 
-                              className="h-3 w-3 text-muted-foreground hover:text-foreground"
-                              title="Filter by status"
-                            />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 bg-background text-foreground">
-                          <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          {statusOptions.map((option) => (
+                            {option.label}
+                          </DropdownMenuCheckboxItem>
+                        ))}
+                        {statusFilter.length > 0 && (
+                          <>
+                            <DropdownMenuSeparator />
                             <DropdownMenuCheckboxItem
-                              key={option.value}
-                              checked={statusFilter.includes(option.value)}
-                              onCheckedChange={() => handleStatusToggle(option.value)}
-                              className="cursor-pointer"
+                              checked={false}
+                              onCheckedChange={() => {
+                                setStatusFilter([]);
+                                setCurrentPage(1);
+                                setPageInput("1");
+                              }}
+                              className="cursor-pointer text-muted-foreground"
                             >
-                              {option.label}
+                              Clear filters
                             </DropdownMenuCheckboxItem>
-                          ))}
-                          {statusFilter.length > 0 && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuCheckboxItem
-                                checked={false}
-                                onCheckedChange={() => {
-                                  setStatusFilter([]);
-                                  setCurrentPage(1);
-                                  setPageInput("1");
-                                }}
-                                className="cursor-pointer text-muted-foreground"
-                              >
-                                Clear filters
-                              </DropdownMenuCheckboxItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              {!inventoryLoading && inventory.length !== 0 && (
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            {!inventoryLoading && inventory.length !== 0 && (
               <tbody className="divide-y divide-white/10">
                 {inventory.map((item) => (
                   <tr key={item.id} className="hover:bg-white/5">
@@ -198,13 +198,9 @@ export default function InventoryPage() {
                     <td className="px-4 py-3 text-sm">{item.model}</td>
                     <td className="px-4 py-3 text-sm">{item.trim || "-"}</td>
                     <td className="px-4 py-3 text-sm">
-                      {item.price
-                        ? `$${Number(item.price).toLocaleString()}`
-                        : "-"}
+                      {item.price ? `$${Number(item.price).toLocaleString()}` : "-"}
                     </td>
-                    <td className="px-4 py-3 text-sm">
-                      {item.mileage.toLocaleString()} mi
-                    </td>
+                    <td className="px-4 py-3 text-sm">{item.mileage.toLocaleString()} mi</td>
                     <td className="px-4 py-3 text-sm">
                       <span
                         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -223,137 +219,139 @@ export default function InventoryPage() {
                   </tr>
                 ))}
               </tbody>
-              )}
-            </table>
-            {inventoryLoading ? (
-                <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
-                  <FontAwesomeIcon icon={faSpinner} className="fa-lg animate-spin" />
-                  <span>Loading inventory...</span>
-                </div>
-              ) : inventory.length === 0 && !inventoryLoading && (
-                <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
-                  <FontAwesomeIcon icon={faBoxOpen} className="fa-lg" />
-                  <span>No inventory items found.</span>
-                </div>
-              )}
-          </div>
-          <div className="px-4 py-3 bg-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-4">
-              <div>
-                {pagination ? (
-                  <>
-                    Showing {(pagination.page - 1) * pagination.limit + 1}-
-                    {Math.min(pagination.page * pagination.limit, pagination.totalCount)} of{" "}
-                    {pagination.totalCount} item{pagination.totalCount !== 1 ? "s" : ""}
-                  </>
-                ) : (
-                  <>
-                    Showing {inventory.length} item{inventory.length !== 1 ? "s" : ""}
-                  </>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <label htmlFor="page-size" className="text-xs">
-                  Items per page:
-                </label>
-                <select
-                  id="page-size"
-                  name="page-size"
-                  value={itemsPerPage}
-                  onChange={(e) => {
-                    const newSize = parseInt(e.target.value, 10);
-                    setItemsPerPage(newSize);
-                    setCurrentPage(1);
-                    setPageInput("1");
-                  }}
-                  disabled={inventoryLoading}
-                  className="px-2 py-1 rounded-md border border-white/10 bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{
-                    colorScheme: "dark",
-                  }}
-                >
-                  <option value="25" className="bg-background text-foreground">25</option>
-                  <option value="50" className="bg-background text-foreground">50</option>
-                  <option value="100" className="bg-background text-foreground">100</option>
-                  <option value="200" className="bg-background text-foreground">200</option>
-                </select>
-              </div>
+            )}
+          </table>
+          {inventoryLoading ? (
+            <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+              <FontAwesomeIcon icon={faSpinner} className="fa-lg animate-spin" />
+              <span>Loading inventory...</span>
             </div>
-            {pagination && pagination.totalPages > 1 && (
-              <div className="flex items-center gap-2 w-max">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const newPage = Math.max(1, currentPage - 1);
-                    setCurrentPage(newPage);
-                    setPageInput(newPage.toString());
+          ) : (
+            inventory.length === 0 &&
+            !inventoryLoading && (
+              <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+                <FontAwesomeIcon icon={faBoxOpen} className="fa-lg" />
+                <span>No inventory items found.</span>
+              </div>
+            )
+          )}
+        </div>
+        <div className="px-4 py-3 bg-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-4">
+            <div>
+              {pagination ? (
+                <>
+                  Showing {(pagination.page - 1) * pagination.limit + 1}-
+                  {Math.min(pagination.page * pagination.limit, pagination.totalCount)} of{" "}
+                  {pagination.totalCount} item{pagination.totalCount !== 1 ? "s" : ""}
+                </>
+              ) : (
+                <>
+                  Showing {inventory.length} item{inventory.length !== 1 ? "s" : ""}
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <label htmlFor="page-size" className="text-xs">
+                Items per page:
+              </label>
+              <select
+                id="page-size"
+                name="page-size"
+                value={itemsPerPage}
+                onChange={(e) => {
+                  const newSize = parseInt(e.target.value, 10);
+                  setItemsPerPage(newSize);
+                  setCurrentPage(1);
+                  setPageInput("1");
+                }}
+                disabled={inventoryLoading}
+                className="px-2 py-1 rounded-md border border-white/10 bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  colorScheme: "dark",
+                }}
+              >
+                <option value="25" className="bg-background text-foreground">
+                  25
+                </option>
+                <option value="50" className="bg-background text-foreground">
+                  50
+                </option>
+                <option value="100" className="bg-background text-foreground">
+                  100
+                </option>
+                <option value="200" className="bg-background text-foreground">
+                  200
+                </option>
+              </select>
+            </div>
+          </div>
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex items-center gap-2 w-max">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const newPage = Math.max(1, currentPage - 1);
+                  setCurrentPage(newPage);
+                  setPageInput(newPage.toString());
+                }}
+                disabled={!pagination.hasPreviousPage || inventoryLoading}
+              >
+                Previous
+              </Button>
+              <div className="flex flex-row items-center gap-2">
+                <span className="text-xs">Page</span>
+                <Input
+                  id="pageNumber"
+                  name="pageNumber"
+                  type="number"
+                  min="1"
+                  max={pagination.totalPages}
+                  value={pageInput}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setPageInput(value);
                   }}
-                  disabled={!pagination.hasPreviousPage || inventoryLoading}
-                >
-                  Previous
-                </Button>
-                <div className="flex flex-row items-center gap-2">
-                  <span className="text-xs">Page</span>
-                  <Input
-                    id="pageNumber"
-                    name="pageNumber"
-                    type="number"
-                    min="1"
-                    max={pagination.totalPages}
-                    value={pageInput}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setPageInput(value);
-                    }}
-                    onBlur={(e) => {
-                      const pageNum = parseInt(e.target.value, 10);
-                      if (
-                        !isNaN(pageNum) &&
-                        pageNum >= 1 &&
-                        pageNum <= pagination.totalPages
-                      ) {
+                  onBlur={(e) => {
+                    const pageNum = parseInt(e.target.value, 10);
+                    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= pagination.totalPages) {
+                      setCurrentPage(pageNum);
+                    } else {
+                      setPageInput(currentPage.toString());
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const pageNum = parseInt(pageInput, 10);
+                      if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= pagination.totalPages) {
                         setCurrentPage(pageNum);
                       } else {
                         setPageInput(currentPage.toString());
                       }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        const pageNum = parseInt(pageInput, 10);
-                        if (
-                          !isNaN(pageNum) &&
-                          pageNum >= 1 &&
-                          pageNum <= pagination.totalPages
-                        ) {
-                          setCurrentPage(pageNum);
-                        } else {
-                          setPageInput(currentPage.toString());
-                        }
-                      }
-                    }}
-                    disabled={inventoryLoading}
-                    className="w-8 h-8 text-center text-xs"
-                  />
-                  <div className="text-xs w-16">{`of ${pagination.totalPages}`}</div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const newPage = Math.min(pagination.totalPages, currentPage + 1);
-                    setCurrentPage(newPage);
-                    setPageInput(newPage.toString());
+                    }
                   }}
-                  disabled={!pagination.hasNextPage || inventoryLoading}
-                >
-                  Next
-                </Button>
+                  disabled={inventoryLoading}
+                  className="w-8 h-8 text-center text-xs"
+                />
+                <div className="text-xs w-16">{`of ${pagination.totalPages}`}</div>
               </div>
-            )}
-          </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const newPage = Math.min(pagination.totalPages, currentPage + 1);
+                  setCurrentPage(newPage);
+                  setPageInput(newPage.toString());
+                }}
+                disabled={!pagination.hasNextPage || inventoryLoading}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
+      </div>
     </div>
   );
 }
-

@@ -41,7 +41,7 @@ export default function ProfilePage() {
 
   // Load user data
   useEffect(() => {
-      loadUserData();
+    loadUserData();
   }, []);
 
   const loadUserData = async () => {
@@ -79,7 +79,7 @@ export default function ProfilePage() {
         body: JSON.stringify({ email }),
       });
 
-        const data = await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
         setError(data.error || "Failed to update email");
@@ -109,22 +109,22 @@ export default function ProfilePage() {
       return;
     }
 
-      if (newPassword.length < 8) {
-        setError("Password must be at least 8 characters long");
-        setLoading(false);
-        return;
-      }
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters long");
+      setLoading(false);
+      return;
+    }
 
-      if (newPassword !== confirmPassword) {
-        setError("New passwords do not match");
-        setLoading(false);
-        return;
-      }
+    if (newPassword !== confirmPassword) {
+      setError("New passwords do not match");
+      setLoading(false);
+      return;
+    }
 
-      if (!currentPassword) {
+    if (!currentPassword) {
       setError("Current password is required");
-        setLoading(false);
-        return;
+      setLoading(false);
+      return;
     }
 
     try {
@@ -315,7 +315,9 @@ export default function ProfilePage() {
           <CardContent className="pt-0">
             <form onSubmit={handleEmailSubmit} className="space-y-4">
               {error && (
-                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
+                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+                  {error}
+                </div>
               )}
               {success && (
                 <div className="rounded-md bg-green-500/15 p-3 text-sm text-green-600 dark:text-green-400">
@@ -358,7 +360,9 @@ export default function ProfilePage() {
           <CardContent className="pt-0">
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
               {error && (
-                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
+                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+                  {error}
+                </div>
               )}
               {success && (
                 <div className="rounded-md bg-green-500/15 p-3 text-sm text-green-600 dark:text-green-400">
@@ -366,52 +370,52 @@ export default function ProfilePage() {
                 </div>
               )}
 
-                <div className="space-y-2">
-                  <label htmlFor="currentPassword" className="text-sm font-medium">
-                    Current Password
-                  </label>
-                  <Input
-                    id="currentPassword"
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
+              <div className="space-y-2">
+                <label htmlFor="currentPassword" className="text-sm font-medium">
+                  Current Password
+                </label>
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
                   required
-                    disabled={loading}
+                  disabled={loading}
                   autoComplete="off"
-                  />
-                </div>
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="newPassword" className="text-sm font-medium">
-                    New Password
-                  </label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+              <div className="space-y-2">
+                <label htmlFor="newPassword" className="text-sm font-medium">
+                  New Password
+                </label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                   required
-                    disabled={loading}
-                    minLength={8}
+                  disabled={loading}
+                  minLength={8}
                   autoComplete="off"
-                  />
-                  <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
-                </div>
+                />
+                <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
+              </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="text-sm font-medium">
-                    Confirm New Password
-                  </label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="text-sm font-medium">
+                  Confirm New Password
+                </label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                    disabled={loading}
-                    minLength={8}
+                  disabled={loading}
+                  minLength={8}
                   autoComplete="off"
-                  />
+                />
               </div>
 
               <div className="flex justify-end pt-4">
@@ -434,7 +438,9 @@ export default function ProfilePage() {
           <CardContent className="pt-0">
             <form onSubmit={handleAvatarSubmit} className="space-y-4">
               {error && (
-                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
+                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+                  {error}
+                </div>
               )}
               {success && (
                 <div className="rounded-md bg-green-500/15 p-3 text-sm text-green-600 dark:text-green-400">
@@ -459,16 +465,16 @@ export default function ProfilePage() {
                         <span className="text-2xl text-muted-foreground">
                           {userData?.name?.[0]?.toUpperCase() || "U"}
                         </span>
-                </div>
-              )}
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1">
-                <Input
+                    <Input
                       ref={fileInputRef}
                       type="file"
                       accept="image/*"
                       onChange={handleAvatarChange}
-                  disabled={loading}
+                      disabled={loading}
                       className="hidden"
                       id="avatar-upload"
                     />
@@ -486,7 +492,7 @@ export default function ProfilePage() {
                           type="button"
                           variant="outline"
                           onClick={handleRemoveAvatar}
-                  disabled={loading}
+                          disabled={loading}
                           className="text-destructive hover:text-destructive"
                         >
                           Remove
@@ -495,15 +501,15 @@ export default function ProfilePage() {
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
                       JPG, PNG or GIF. Max size 5MB.
-                  </p>
+                    </p>
                   </div>
-              </div>
+                </div>
 
                 {avatarPreview && avatarPreview !== userData?.avatar && (
-              <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={loading}>
+                  <div className="flex justify-end pt-4">
+                    <Button type="submit" disabled={loading}>
                       {loading ? "Saving..." : "Save Avatar"}
-                </Button>
+                    </Button>
                   </div>
                 )}
               </div>

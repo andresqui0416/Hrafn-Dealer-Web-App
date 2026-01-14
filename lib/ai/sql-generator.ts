@@ -61,7 +61,7 @@ Now convert this question to SQL:`;
 
 export async function generateSQLFromNaturalLanguage(
   question: string,
-  dealerId: string
+  dealerId: string,
 ): Promise<string> {
   try {
     const response = await openai.chat.completions.create({
@@ -86,7 +86,11 @@ export async function generateSQLFromNaturalLanguage(
     }
 
     // Clean up the SQL (remove markdown code blocks if present)
-    const cleanedSQL = sql.replace(/^```sql\n?/i, "").replace(/^```\n?/i, "").replace(/\n?```$/i, "").trim();
+    const cleanedSQL = sql
+      .replace(/^```sql\n?/i, "")
+      .replace(/^```\n?/i, "")
+      .replace(/\n?```$/i, "")
+      .trim();
 
     // Replace :dealerId placeholder with actual dealer ID
     const finalSQL = cleanedSQL.replace(/:dealerId/g, `'${dealerId}'`);
@@ -97,4 +101,3 @@ export async function generateSQLFromNaturalLanguage(
     throw new Error("Failed to generate SQL query");
   }
 }
-

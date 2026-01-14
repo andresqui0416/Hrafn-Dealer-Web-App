@@ -51,7 +51,7 @@ export async function authMiddleware(request: NextRequest): Promise<NextResponse
     // Vercel cron jobs: Allow if CRON_SECRET is set and matches, or if no CRON_SECRET is configured
     // Vercel cron jobs can optionally send Authorization header if configured
     if (process.env.CRON_SECRET) {
-      const authHeader = request.headers.get('Authorization');
+      const authHeader = request.headers.get("Authorization");
       if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         console.log("Unauthorized cron request - missing or invalid CRON_SECRET");
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
 // GET all dealer services
 export async function GET(request: NextRequest) {
   try {
-
     const dealerServices = await prisma.dealerService.findMany({
       include: {
         dealer: {
@@ -37,4 +36,3 @@ export async function GET(request: NextRequest) {
     await prisma.$disconnect();
   }
 }
-

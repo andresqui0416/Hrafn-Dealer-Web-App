@@ -6,10 +6,7 @@ const prisma = new PrismaClient();
 export const dynamic = "force-dynamic";
 
 // GET messages for a chat (admins only)
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Get adminId from middleware-set header (guaranteed to exist by auth middleware)
     const adminId = request.headers.get("x-admin-id")!;
@@ -32,7 +29,7 @@ export async function GET(
     if (chat.adminId && chat.adminId !== adminId) {
       return NextResponse.json(
         { error: "You can only access chats you are handling" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -46,10 +43,7 @@ export async function GET(
 }
 
 // POST send a message (admins only)
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Get adminId from middleware-set header (guaranteed to exist by auth middleware)
     const adminId = request.headers.get("x-admin-id")!;
@@ -58,10 +52,7 @@ export async function POST(
     const { content } = body;
 
     if (!content || typeof content !== "string" || content.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Message content is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Message content is required" }, { status: 400 });
     }
 
     const chat = await prisma.chat.findUnique({
@@ -76,7 +67,7 @@ export async function POST(
     if (chat.adminId && chat.adminId !== adminId) {
       return NextResponse.json(
         { error: "You can only send messages to chats you are handling" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -104,4 +95,3 @@ export async function POST(
     await prisma.$disconnect();
   }
 }
-

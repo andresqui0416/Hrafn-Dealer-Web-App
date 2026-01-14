@@ -6,10 +6,7 @@ const prisma = new PrismaClient();
 export const dynamic = "force-dynamic";
 
 // GET chat details (users only)
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Get userId from middleware-set header (guaranteed to exist by auth middleware)
     const userId = request.headers.get("x-user-id")!;
@@ -35,4 +32,3 @@ export async function GET(
     await prisma.$disconnect();
   }
 }
-

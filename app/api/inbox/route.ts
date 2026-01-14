@@ -55,10 +55,7 @@ export async function POST(request: NextRequest) {
     const { subject, content } = body;
 
     if (!subject || !content) {
-      return NextResponse.json(
-        { error: "Subject and content are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Subject and content are required" }, { status: 400 });
     }
 
     // Create chat with first message
@@ -99,4 +96,3 @@ export async function POST(request: NextRequest) {
     await prisma.$disconnect();
   }
 }
-

@@ -33,7 +33,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Service request not found" }, { status: 404 });
     }
     // If the service request is allowed, create the departments
-    let data: serviceData = {status: status as "pending" | "reviewing" | "rejected" | "allowed"};
+    let data: serviceData = { status: status as "pending" | "reviewing" | "rejected" | "allowed" };
     if (status === "allowed") {
       const departments = Array.from(
         new Set(body.departments.map((item: any) => JSON.stringify(item))),
@@ -50,7 +50,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       await prisma.dealerDepartment.createMany({
         data: departments,
       });
-      
+
       if (body.subscriptionId) {
         data.subscriptionId = body.subscriptionId;
       }

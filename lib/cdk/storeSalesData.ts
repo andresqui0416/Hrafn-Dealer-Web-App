@@ -62,12 +62,16 @@ export async function storeSalesData(salesDataArray: any[], dealerId: string) {
             sp1Commission: comm.sp1Commission || null,
             sp1SaleCreditSP: comm.sp1SaleCreditSP || null,
             sp1SurplusCash: comm.sp1SurplusCash || null,
-            sp1TotalCommission: comm.sp1TotalCommission ? new Decimal(comm.sp1TotalCommission) : null,
+            sp1TotalCommission: comm.sp1TotalCommission
+              ? new Decimal(comm.sp1TotalCommission)
+              : null,
             sp2Bonus: comm.sp2Bonus ? new Decimal(comm.sp2Bonus) : null,
             sp2Commission: comm.sp2Commission || null,
             sp2SaleCreditSP: comm.sp2SaleCreditSP || null,
             sp2SurplusCash: comm.sp2SurplusCash || null,
-            sp2TotalCommission: comm.sp2TotalCommission ? new Decimal(comm.sp2TotalCommission) : null,
+            sp2TotalCommission: comm.sp2TotalCommission
+              ? new Decimal(comm.sp2TotalCommission)
+              : null,
             sp2PurchaseMBISPCommAmount: comm.sp2PurchaseMBISPCommAmount
               ? new Decimal(comm.sp2PurchaseMBISPCommAmount)
               : null,
@@ -273,9 +277,13 @@ export async function storeSalesData(salesDataArray: any[], dealerId: string) {
       if (saleData.dealEvents && Array.isArray(saleData.dealEvents)) {
         nestedData.dealEvents = {
           create: saleData.dealEvents.map((event: any, index: number) => ({
-            specialContract1Date: event.specialContract1Date ? new Date(event.specialContract1Date) : null,
+            specialContract1Date: event.specialContract1Date
+              ? new Date(event.specialContract1Date)
+              : null,
             specialContract1Reason: event.specialContract1Reason || null,
-            specialContract2Date: event.specialContract2Date ? new Date(event.specialContract2Date) : null,
+            specialContract2Date: event.specialContract2Date
+              ? new Date(event.specialContract2Date)
+              : null,
             specialContract2Reason: event.specialContract2Reason || null,
             dealEvent: event.dealEvent || null,
             dealEventDate: event.dealEventDate ? new Date(event.dealEventDate) : null,
@@ -317,22 +325,34 @@ export async function storeSalesData(salesDataArray: any[], dealerId: string) {
         const ins = saleData.insurance;
         nestedData.insurance = {
           create: {
-            extWarrantyExpMilesLease: ins.extWarrantyExpMilesLease != null ? parseInt(String(ins.extWarrantyExpMilesLease), 10) : null,
-            extWarrantyTermLease: ins.extWarrantyTermLease != null ? parseInt(String(ins.extWarrantyTermLease), 10) : null,
+            extWarrantyExpMilesLease:
+              ins.extWarrantyExpMilesLease != null
+                ? parseInt(String(ins.extWarrantyExpMilesLease), 10)
+                : null,
+            extWarrantyTermLease:
+              ins.extWarrantyTermLease != null
+                ? parseInt(String(ins.extWarrantyTermLease), 10)
+                : null,
             insuranceTypeCode: ins.insuranceTypeCode || null,
-            texasGAPInsuranceAmount: ins.texasGAPInsuranceAmount ? new Decimal(ins.texasGAPInsuranceAmount) : null,
+            texasGAPInsuranceAmount: ins.texasGAPInsuranceAmount
+              ? new Decimal(ins.texasGAPInsuranceAmount)
+              : null,
             insurance1: ins.insurance1 || null,
             insurance2: ins.insurance2 || null,
             insurance3: ins.insurance3 || null,
             ahiCost: ins.ahiCost ? new Decimal(ins.ahiCost) : null,
             ahiIncome: ins.ahiIncome ? new Decimal(ins.ahiIncome) : null,
-            ahiMonthlyMaxAmount: ins.ahiMonthlyMaxAmount ? new Decimal(ins.ahiMonthlyMaxAmount) : null,
+            ahiMonthlyMaxAmount: ins.ahiMonthlyMaxAmount
+              ? new Decimal(ins.ahiMonthlyMaxAmount)
+              : null,
             ahiPremium: ins.ahiPremium ? new Decimal(ins.ahiPremium) : null,
             ahiRate: ins.ahiRate ? new Decimal(ins.ahiRate) : null,
             ahiTerm: ins.ahiTerm != null ? parseInt(String(ins.ahiTerm), 10) : null,
             cliCost: ins.cliCost ? new Decimal(ins.cliCost) : null,
             cliIncome: ins.cliIncome ? new Decimal(ins.cliIncome) : null,
-            cliMonthlyMaxAmount: ins.cliMonthlyMaxAmount ? new Decimal(ins.cliMonthlyMaxAmount) : null,
+            cliMonthlyMaxAmount: ins.cliMonthlyMaxAmount
+              ? new Decimal(ins.cliMonthlyMaxAmount)
+              : null,
             cliPremium: ins.cliPremium ? new Decimal(ins.cliPremium) : null,
             cliRate: ins.cliRate ? new Decimal(ins.cliRate) : null,
             cliTerm: ins.cliTerm != null ? parseInt(String(ins.cliTerm), 10) : null,
@@ -379,8 +399,12 @@ export async function storeSalesData(salesDataArray: any[], dealerId: string) {
         nestedData.tax = {
           create: {
             serviceTaxAmount: tax.serviceTaxAmount ? new Decimal(tax.serviceTaxAmount) : null,
-            leaseFlexibleTax1Amount: tax.leaseFlexibleTax1Amount ? new Decimal(tax.leaseFlexibleTax1Amount) : null,
-            leaseFlexibleTax2Amount: tax.leaseFlexibleTax2Amount ? new Decimal(tax.leaseFlexibleTax2Amount) : null,
+            leaseFlexibleTax1Amount: tax.leaseFlexibleTax1Amount
+              ? new Decimal(tax.leaseFlexibleTax1Amount)
+              : null,
+            leaseFlexibleTax2Amount: tax.leaseFlexibleTax2Amount
+              ? new Decimal(tax.leaseFlexibleTax2Amount)
+              : null,
             goodsAndServicesTaxDetails: tax.goodsAndServicesTaxDetails || null,
             luxuryTaxDetails: tax.luxuryTaxDetails || null,
             salesTaxDetails: tax.salesTaxDetails || null,
@@ -395,29 +419,43 @@ export async function storeSalesData(salesDataArray: any[], dealerId: string) {
         const totals = saleData.totals;
         nestedData.totals = {
           create: {
-            totalTradeAllowance: totals.totalTradeAllowance ? new Decimal(totals.totalTradeAllowance) : null,
+            totalTradeAllowance: totals.totalTradeAllowance
+              ? new Decimal(totals.totalTradeAllowance)
+              : null,
             totalTradesACV: totals.totalTradesACV ? new Decimal(totals.totalTradesACV) : null,
             totalTradesNet: totals.totalTradesNet ? new Decimal(totals.totalTradesNet) : null,
             totalTradesOver: totals.totalTradesOver ? new Decimal(totals.totalTradesOver) : null,
-            totalTradesPayoff: totals.totalTradesPayoff ? new Decimal(totals.totalTradesPayoff) : null,
+            totalTradesPayoff: totals.totalTradesPayoff
+              ? new Decimal(totals.totalTradesPayoff)
+              : null,
             totalAnnFees: totals.totalAnnFees ? new Decimal(totals.totalAnnFees) : null,
-            totalBackCostAdjustments: totals.totalBackCostAdjustments ? new Decimal(totals.totalBackCostAdjustments) : null,
+            totalBackCostAdjustments: totals.totalBackCostAdjustments
+              ? new Decimal(totals.totalBackCostAdjustments)
+              : null,
             totalBasePrice: totals.totalBasePrice ? new Decimal(totals.totalBasePrice) : null,
-            totalCapReduction: totals.totalCapReduction ? new Decimal(totals.totalCapReduction) : null,
+            totalCapReduction: totals.totalCapReduction
+              ? new Decimal(totals.totalCapReduction)
+              : null,
             totalCashSurplus: totals.totalCashSurplus ? new Decimal(totals.totalCashSurplus) : null,
             totalCommission: totals.totalCommission ? new Decimal(totals.totalCommission) : null,
             totalDMVLicenseFeeCalifornia: totals.totalDMVLicenseFeeCalifornia
               ? new Decimal(totals.totalDMVLicenseFeeCalifornia)
               : null,
             totalDown: totals.totalDown ? new Decimal(totals.totalDown) : null,
-            totalFinancedFeeOptions: totals.totalFinancedFeeOptions ? new Decimal(totals.totalFinancedFeeOptions) : null,
+            totalFinancedFeeOptions: totals.totalFinancedFeeOptions
+              ? new Decimal(totals.totalFinancedFeeOptions)
+              : null,
             totalFrontCostAdjustments: totals.totalFrontCostAdjustments
               ? new Decimal(totals.totalFrontCostAdjustments)
               : null,
-            totalInsurancePremiums: totals.totalInsurancePremiums ? new Decimal(totals.totalInsurancePremiums) : null,
+            totalInsurancePremiums: totals.totalInsurancePremiums
+              ? new Decimal(totals.totalInsurancePremiums)
+              : null,
             totalGross: totals.totalGross ? new Decimal(totals.totalGross) : null,
             totalInitFees: totals.totalInitFees ? new Decimal(totals.totalInitFees) : null,
-            totalOfMonthlyPayments: totals.totalOfMonthlyPayments ? new Decimal(totals.totalOfMonthlyPayments) : null,
+            totalOfMonthlyPayments: totals.totalOfMonthlyPayments
+              ? new Decimal(totals.totalOfMonthlyPayments)
+              : null,
             totalOptionsFees: totals.totalOptionsFees ? new Decimal(totals.totalOptionsFees) : null,
             totalTaxableFees: totals.totalTaxableFees ? new Decimal(totals.totalTaxableFees) : null,
             totalTaxRate: totals.totalTaxRate ? new Decimal(totals.totalTaxRate) : null,
@@ -479,7 +517,8 @@ export async function storeSalesData(salesDataArray: any[], dealerId: string) {
             bodyStyle: veh.bodyStyle || null,
             color: veh.color || null,
             stockNo: veh.stockNo || null,
-            vehicleMileage: veh.vehicleMileage != null ? parseInt(String(veh.vehicleMileage), 10) : null,
+            vehicleMileage:
+              veh.vehicleMileage != null ? parseInt(String(veh.vehicleMileage), 10) : null,
             vehInventoryCompany: veh.vehInventoryCompany || null,
             vehSaleCompany: veh.vehSaleCompany || null,
           },
@@ -533,11 +572,13 @@ export async function storeSalesData(salesDataArray: any[], dealerId: string) {
         results.created++;
       }
     } catch (error) {
-      console.error(`Error storing sale data for dealNo ${saleData.deal?.dealNo || saleData.dealNo}:`, error);
+      console.error(
+        `Error storing sale data for dealNo ${saleData.deal?.dealNo || saleData.dealNo}:`,
+        error,
+      );
       results.errors++;
     }
   }
 
   return results;
 }
-

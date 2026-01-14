@@ -8,12 +8,13 @@ const fetchOfferData = async (zipCode: string = "95556") => {
     method: "GET",
     redirect: "follow" as RequestRedirect,
     headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      "Accept": "application/json, text/plain, */*",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      Accept: "application/json, text/plain, */*",
       "Accept-Language": "en-US,en;q=0.9",
       "Accept-Encoding": "gzip, deflate, br",
-      "Referer": "https://automobiles.honda.com/",
-      "Origin": "https://automobiles.honda.com",
+      Referer: "https://automobiles.honda.com/",
+      Origin: "https://automobiles.honda.com",
     },
   });
 
@@ -65,7 +66,11 @@ const fetchOfferData = async (zipCode: string = "95556") => {
 
     // Extract finance information (APR and term)
     let apr: number | null = null;
-    if (offer.PaymentTerms && offer.PaymentTerms.FinanceTerms && Array.isArray(offer.PaymentTerms.FinanceTerms)) {
+    if (
+      offer.PaymentTerms &&
+      offer.PaymentTerms.FinanceTerms &&
+      Array.isArray(offer.PaymentTerms.FinanceTerms)
+    ) {
       // Use the first finance term's APR, or find the best one
       const financeTerm = offer.PaymentTerms.FinanceTerms[0];
       if (financeTerm && financeTerm.APR) {
@@ -155,7 +160,9 @@ export async function scrapeOffersFromHonda(zipCode: string = "95556") {
               offerAmount: offer.offerAmount,
               apr: offer.apr !== null && offer.apr !== undefined ? offer.apr : null,
               termMonths:
-                offer.termMonths !== null && offer.termMonths !== undefined ? offer.termMonths : null,
+                offer.termMonths !== null && offer.termMonths !== undefined
+                  ? offer.termMonths
+                  : null,
               cashBack:
                 offer.cashBack !== null && offer.cashBack !== undefined ? offer.cashBack : null,
               tradeDiscount: offer.tradeDiscount,

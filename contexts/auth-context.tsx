@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchingRef.current = true;
     try {
       setLoading(true);
-      
+
       // If on admin route, fetch admin auth
       if (isAdminRoute) {
         const res = await fetch("/api/admin/auth/me");

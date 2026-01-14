@@ -21,13 +21,16 @@ export function Header() {
     >
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <div className={`${pathname !=='/' ?'block': 'hidden'}`}>
-
-          <Button variant="ghost" className="cursor-pointer lg:hidden" onClick={handleSidebarOpen}>
-            <FontAwesomeIcon icon={faBars} className="fa-lg" />
-          </Button>
+          <div className={`${pathname !== "/" ? "block" : "hidden"}`}>
+            <Button
+              variant="ghost"
+              className="cursor-pointer lg:hidden"
+              onClick={handleSidebarOpen}
+            >
+              <FontAwesomeIcon icon={faBars} className="fa-lg" />
+            </Button>
           </div>
-          <div className={`${pathname !=='/' ?'hidden': 'block'} lg:block`}>
+          <div className={`${pathname !== "/" ? "hidden" : "block"} lg:block`}>
             <Link href="/">
               <div className="flex items-center gap-3">
                 <Image src="/logo.png" alt="Hrafn AI" width={32} height={32} />

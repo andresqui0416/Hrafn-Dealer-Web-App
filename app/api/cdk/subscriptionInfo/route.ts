@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
           error: "Failed to fetch subscription info",
           details: errorData,
         },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -30,15 +30,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error) {
     console.error("CDK subscription info error:", error);
-    
+
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    
+
     return NextResponse.json(
       {
         error: "Internal server error",
         details: errorMessage,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

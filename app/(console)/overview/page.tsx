@@ -84,12 +84,16 @@ export default function OverviewPage() {
             icon={trend === "up" ? faArrowTrendUp : faArrowTrendDown}
             className={cn(
               "h-3 w-3 mr-1",
-              trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400",
+              trend === "up"
+                ? "text-green-600 dark:text-green-400"
+                : "text-red-600 dark:text-red-400",
             )}
           />
           <span
             className={cn(
-              trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400",
+              trend === "up"
+                ? "text-green-600 dark:text-green-400"
+                : "text-red-600 dark:text-red-400",
             )}
           >
             {Math.abs(change)}% {trend === "up" ? "increase" : "decrease"}
@@ -159,4 +163,3 @@ export default function OverviewPage() {
     </div>
   );
 }
-
