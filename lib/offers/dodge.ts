@@ -46,6 +46,10 @@ const fetchOfferData = async (modelInfo: any) => {
     return null;
   }
   const data = (await response.json())?.data;
+  if (!data || !data.targetMediumMapping || !Array.isArray(data.targetMediumMapping)) {
+    console.warn("No targetMediumMapping found in response data");
+    return [];
+  }
   const offers = data.targetMediumMapping.flatMap((item: any) => {
     if (!item.offerOrder || !Array.isArray(item.offerOrder)) {
       return [];
