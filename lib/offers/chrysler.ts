@@ -17,20 +17,22 @@ const fetchModelInfos = async () => {
   }
 
   const data = await response.json();
-  const modelInfos = data.vehicleSelector.vehicleSelectorGrids[0].vehicleSelectorCards.flatMap((card: any) => {
-    return card.modelYearData.map((yearData: any) => {
-      return {
-        key: yearData.authoring.url,
-        year: yearData.modelData.year,
-        brand: yearData.modelData.brand,
-        vehicle: yearData.modelData.vehicle,
-        modelYearCode: yearData.modelData.modelYearCode,
-        displayName: yearData.modelData.display,
-        msrp: yearData.modelData.msrp,
-        ccode: yearData.modelData.ccode,
-      };
-    });
-  });
+  const modelInfos = data.vehicleSelector.vehicleSelectorGrids[0].vehicleSelectorCards.flatMap(
+    (card: any) => {
+      return card.modelYearData.map((yearData: any) => {
+        return {
+          key: yearData.authoring.url,
+          year: yearData.modelData.year,
+          brand: yearData.modelData.brand,
+          vehicle: yearData.modelData.vehicle,
+          modelYearCode: yearData.modelData.modelYearCode,
+          displayName: yearData.modelData.display,
+          msrp: yearData.modelData.msrp,
+          ccode: yearData.modelData.ccode,
+        };
+      });
+    },
+  );
   return modelInfos;
 };
 

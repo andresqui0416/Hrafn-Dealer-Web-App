@@ -6,10 +6,7 @@ const prisma = new PrismaClient();
 export const dynamic = "force-dynamic";
 
 // PUT accept a chat (assign admin as handler)
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Get adminId from middleware-set header (guaranteed to exist by auth middleware)
     const adminId = request.headers.get("x-admin-id")!;
@@ -27,7 +24,7 @@ export async function PUT(
     if (chat.adminId !== null) {
       return NextResponse.json(
         { error: "Chat is already assigned to another admin" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -37,7 +34,7 @@ export async function PUT(
       data: {
         adminId,
         status: "accepted",
-      }
+      },
     });
 
     return NextResponse.json({ status: "Chat accepted successfully" }, { status: 200 });
@@ -48,4 +45,3 @@ export async function PUT(
     await prisma.$disconnect();
   }
 }
-

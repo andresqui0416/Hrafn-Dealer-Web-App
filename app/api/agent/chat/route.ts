@@ -63,8 +63,7 @@ export async function POST(req: NextRequest) {
     }
 
     const lastUser = [...messages].reverse().find((m) => m.role === "user");
-    const safeMessage =
-      typeof lastUser?.content === "string" ? lastUser.content.trim() : "";
+    const safeMessage = typeof lastUser?.content === "string" ? lastUser.content.trim() : "";
 
     if (!safeMessage) {
       return NextResponse.json({ error: "Last user message is required" }, { status: 400 });
@@ -150,8 +149,7 @@ export async function POST(req: NextRequest) {
 
       // In Responses API, arguments may come as a JSON string; normalize to object
       const rawArgs = firstOutput.arguments;
-      const parsedArgs =
-        typeof rawArgs === "string" ? JSON.parse(rawArgs) : (rawArgs || {});
+      const parsedArgs = typeof rawArgs === "string" ? JSON.parse(rawArgs) : rawArgs || {};
       const question = parsedArgs.question || safeMessage;
 
       let toolResult: any;
@@ -170,9 +168,8 @@ export async function POST(req: NextRequest) {
 
       // Second Responses call: feed tool result back to the model to generate final answer
       // Responses API doesn't support "tool" role, so we pass the result as a "user" message
-      const toolResultJson = JSON.stringify(
-        toolResult,
-        (_, value) => (typeof value === "bigint" ? Number(value) : value),
+      const toolResultJson = JSON.stringify(toolResult, (_, value) =>
+        typeof value === "bigint" ? Number(value) : value,
       );
 
       const followupInput: any[] = [

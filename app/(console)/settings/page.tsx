@@ -96,7 +96,7 @@ export default function SettingsPage() {
         }
       } catch (err) {
         // Ignore abort errors
-        if (err instanceof Error && err.name === 'AbortError') {
+        if (err instanceof Error && err.name === "AbortError") {
           return;
         }
         console.error("Failed to load dealer data:", err);
@@ -266,7 +266,7 @@ export default function SettingsPage() {
       setSuccess("Service request submitted successfully");
       setSelectedServiceKind("");
       setOrgName(dealerData?.name || "");
-      
+
       // Reload services
       const servicesResponse = await fetch("/api/services/dealer");
       if (servicesResponse.ok) {
@@ -322,7 +322,7 @@ export default function SettingsPage() {
       setSuccess("Organization name updated successfully");
       setEditingServiceId(null);
       setEditOrgName("");
-      
+
       setServicesLoading(true);
       // Reload services
       const servicesResponse = await fetch("/api/services/dealer");
@@ -339,7 +339,11 @@ export default function SettingsPage() {
   };
 
   const handleWithdrawService = async (serviceId: string) => {
-    if (!confirm("Are you sure you want to withdraw this service request? This action cannot be undone.")) {
+    if (
+      !confirm(
+        "Are you sure you want to withdraw this service request? This action cannot be undone.",
+      )
+    ) {
       return;
     }
 
@@ -360,7 +364,7 @@ export default function SettingsPage() {
       }
 
       setSuccess("Service request withdrawn successfully");
-      
+
       // Reload services
       const servicesResponse = await fetch("/api/services/dealer");
       if (servicesResponse.ok) {
@@ -468,9 +472,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Dealer Information</CardTitle>
-            <CardDescription>
-              Update your dealership name and address
-            </CardDescription>
+            <CardDescription>Update your dealership name and address</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -528,7 +530,8 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle>Request New Service</CardTitle>
               <CardDescription>
-                Request access to CRM services. The organization name should match the name registered in the CRM system.
+                Request access to CRM services. The organization name should match the name
+                registered in the CRM system.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -585,9 +588,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Service Status</CardTitle>
-              <CardDescription>
-                View the status of your service requests
-              </CardDescription>
+              <CardDescription>View the status of your service requests</CardDescription>
             </CardHeader>
             <CardContent>
               {servicesLoading ? (
@@ -616,7 +617,10 @@ export default function SettingsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleEditService(service)}
-                              disabled={withdrawingServiceId === service.id || updatingServiceId === service.id}
+                              disabled={
+                                withdrawingServiceId === service.id ||
+                                updatingServiceId === service.id
+                              }
                               className="h-6 w-6 p-0 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors duration-200"
                               title="Edit organization name"
                             >
@@ -628,7 +632,7 @@ export default function SettingsPage() {
                           <span
                             className={cn(
                               "px-2 py-1 rounded-md text-xs font-medium capitalize",
-                              getStatusBadgeColor(service.status)
+                              getStatusBadgeColor(service.status),
                             )}
                           >
                             {service.status}
@@ -637,7 +641,10 @@ export default function SettingsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleWithdrawService(service.id)}
-                            disabled={withdrawingServiceId === service.id || updatingServiceId === service.id}
+                            disabled={
+                              withdrawingServiceId === service.id ||
+                              updatingServiceId === service.id
+                            }
                             className="h-8 w-8 p-0 cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/20 transition-colors duration-200"
                             title="Withdraw service request"
                           >
@@ -645,7 +652,7 @@ export default function SettingsPage() {
                               icon={withdrawingServiceId === service.id ? faSpinner : faTrash}
                               className={cn(
                                 "h-4 w-4",
-                                withdrawingServiceId === service.id && "animate-spin"
+                                withdrawingServiceId === service.id && "animate-spin",
                               )}
                             />
                           </Button>
@@ -669,7 +676,8 @@ export default function SettingsPage() {
           <DialogHeader>
             <DialogTitle>Edit Organization Name</DialogTitle>
             <DialogDescription>
-              Update the organization name for this service request. This should match the name registered in the CRM system.
+              Update the organization name for this service request. This should match the name
+              registered in the CRM system.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -725,4 +733,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

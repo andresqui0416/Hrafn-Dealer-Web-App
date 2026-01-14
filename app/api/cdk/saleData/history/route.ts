@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
  * Retrieves Historical Vehicle Sale records with status equal to 'F' (finalized)
  * older than 31 days. Date range must be between T-5 years - 31 days and T-31 days.
  * The difference between startDate and endDate should be less than or equal to 6 months.
- * 
+ *
  * Query parameters:
  * - startDate (required): Start date in ISO 8601 format (yyyy-mm-ddThh:mm:ss)
  * - endDate (optional): End date in ISO 8601 format (defaults to current date - 31 days)
@@ -28,9 +28,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "startDate and endDate are required. Format: yyyy-mm-ddThh:mm:ss (e.g., 2023-01-01T10:15:30)",
+          error:
+            "startDate and endDate are required. Format: yyyy-mm-ddThh:mm:ss (e.g., 2023-01-01T10:15:30)",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
           success: false,
           error: "startDate must be before endDate",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -60,10 +61,18 @@ export async function GET(request: NextRequest) {
     }
 
     if (!dealerDepartment.service.subscriptionId) {
-      return NextResponse.json({ error: "Dealer service subscription ID not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Dealer service subscription ID not found" },
+        { status: 404 },
+      );
     }
 
-    const data = await getFISalesHistoryData(departmentId as string, dealerDepartment.service.subscriptionId as string, startDate as string, endDate as string);
+    const data = await getFISalesHistoryData(
+      departmentId as string,
+      dealerDepartment.service.subscriptionId as string,
+      startDate as string,
+      endDate as string,
+    );
 
     return NextResponse.json({
       success: true,
@@ -78,8 +87,7 @@ export async function GET(request: NextRequest) {
         success: false,
         error: errorMessage,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

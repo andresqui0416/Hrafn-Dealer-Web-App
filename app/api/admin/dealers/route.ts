@@ -7,7 +7,6 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-
     const dealers = await prisma.dealer.findMany({
       include: {
         _count: {
@@ -49,15 +48,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-
     const body = await request.json();
     const { name, address } = body;
 
     if (!name || !address) {
-      return NextResponse.json(
-        { error: "Name and address are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Name and address are required" }, { status: 400 });
     }
 
     const dealer = await prisma.dealer.create({
@@ -78,4 +73,3 @@ export async function POST(request: NextRequest) {
     await prisma.$disconnect();
   }
 }
-

@@ -13,13 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faSpinner,
-  faX,
-  faPlus,
-  faEnvelope,
-  faClock,
-} from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faX, faPlus, faEnvelope, faClock } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -359,7 +353,7 @@ export default function InboxPage() {
               className={cn(
                 creating || !subject.trim() || !content.trim()
                   ? "cursor-not-allowed"
-                  : "cursor-pointer"
+                  : "cursor-pointer",
               )}
             >
               {creating ? (
@@ -376,7 +370,11 @@ export default function InboxPage() {
       </Dialog>
 
       {/* Chat Dialog */}
-      <Dialog open={showChatDialog} onOpenChange={setShowChatDialog} className="lg:max-w-4xl! max-w-[95vw]!">
+      <Dialog
+        open={showChatDialog}
+        onOpenChange={setShowChatDialog}
+        className="lg:max-w-4xl! max-w-[95vw]!"
+      >
         <DialogContent className="flex flex-col">
           <div className="flex items-center justify-between border-b border-white/40">
             <DialogHeader className="px-0">
@@ -401,26 +399,26 @@ export default function InboxPage() {
               </div>
             ) : (
               messages.map((message) => (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex",
-                  message.senderType === "user" ? "justify-end" : "justify-start",
-                )}
-              >
                 <div
+                  key={message.id}
                   className={cn(
-                    "max-w-[80%] rounded-lg px-3 py-2",
-                    message.senderType === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-white/5",
+                    "flex",
+                    message.senderType === "user" ? "justify-end" : "justify-start",
                   )}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  <p className="text-xs opacity-70 mt-2">
-                    {new Date(message.createdAt).toLocaleString()}
-                  </p>
-                </div>
+                  <div
+                    className={cn(
+                      "max-w-[80%] rounded-lg px-3 py-2",
+                      message.senderType === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-white/5",
+                    )}
+                  >
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <p className="text-xs opacity-70 mt-2">
+                      {new Date(message.createdAt).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
               ))
             )}
@@ -449,7 +447,7 @@ export default function InboxPage() {
               className={cn(
                 sending || getMessagesLoading || !messageInput.trim()
                   ? "cursor-not-allowed"
-                  : "cursor-pointer"
+                  : "cursor-pointer",
               )}
             >
               {sending ? (

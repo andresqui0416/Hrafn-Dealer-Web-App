@@ -6,10 +6,7 @@ const prisma = new PrismaClient();
 export const dynamic = "force-dynamic";
 
 // GET messages for a chat (users only)
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Get userId from middleware-set header (guaranteed to exist by auth middleware)
     const userId = request.headers.get("x-user-id")!;
@@ -20,7 +17,7 @@ export async function GET(
         messages: {
           orderBy: { createdAt: "asc" },
         },
-      }
+      },
     });
 
     if (!chat) {
@@ -37,10 +34,7 @@ export async function GET(
 }
 
 // POST send a message (users only)
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Get userId from middleware-set header (guaranteed to exist by auth middleware)
     const userId = request.headers.get("x-user-id")!;
@@ -49,10 +43,7 @@ export async function POST(
     const { content } = body;
 
     if (!content || typeof content !== "string" || content.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Message content is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Message content is required" }, { status: 400 });
     }
 
     const chat = await prisma.chat.findUnique({
@@ -76,7 +67,7 @@ export async function POST(
     // Update chat's updatedAt timestamp
     await prisma.chat.update({
       where: { id: params.id },
-      data: { 
+      data: {
         status: "accepted",
         updatedAt: new Date(),
       },
@@ -90,4 +81,3 @@ export async function POST(
     await prisma.$disconnect();
   }
 }
-

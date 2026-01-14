@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (!admin.isActive) {
       return NextResponse.json(
         { error: "Account is deactivated. Please contact support." },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -70,4 +70,3 @@ export async function POST(request: NextRequest) {
     await prisma.$disconnect();
   }
 }
-

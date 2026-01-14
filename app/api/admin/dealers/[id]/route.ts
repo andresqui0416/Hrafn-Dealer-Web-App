@@ -5,20 +5,13 @@ const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-
     const body = await request.json();
     const { name, address } = body;
 
     if (!name || !address) {
-      return NextResponse.json(
-        { error: "Name and address are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Name and address are required" }, { status: 400 });
     }
 
     const dealer = await prisma.dealer.update({
@@ -44,12 +37,8 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-
     await prisma.dealer.delete({
       where: { id: params.id },
     });
@@ -65,4 +54,3 @@ export async function DELETE(
     await prisma.$disconnect();
   }
 }
-

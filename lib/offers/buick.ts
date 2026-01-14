@@ -99,7 +99,11 @@ function extractTradeDiscount(text: string | null | undefined): number | null {
   try {
     // Look for patterns like "$X,XXX Total Value" especially when associated with trade-in
     const match = text.match(/\$([\d,]+)\s+Total\s+Value/i);
-    if (match && match[1] && (text.toLowerCase().includes("trade") || text.toLowerCase().includes("trade-in"))) {
+    if (
+      match &&
+      match[1] &&
+      (text.toLowerCase().includes("trade") || text.toLowerCase().includes("trade-in"))
+    ) {
       return parseNumber(match[1]);
     }
     return null;
@@ -118,19 +122,19 @@ function extractExpirationDateFromHTML(html: string | null | undefined): Date | 
       /(?:Take\s+new\s+retail\s+delivery\s+by|by|Take\s+delivery\s+by)\s+(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/i,
       /\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})\b/,
     ];
-    
+
     for (const pattern of patterns) {
       const match = html.match(pattern);
       if (match) {
         let month = parseInt(match[1], 10);
         let day = parseInt(match[2], 10);
         let year = parseInt(match[3], 10);
-        
+
         // Handle 2-digit years
         if (year < 100) {
           year = 2000 + year;
         }
-        
+
         // Validate date
         if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && year >= 2020 && year <= 2030) {
           const date = new Date(year, month - 1, day);
@@ -189,12 +193,15 @@ function stripHtmlToText(html: string | null | undefined): string | null {
 // Extract text content from HTML used for full featured-offer fragments
 // (kept separate from stripHtmlToText so we can preserve section structure)
 // Extract text content from HTML - returns main text and fine print separately
-function extractTextFromHTML(html: string | null | undefined): { mainText: string; finePrint: string } {
+function extractTextFromHTML(html: string | null | undefined): {
+  mainText: string;
+  finePrint: string;
+} {
   let mainText = "";
   let finePrint = "";
-  
+
   if (!html) return { mainText: "", finePrint: "" };
-  
+
   try {
     // If it's a full HTML document, extract body content
     let contentHtml = html;
@@ -202,29 +209,33 @@ function extractTextFromHTML(html: string | null | undefined): { mainText: strin
     if (bodyMatch && bodyMatch[1]) {
       contentHtml = bodyMatch[1];
     }
-    
+
     // Helper to extract nested element content (handles nested tags properly)
-    function extractNestedElement(html: string, tagName: string, className?: string): string | null {
+    function extractNestedElement(
+      html: string,
+      tagName: string,
+      className?: string,
+    ): string | null {
       let pattern: RegExp;
       if (className) {
-        pattern = new RegExp(`<${tagName}[^>]*class="[^"]*${className}[^"]*"[^>]*>`, 'i');
+        pattern = new RegExp(`<${tagName}[^>]*class="[^"]*${className}[^"]*"[^>]*>`, "i");
       } else {
-        pattern = new RegExp(`<${tagName}[^>]*>`, 'i');
+        pattern = new RegExp(`<${tagName}[^>]*>`, "i");
       }
-      
+
       const startMatch = html.match(pattern);
       if (!startMatch) return null;
-      
+
       const tagStart = startMatch.index!;
       const contentStart = tagStart + startMatch[0].length;
       let depth = 1;
       let pos = contentStart;
-      const openTagRegex = new RegExp(`<${tagName}(?:\\s|>|/)`, 'i');
+      const openTagRegex = new RegExp(`<${tagName}(?:\\s|>|/)`, "i");
       const closeTag = `</${tagName}>`;
-      
+
       while (pos < html.length && depth > 0) {
         const remaining = html.substring(pos);
-        
+
         // Check for closing tag
         if (remaining.startsWith(closeTag)) {
           depth--;
@@ -234,13 +245,13 @@ function extractTextFromHTML(html: string | null | undefined): { mainText: strin
           pos += closeTag.length;
           continue;
         }
-        
+
         // Check for opening tag
         const openMatch = remaining.match(openTagRegex);
         if (openMatch && openMatch.index === 0) {
           depth++;
           // Skip to the end of this tag (find the >)
-          const gtIndex = remaining.indexOf('>');
+          const gtIndex = remaining.indexOf(">");
           if (gtIndex > 0) {
             pos += gtIndex + 1;
           } else {
@@ -248,41 +259,50 @@ function extractTextFromHTML(html: string | null | undefined): { mainText: strin
           }
           continue;
         }
-        
+
         pos++;
       }
       return null;
     }
-    
+
     // 1. Extract main offer text from col-con section
     // Based on reference.txt structure: find adv-col with col-sm-12, then col-con inside it
     // The offer content is in the col-con that contains APR or Purchase Allowance but NOT buttons
-    
+
     // First, find all adv-col elements with col-sm-12
-    const advColMatches = Array.from(contentHtml.matchAll(/<adv-col[^>]*class="[^"]*col-sm-12[^"]*"[^>]*>/gi));
-    
+    const advColMatches = Array.from(
+      contentHtml.matchAll(/<adv-col[^>]*class="[^"]*col-sm-12[^"]*"[^>]*>/gi),
+    );
+
     for (const advColMatch of advColMatches) {
       const advColStart = advColMatch.index!;
-      const advColContent = extractNestedElement(contentHtml.substring(advColStart), 'adv-col');
-      
+      const advColContent = extractNestedElement(contentHtml.substring(advColStart), "adv-col");
+
       if (!advColContent) continue;
-      
+
       // Find col-con divs within this adv-col
-      const colConMatches = Array.from(advColContent.matchAll(/<div[^>]*class="[^"]*col-con[^"]*"[^>]*>/gi));
-      
+      const colConMatches = Array.from(
+        advColContent.matchAll(/<div[^>]*class="[^"]*col-con[^"]*"[^>]*>/gi),
+      );
+
       for (const colConMatch of colConMatches) {
         const colConStart = colConMatch.index!;
-        const colConContent = extractNestedElement(advColContent.substring(colConStart), 'div', 'col-con');
-        
+        const colConContent = extractNestedElement(
+          advColContent.substring(colConStart),
+          "div",
+          "col-con",
+        );
+
         if (!colConContent || colConContent.length < 50) continue;
-        
+
         // Check if this col-con contains the offer content we want
-        const hasAPR = colConContent.includes('APR');
-        const hasPA = colConContent.includes('Purchase Allowance');
-        const hasButtons = colConContent.includes('View Inventory') || 
-                          colConContent.includes('Request Dealer Pricing') ||
-                          colConContent.includes('Build &amp; Buy');
-        
+        const hasAPR = colConContent.includes("APR");
+        const hasPA = colConContent.includes("Purchase Allowance");
+        const hasButtons =
+          colConContent.includes("View Inventory") ||
+          colConContent.includes("Request Dealer Pricing") ||
+          colConContent.includes("Build &amp; Buy");
+
         if ((hasAPR || hasPA) && !hasButtons) {
           const extractedText = extractTextFromSection(colConContent);
           if (extractedText && extractedText.trim().length > 20) {
@@ -291,22 +311,32 @@ function extractTextFromHTML(html: string | null | undefined): { mainText: strin
           }
         }
       }
-      
+
       if (mainText && mainText.trim().length > 20) break;
     }
-    
+
     // Fallback: if no mainText found, try extracting from any col-con that has gb-headline5
     if (!mainText || mainText.trim().length < 20) {
-      const allColConMatches = Array.from(contentHtml.matchAll(/<div[^>]*class="[^"]*col-con[^"]*"[^>]*>/gi));
-      
+      const allColConMatches = Array.from(
+        contentHtml.matchAll(/<div[^>]*class="[^"]*col-con[^"]*"[^>]*>/gi),
+      );
+
       for (const match of allColConMatches) {
         const matchStart = match.index!;
-        const colConContent = extractNestedElement(contentHtml.substring(matchStart), 'div', 'col-con');
-        
-        if (colConContent && colConContent.length > 50 && colConContent.includes('gb-headline5') && 
-            !colConContent.includes('View Inventory') && 
-            !colConContent.includes('Request Dealer Pricing') &&
-            !colConContent.includes('Build &amp; Buy')) {
+        const colConContent = extractNestedElement(
+          contentHtml.substring(matchStart),
+          "div",
+          "col-con",
+        );
+
+        if (
+          colConContent &&
+          colConContent.length > 50 &&
+          colConContent.includes("gb-headline5") &&
+          !colConContent.includes("View Inventory") &&
+          !colConContent.includes("Request Dealer Pricing") &&
+          !colConContent.includes("Build &amp; Buy")
+        ) {
           const extractedText = extractTextFromSection(colConContent);
           if (extractedText && extractedText.trim().length > 20) {
             mainText = extractedText;
@@ -315,18 +345,24 @@ function extractTextFromHTML(html: string | null | undefined): { mainText: strin
         }
       }
     }
-    
+
     // 2. Extract fine print from disclosure section (reference.txt line 786)
     // Look for div with class gmst-co-offer-item-offer-disclosure
-    const disclosureMatch = contentHtml.match(/<div[^>]*class="[^"]*gmst-co-offer-item-offer-disclosure[^"]*"[^>]*>/i);
+    const disclosureMatch = contentHtml.match(
+      /<div[^>]*class="[^"]*gmst-co-offer-item-offer-disclosure[^"]*"[^>]*>/i,
+    );
     if (disclosureMatch) {
       const disclosureStart = disclosureMatch.index!;
-      const disclosureContent = extractNestedElement(contentHtml.substring(disclosureStart), 'div', 'gmst-co-offer-item-offer-disclosure');
+      const disclosureContent = extractNestedElement(
+        contentHtml.substring(disclosureStart),
+        "div",
+        "gmst-co-offer-item-offer-disclosure",
+      );
       if (disclosureContent) {
         // Extract paragraphs and join with newlines
         const paragraphMatches = disclosureContent.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi);
         const paragraphs: string[] = [];
-        
+
         for (const match of paragraphMatches) {
           if (match[1]) {
             const paragraphText = extractTextFromSection(match[1]);
@@ -335,7 +371,7 @@ function extractTextFromHTML(html: string | null | undefined): { mainText: strin
             }
           }
         }
-        
+
         if (paragraphs.length > 0) {
           // Join paragraphs with newlines
           finePrint = paragraphs.join("\n");
@@ -345,7 +381,7 @@ function extractTextFromHTML(html: string | null | undefined): { mainText: strin
         }
       }
     }
-    
+
     return { mainText, finePrint };
   } catch {
     return { mainText: "", finePrint: "" };
@@ -355,7 +391,7 @@ function extractTextFromHTML(html: string | null | undefined): { mainText: strin
 // Helper function to extract clean text from an HTML section
 function extractTextFromSection(html: string): string {
   if (!html) return "";
-  
+
   // Remove unwanted elements
   let processedHtml = html
     .replace(/<gb-responsive-image[^>]*>[\s\S]*?<\/gb-responsive-image>/gi, "")
@@ -369,7 +405,7 @@ function extractTextFromSection(html: string): string {
     .replace(/<gb-button[^>]*>[\s\S]*?<\/gb-button>/gi, "")
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
-  
+
   // Remove attributes with URLs and image paths
   processedHtml = processedHtml
     .replace(/srcset\s*=\s*["'][^"']*["']/gi, "")
@@ -378,20 +414,35 @@ function extractTextFromSection(html: string): string {
     .replace(/data-[^=]*\s*=\s*["'][^"']*["']/gi, "")
     .replace(/https?:\/\/[^\s<>"']+/gi, "")
     .replace(/\/[^\s<>"']*\.(jpg|jpeg|png|gif|webp|svg)(\?[^\s<>"']*)?/gi, "");
-  
+
   // Replace block-level closing tags with newlines
-  processedHtml = processedHtml.replace(/<\/div[^>]*class="[^"]*gb-large-margin[^"]*"[^>]*>/gi, "\n\n");
-  processedHtml = processedHtml.replace(/<\/div[^>]*class="[^"]*gb-medium-margin[^"]*"[^>]*>/gi, "\n\n");
-  processedHtml = processedHtml.replace(/<\/(div|p|h[1-6]|section|article|header|footer|li|br|adv-col|adv-grid|gb-adv-grid|hr)[^>]*>/gi, "\n");
-  
+  processedHtml = processedHtml.replace(
+    /<\/div[^>]*class="[^"]*gb-large-margin[^"]*"[^>]*>/gi,
+    "\n\n",
+  );
+  processedHtml = processedHtml.replace(
+    /<\/div[^>]*class="[^"]*gb-medium-margin[^"]*"[^>]*>/gi,
+    "\n\n",
+  );
+  processedHtml = processedHtml.replace(
+    /<\/(div|p|h[1-6]|section|article|header|footer|li|br|adv-col|adv-grid|gb-adv-grid|hr)[^>]*>/gi,
+    "\n",
+  );
+
   // Replace block-level opening tags with newlines
   processedHtml = processedHtml.replace(/<div[^>]*class="[^"]*gb-large-margin[^"]*"[^>]*>/gi, "\n");
-  processedHtml = processedHtml.replace(/<div[^>]*class="[^"]*gb-medium-margin[^"]*"[^>]*>/gi, "\n");
-  processedHtml = processedHtml.replace(/<(div|p|h[1-6]|section|article|header|footer|li|br|adv-col|adv-grid|gb-adv-grid|hr)[^>]*>/gi, "\n");
-  
+  processedHtml = processedHtml.replace(
+    /<div[^>]*class="[^"]*gb-medium-margin[^"]*"[^>]*>/gi,
+    "\n",
+  );
+  processedHtml = processedHtml.replace(
+    /<(div|p|h[1-6]|section|article|header|footer|li|br|adv-col|adv-grid|gb-adv-grid|hr)[^>]*>/gi,
+    "\n",
+  );
+
   // Remove all remaining HTML tags
   let text = processedHtml.replace(/<[^>]*>/g, " ");
-  
+
   // Decode HTML entities
   text = text
     .replace(/&nbsp;/g, " ")
@@ -403,7 +454,7 @@ function extractTextFromSection(html: string): string {
     .replace(/&#x27;/g, "'")
     .replace(/&#x2F;/g, "/")
     .replace(/&apos;/g, "'");
-  
+
   // Remove unwanted patterns
   text = text
     .replace(/\bINVENTORY\b/gi, "")
@@ -417,7 +468,7 @@ function extractTextFromSection(html: string): string {
     .replace(/content\/dam\/[^\s]+/gi, "")
     .replace(/data-disclosure-id[^\s]*/gi, "")
     .replace(/\/content\/[^\s]+/gi, "");
-  
+
   // Normalize whitespace but preserve newlines
   // First, replace multiple spaces/tabs with single space (but not newlines)
   text = text.replace(/[ \t]+/g, " ");
@@ -430,7 +481,7 @@ function extractTextFromSection(html: string): string {
   // Replace multiple spaces (but preserve newlines)
   text = text.replace(/[ \t]{2,}/g, " ");
   text = text.trim();
-  
+
   return text;
 }
 
@@ -459,7 +510,10 @@ async function fetchFeaturedOfferHTML(featuredOfferUrl: string): Promise<string 
     const html = await response.text();
     return html;
   } catch (error: any) {
-    console.warn(`Error fetching featured offer HTML from ${featuredOfferUrl}:`, error?.message || error);
+    console.warn(
+      `Error fetching featured offer HTML from ${featuredOfferUrl}:`,
+      error?.message || error,
+    );
     return null;
   }
 }
@@ -517,14 +571,18 @@ export async function scrapeOffersFromBuick() {
 
           // Extract main text and fine print from HTML
           const { mainText, finePrint: extractedFinePrint } = extractTextFromHTML(html);
-          
+
           // Debug: log if text extraction failed
           if (!mainText || mainText.trim().length < 20) {
-            console.warn(`Failed to extract main text from HTML for featured offer: ${model} ${year}`);
-            console.warn(`HTML length: ${html.length}, Extracted main text length: ${mainText?.length || 0}`);
+            console.warn(
+              `Failed to extract main text from HTML for featured offer: ${model} ${year}`,
+            );
+            console.warn(
+              `HTML length: ${html.length}, Extracted main text length: ${mainText?.length || 0}`,
+            );
             // Check if HTML contains the expected content
-            const hasAPR = html.includes('APR');
-            const hasPA = html.includes('Purchase Allowance');
+            const hasAPR = html.includes("APR");
+            const hasPA = html.includes("Purchase Allowance");
             console.warn(`HTML contains APR: ${hasAPR}, Purchase Allowance: ${hasPA}`);
             if (hasAPR || hasPA) {
               // Try to find col-con divs
@@ -544,7 +602,7 @@ export async function scrapeOffersFromBuick() {
           const monthlyPayment = extractMonthlyPayment(mainText);
           const termMonths = extractTermMonths(mainText);
           const dueAtSigning = extractDueAtSigning(mainText);
-          
+
           // Extract cashBack from main text (regardless of offer type)
           let cashBack: number | null = null;
           // Look for "Purchase Allowance" pattern first (this is cashback)
@@ -553,12 +611,16 @@ export async function scrapeOffersFromBuick() {
             cashBack = parseNumber(purchaseAllowanceMatch[1]);
           } else {
             // Also try uppercase pattern
-            const purchaseAllowanceMatchUpper = mainText.match(/\$([\d,]+)\s+PURCHASE\s+ALLOWANCE/i);
+            const purchaseAllowanceMatchUpper = mainText.match(
+              /\$([\d,]+)\s+PURCHASE\s+ALLOWANCE/i,
+            );
             if (purchaseAllowanceMatchUpper && purchaseAllowanceMatchUpper[1]) {
               cashBack = parseNumber(purchaseAllowanceMatchUpper[1]);
             } else {
               // Look for other patterns like "$X,XXX cash back", "$X,XXX off", "$X,XXX discount", or "$X,XXX bonus cash"
-              const cashBackMatch = mainText.match(/\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i);
+              const cashBackMatch = mainText.match(
+                /\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i,
+              );
               if (cashBackMatch && cashBackMatch[1]) {
                 cashBack = parseNumber(cashBackMatch[1]);
               }
@@ -570,9 +632,10 @@ export async function scrapeOffersFromBuick() {
           const tradeDiscount = extractTradeDiscount(mainText);
 
           // Extract expiration date from fine print (preferred) or main text or API result
-          let expirationDate = extractExpirationDateFromHTML(extractedFinePrint) || 
-                              extractExpirationDateFromHTML(mainText) || 
-                              extractExpirationDateFromHTML(html);
+          let expirationDate =
+            extractExpirationDateFromHTML(extractedFinePrint) ||
+            extractExpirationDateFromHTML(mainText) ||
+            extractExpirationDateFromHTML(html);
           if (!expirationDate) {
             expirationDate = parseExpirationDate(result.endEffDate);
           }
@@ -584,12 +647,15 @@ export async function scrapeOffersFromBuick() {
             // Normalize multiple newlines to double newlines
             terms = terms.replace(/\n{3,}/g, "\n\n");
             // Trim each line and join with newlines
-            terms = terms.split("\n").map((line: string) => line.trim()).join("\n");
+            terms = terms
+              .split("\n")
+              .map((line: string) => line.trim())
+              .join("\n");
             // Normalize multiple newlines again
             terms = terms.replace(/\n\n+/g, "\n\n").trim();
             terms = terms || null;
           }
-          
+
           // Use extracted fine print (already has newlines between paragraphs)
           const finePrint = extractedFinePrint.trim() || null;
 
@@ -599,11 +665,15 @@ export async function scrapeOffersFromBuick() {
             apr !== null ||
             cashBack !== null ||
             tradeDiscount !== null ||
-            (mainText.trim().length > 30); // At least 30 characters of text content
+            mainText.trim().length > 30; // At least 30 characters of text content
 
           if (!hasValidData) {
-            console.warn(`Skipping featured ${offerType} offer for ${model} ${year} - insufficient data`);
-            console.warn(`  mainText length: ${mainText.trim().length}, apr: ${apr}, cashBack: ${cashBack}, tradeDiscount: ${tradeDiscount}`);
+            console.warn(
+              `Skipping featured ${offerType} offer for ${model} ${year} - insufficient data`,
+            );
+            console.warn(
+              `  mainText length: ${mainText.trim().length}, apr: ${apr}, cashBack: ${cashBack}, tradeDiscount: ${tradeDiscount}`,
+            );
             console.warn(`  mainText preview: ${mainText.substring(0, 200)}`);
             continue;
           }
@@ -632,7 +702,10 @@ export async function scrapeOffersFromBuick() {
 
           continue; // Move to next result
         } catch (error: any) {
-          console.warn(`Error processing featured offer for ${model} ${year}:`, error?.message || error);
+          console.warn(
+            `Error processing featured offer for ${model} ${year}:`,
+            error?.message || error,
+          );
           continue;
         }
       }
@@ -679,7 +752,10 @@ export async function scrapeOffersFromBuick() {
         // Normalize multiple newlines to double newlines
         terms = terms.replace(/\n{3,}/g, "\n\n");
         // Trim each line and join with newlines
-        terms = terms.split("\n").map((line: string) => line.trim()).join("\n");
+        terms = terms
+          .split("\n")
+          .map((line: string) => line.trim())
+          .join("\n");
         // Normalize multiple newlines again
         terms = terms.replace(/\n\n+/g, "\n\n").trim();
         terms = terms || null;
@@ -691,7 +767,7 @@ export async function scrapeOffersFromBuick() {
       // Don't populate offerAmount from monthlyPayment or cashBack - keep them separate
       // offerAmount should only be set if explicitly extracted from the offer content
       let offerAmount: number | null = null;
-      
+
       // Extract cashBack from body text (regardless of offer type)
       let cashBack: number | null = null;
       // Look for "Purchase Allowance" pattern first (this is cashback)
@@ -706,7 +782,9 @@ export async function scrapeOffersFromBuick() {
           cashBack = parseNumber(purchaseAllowanceMatchUpper[1]);
         } else {
           // Look for other patterns like "$X,XXX cash back", "$X,XXX off", "$X,XXX discount", or "$X,XXX bonus cash"
-          const cashBackMatch = bodyText.match(/\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i);
+          const cashBackMatch = bodyText.match(
+            /\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i,
+          );
           if (cashBackMatch && cashBackMatch[1]) {
             cashBack = parseNumber(cashBackMatch[1]);
           }
@@ -721,7 +799,8 @@ export async function scrapeOffersFromBuick() {
       const hasValidData =
         (offerType === "lease" && monthlyPayment) ||
         (offerType === "financing" && apr !== null) ||
-        (offerType === "cash" && (offerAmount !== null || cashBack !== null || tradeDiscount !== null));
+        (offerType === "cash" &&
+          (offerAmount !== null || cashBack !== null || tradeDiscount !== null));
 
       if (!hasValidData) {
         console.warn(`Skipping ${offerType} offer for ${model} ${year} - insufficient data`);

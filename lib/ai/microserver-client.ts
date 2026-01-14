@@ -21,7 +21,7 @@ async function isMicroserverAvailable(): Promise<boolean> {
 }
 
 export async function classifyIntentMicroserver(
-  message: string
+  message: string,
 ): Promise<"data_query" | "general"> {
   try {
     const response = await fetch(`${MICROSERVER_URL}/classify-intent`, {
@@ -44,10 +44,7 @@ export async function classifyIntentMicroserver(
   }
 }
 
-export async function generateSQLMicroserver(
-  question: string,
-  dealerId: string
-): Promise<string> {
+export async function generateSQLMicroserver(question: string, dealerId: string): Promise<string> {
   try {
     const response = await fetch(`${MICROSERVER_URL}/generate-sql`, {
       method: "POST",
@@ -69,15 +66,15 @@ export async function generateSQLMicroserver(
     // Replace :dealerId placeholder or add WHERE clause if missing
     if (sql.includes(":dealerId")) {
       sql = sql.replace(/:dealerId/g, `'${dealerId}'`);
-    } else if (sql.toLowerCase().includes('from "Inventory"') || sql.toLowerCase().includes('from Inventory')) {
+    } else if (
+      sql.toLowerCase().includes('from "Inventory"') ||
+      sql.toLowerCase().includes("from Inventory")
+    ) {
       // Add dealerId filter if missing
       const whereMatch = sql.match(/where\s+/i);
       if (!whereMatch) {
         // Add WHERE clause
-        sql = sql.replace(
-          /from\s+"Inventory"/i,
-          `FROM "Inventory" WHERE ${whereClause}`
-        );
+        sql = sql.replace(/from\s+"Inventory"/i, `FROM "Inventory" WHERE ${whereClause}`);
       } else {
         // Add dealerId to existing WHERE clause if not already present
         if (!sql.includes(`"dealerId"`)) {
@@ -94,4 +91,3 @@ export async function generateSQLMicroserver(
 }
 
 export { isMicroserverAvailable };
-

@@ -4,7 +4,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faUser, faGear, faSignOut, faChartLine } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronDown,
+  faUser,
+  faGear,
+  faSignOut,
+  faChartLine,
+} from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

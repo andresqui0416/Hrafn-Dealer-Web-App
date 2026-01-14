@@ -10,27 +10,30 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const {
-      dealerName,
-      contactName,
-      contactEmail,
-      contactPhone,
-      dealerAddress,
-      password,
-    } = body;
+    const { dealerName, contactName, contactEmail, contactPhone, dealerAddress, password } = body;
 
     // Validation
-    if (!dealerName || !contactName || !contactEmail || !password || !contactPhone || !dealerAddress) {
+    if (
+      !dealerName ||
+      !contactName ||
+      !contactEmail ||
+      !password ||
+      !contactPhone ||
+      !dealerAddress
+    ) {
       return NextResponse.json(
-        { error: "Dealer name, contact name, email, password, phone, and dealer address are required" },
-        { status: 400 }
+        {
+          error:
+            "Dealer name, contact name, email, password, phone, and dealer address are required",
+        },
+        { status: 400 },
       );
     }
 
     if (password.length < 8) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters long" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -42,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { error: "An account with this email already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -54,7 +57,7 @@ export async function POST(request: NextRequest) {
     if (existingDealer) {
       return NextResponse.json(
         { error: "A dealer with this name already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -124,31 +127,27 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error("Signup error:", error);
-    
+
     // Handle unique constraint violations
     if (error instanceof Error) {
       if (error.message.includes("Unique constraint") || error.message.includes("unique")) {
         if (error.message.includes("email")) {
           return NextResponse.json(
             { error: "An account with this email already exists" },
-            { status: 409 }
+            { status: 409 },
           );
         }
         if (error.message.includes("name") || error.message.includes("Dealer")) {
           return NextResponse.json(
             { error: "A dealer with this name already exists" },
-            { status: 409 }
+            { status: 409 },
           );
         }
       }
     }
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
 }
-

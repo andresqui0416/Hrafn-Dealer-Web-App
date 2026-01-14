@@ -25,7 +25,14 @@ export default function SignupPage() {
     setError(null);
 
     // Validation
-    if (!dealerName || !contactName || !contactEmail || !contactPhone || !dealerAddress || !password) {
+    if (
+      !dealerName ||
+      !contactName ||
+      !contactEmail ||
+      !contactPhone ||
+      !dealerAddress ||
+      !password
+    ) {
       setError("Please fill in all required fields");
       return;
     }
@@ -97,7 +104,7 @@ export default function SignupPage() {
                 {error}
               </div>
             )}
-            
+
             <div className="space-y-2">
               <label htmlFor="dealerName" className="text-sm font-medium">
                 Dealer Name <span className="text-destructive">*</span>
@@ -232,4 +239,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
