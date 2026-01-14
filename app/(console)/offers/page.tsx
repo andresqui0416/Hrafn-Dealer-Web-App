@@ -157,7 +157,12 @@ export default function OffersPage() {
     const info = typeInfo[type] || { label: type, className: "bg-gray-500/20 text-gray-400" };
 
     return (
-      <span className={cn("inline-flex items-center px-2 py-1 rounded-full text-xs font-medium", info.className)}>
+      <span
+        className={cn(
+          "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium",
+          info.className,
+        )}
+      >
         {info.label}
       </span>
     );
@@ -225,12 +230,7 @@ export default function OffersPage() {
             className="pl-10"
           />
         </div>
-        <Button
-          variant="outline"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="gap-2"
-        >
+        <Button variant="outline" onClick={handleRefresh} disabled={refreshing} className="gap-2">
           <FontAwesomeIcon
             icon={refreshing ? faSpinner : faRotateRight}
             className={cn("h-4 w-4", refreshing && "animate-spin")}
@@ -317,16 +317,18 @@ export default function OffersPage() {
                     </td>
                     <td className="px-4 py-3 text-sm">{getOfferTypeBadge(offer.offerType)}</td>
                     <td className="px-4 py-3 text-sm">
-                      {offer.offerType === "lease" ? (
-                        // For lease, show monthly payment only
-                        offer.monthlyPayment ? formatCurrency(offer.monthlyPayment) : "-"
-                      ) : offer.offerType === "financing" ? (
-                        // For financing, show "-"
-                        "-"
-                      ) : (
-                        // For cash offers, show offer amount only
-                        offer.offerAmount ? formatCurrency(offer.offerAmount) : "-"
-                      )}
+                      {offer.offerType === "lease"
+                        ? // For lease, show monthly payment only
+                          offer.monthlyPayment
+                          ? formatCurrency(offer.monthlyPayment)
+                          : "-"
+                        : offer.offerType === "financing"
+                          ? // For financing, show "-"
+                            "-"
+                          : // For cash offers, show offer amount only
+                            offer.offerAmount
+                            ? formatCurrency(offer.offerAmount)
+                            : "-"}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {offer.cashBack ? formatCurrency(offer.cashBack) : "-"}
@@ -344,7 +346,7 @@ export default function OffersPage() {
                       {offer.expirationDate ? (
                         <span
                           className={cn(
-                            isExpired(offer.expirationDate) && "text-red-400 line-through"
+                            isExpired(offer.expirationDate) && "text-red-400 line-through",
                           )}
                         >
                           {formatDate(offer.expirationDate)}
@@ -378,7 +380,8 @@ export default function OffersPage() {
               <span>Loading offers...</span>
             </div>
           ) : (
-            offers.length === 0 && !offersLoading && (
+            offers.length === 0 &&
+            !offersLoading && (
               <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
                 <FontAwesomeIcon icon={faTag} className="fa-lg" />
                 <span>No offers found.</span>
@@ -396,7 +399,9 @@ export default function OffersPage() {
                   {pagination.totalCount} offer{pagination.totalCount !== 1 ? "s" : ""}
                 </>
               ) : (
-                <>Showing {offers.length} offer{offers.length !== 1 ? "s" : ""}</>
+                <>
+                  Showing {offers.length} offer{offers.length !== 1 ? "s" : ""}
+                </>
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -463,11 +468,7 @@ export default function OffersPage() {
                   }}
                   onBlur={(e) => {
                     const pageNum = parseInt(e.target.value, 10);
-                    if (
-                      !isNaN(pageNum) &&
-                      pageNum >= 1 &&
-                      pageNum <= pagination.totalPages
-                    ) {
+                    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= pagination.totalPages) {
                       setCurrentPage(pageNum);
                     } else {
                       setPageInput(currentPage.toString());
@@ -476,11 +477,7 @@ export default function OffersPage() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       const pageNum = parseInt(pageInput, 10);
-                      if (
-                        !isNaN(pageNum) &&
-                        pageNum >= 1 &&
-                        pageNum <= pagination.totalPages
-                      ) {
+                      if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= pagination.totalPages) {
                         setCurrentPage(pageNum);
                       } else {
                         setPageInput(currentPage.toString());
@@ -553,7 +550,9 @@ export default function OffersPage() {
                   )}
                   {selectedOffer.modelCode && (
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Model Code</label>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Model Code
+                      </label>
                       <p className="text-sm mt-1">{selectedOffer.modelCode}</p>
                     </div>
                   )}
@@ -569,11 +568,13 @@ export default function OffersPage() {
                   </div>
                   {selectedOffer.expirationDate && (
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Expiration</label>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Expiration
+                      </label>
                       <p className="text-sm mt-1">
                         <span
                           className={cn(
-                            isExpired(selectedOffer.expirationDate) && "text-red-400 line-through"
+                            isExpired(selectedOffer.expirationDate) && "text-red-400 line-through",
                           )}
                         >
                           {formatDate(selectedOffer.expirationDate)}
@@ -602,25 +603,37 @@ export default function OffersPage() {
                           <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
                           Offer Amount
                         </label>
-                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.offerAmount)}</p>
+                        <p className="text-lg font-semibold mt-1">
+                          {formatCurrency(selectedOffer.offerAmount)}
+                        </p>
                       </div>
                     )}
                     {selectedOffer.monthlyPayment !== null && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Monthly Payment</label>
-                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.monthlyPayment)}</p>
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Monthly Payment
+                        </label>
+                        <p className="text-lg font-semibold mt-1">
+                          {formatCurrency(selectedOffer.monthlyPayment)}
+                        </p>
                       </div>
                     )}
                     {selectedOffer.termMonths !== null && (
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Term</label>
-                        <p className="text-lg font-semibold mt-1">{selectedOffer.termMonths} months</p>
+                        <p className="text-lg font-semibold mt-1">
+                          {selectedOffer.termMonths} months
+                        </p>
                       </div>
                     )}
                     {selectedOffer.dueAtSigning !== null && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Due at Signing</label>
-                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.dueAtSigning)}</p>
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Due at Signing
+                        </label>
+                        <p className="text-lg font-semibold mt-1">
+                          {formatCurrency(selectedOffer.dueAtSigning)}
+                        </p>
                       </div>
                     )}
                     {selectedOffer.cashBack !== null && (
@@ -629,7 +642,9 @@ export default function OffersPage() {
                           <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
                           Cash Back
                         </label>
-                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.cashBack)}</p>
+                        <p className="text-lg font-semibold mt-1">
+                          {formatCurrency(selectedOffer.cashBack)}
+                        </p>
                       </div>
                     )}
                     {selectedOffer.tradeDiscount !== null && (
@@ -638,7 +653,9 @@ export default function OffersPage() {
                           <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
                           Trade Discount
                         </label>
-                        <p className="text-lg font-semibold mt-1">{formatCurrency(selectedOffer.tradeDiscount)}</p>
+                        <p className="text-lg font-semibold mt-1">
+                          {formatCurrency(selectedOffer.tradeDiscount)}
+                        </p>
                       </div>
                     )}
                     {selectedOffer.apr !== null && (
@@ -651,7 +668,9 @@ export default function OffersPage() {
                     )}
                     {selectedOffer.milesPerYear !== null && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Miles/Year</label>
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Miles/Year
+                        </label>
                         <p className="text-lg font-semibold mt-1">
                           {selectedOffer.milesPerYear.toLocaleString()}
                         </p>
@@ -667,7 +686,9 @@ export default function OffersPage() {
                   <h3 className="text-lg font-semibold mb-4">Terms & Conditions</h3>
                   {selectedOffer.terms && (
                     <div className="mb-4">
-                      <label className="text-sm font-medium text-muted-foreground">Description</label>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Description
+                      </label>
                       <div className="text-sm mt-1 whitespace-pre-wrap">
                         <div dangerouslySetInnerHTML={{ __html: selectedOffer.terms }}></div>
                       </div>
@@ -675,7 +696,9 @@ export default function OffersPage() {
                   )}
                   {selectedOffer.finePrint && (
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Fine Print</label>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Fine Print
+                      </label>
                       <div className="text-sm mt-1 whitespace-pre-wrap text-muted-foreground">
                         <div dangerouslySetInnerHTML={{ __html: selectedOffer.finePrint }}></div>
                       </div>

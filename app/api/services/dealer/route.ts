@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     if (!serviceKindId || !orgName) {
       return NextResponse.json(
         { error: "Service kind ID and organization name are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     if (existingService) {
       return NextResponse.json(
         { error: "A service request already exists for this service type" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error && error.message.includes("Unique constraint")) {
       return NextResponse.json(
         { error: "A service request already exists for this service type" },
-        { status: 400 }
+        { status: 400 },
       );
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -122,4 +122,3 @@ export async function POST(request: NextRequest) {
     await prisma.$disconnect();
   }
 }
-

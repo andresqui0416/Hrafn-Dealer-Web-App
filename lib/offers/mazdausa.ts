@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-
 // Parse date from format "1/5/2026" or "01/05/2026"
 function parseMazdaDate(dateStr: string | null | undefined): Date | null {
   if (!dateStr) return null;
@@ -62,117 +61,117 @@ export async function scrapeOffersFromMazda() {
     // Process each vehicle
     for (const vehicle of data.body.vehicles) {
       const vehicleSpecialOffers = vehicle.vehicleSpecialOffers || [];
-			for (const vehicleSpecialOffer of vehicleSpecialOffers) {
-				const modelName = vehicleSpecialOffer.modelName || "";
-				const year = parseNumber(vehicleSpecialOffer.modelYear) || null;
-				const modelCode = vehicleSpecialOffer.modelCode || null;
-				// Process lease offers
-				if (Array.isArray(vehicleSpecialOffer.leaseOffers)) {
-					for (const leaseOffer of vehicleSpecialOffer.leaseOffers) {
-						const trimCode = leaseOffer.offerTrimCode || leaseOffer.vehicleTrimCode || "";
-						const expirationDate = parseMazdaDate(leaseOffer.expirationDate);
-						const monthlyPayment = parseNumber(leaseOffer.monthlyPayment);
-						const dueAtSigning = parseNumber(leaseOffer.dueAtSigning);
-						const termMonths = parseNumber(leaseOffer.leaseTerm);
+      for (const vehicleSpecialOffer of vehicleSpecialOffers) {
+        const modelName = vehicleSpecialOffer.modelName || "";
+        const year = parseNumber(vehicleSpecialOffer.modelYear) || null;
+        const modelCode = vehicleSpecialOffer.modelCode || null;
+        // Process lease offers
+        if (Array.isArray(vehicleSpecialOffer.leaseOffers)) {
+          for (const leaseOffer of vehicleSpecialOffer.leaseOffers) {
+            const trimCode = leaseOffer.offerTrimCode || leaseOffer.vehicleTrimCode || "";
+            const expirationDate = parseMazdaDate(leaseOffer.expirationDate);
+            const monthlyPayment = parseNumber(leaseOffer.monthlyPayment);
+            const dueAtSigning = parseNumber(leaseOffer.dueAtSigning);
+            const termMonths = parseNumber(leaseOffer.leaseTerm);
             const cashBack = parseNumber(leaseOffer.leaseCashBack);
-	
-						offers.push({
+
+            offers.push({
               header: leaseOffer.header || null,
-							brand: "Mazda",
-							year,
-							make: "Mazda",
-							model: modelName,
-							modelCode,
-							trim: trimCode || null,
-							offerType: "lease",
-							offerAmount: null,
-							apr: null,
-							termMonths,
-							cashBack: cashBack,
-							dueAtSigning,
-							monthlyPayment,
-							milesPerYear: null, // Could extract from description if needed
-							expirationDate,
-							terms: leaseOffer.description || leaseOffer.header || null,
-							finePrint: leaseOffer.disclaimer || null,
-							scrapedAt,
-						});
-					}
-				}
-	
-				// Process purchase offers (financing)
-				if (Array.isArray(vehicleSpecialOffer.purchaseOffers)) {
-					for (const purchaseOffer of vehicleSpecialOffer.purchaseOffers) {
-						const trimCode = purchaseOffer.offerTrimCode || purchaseOffer.vehicleTrimCode || "";
-						const expirationDate = parseMazdaDate(purchaseOffer.expirationDate);
-						const apr = parseNumber(purchaseOffer.apr);
-						const termMonths = parseNumber(purchaseOffer.paymentTerm);
-						const cashBack = parseNumber(purchaseOffer.cashBack);
-	
-						// Determine offer type: if there's cashBack, it's cash, otherwise financing
-						const offerType = cashBack && cashBack > 0 ? "cash" : "financing";
-	
-						offers.push({
+              brand: "Mazda",
+              year,
+              make: "Mazda",
+              model: modelName,
+              modelCode,
+              trim: trimCode || null,
+              offerType: "lease",
+              offerAmount: null,
+              apr: null,
+              termMonths,
+              cashBack: cashBack,
+              dueAtSigning,
+              monthlyPayment,
+              milesPerYear: null, // Could extract from description if needed
+              expirationDate,
+              terms: leaseOffer.description || leaseOffer.header || null,
+              finePrint: leaseOffer.disclaimer || null,
+              scrapedAt,
+            });
+          }
+        }
+
+        // Process purchase offers (financing)
+        if (Array.isArray(vehicleSpecialOffer.purchaseOffers)) {
+          for (const purchaseOffer of vehicleSpecialOffer.purchaseOffers) {
+            const trimCode = purchaseOffer.offerTrimCode || purchaseOffer.vehicleTrimCode || "";
+            const expirationDate = parseMazdaDate(purchaseOffer.expirationDate);
+            const apr = parseNumber(purchaseOffer.apr);
+            const termMonths = parseNumber(purchaseOffer.paymentTerm);
+            const cashBack = parseNumber(purchaseOffer.cashBack);
+
+            // Determine offer type: if there's cashBack, it's cash, otherwise financing
+            const offerType = cashBack && cashBack > 0 ? "cash" : "financing";
+
+            offers.push({
               header: purchaseOffer.header || null,
-							brand: "Mazda",
-							year,
-							make: "Mazda",
-							model: modelName,
-							modelCode,
-							trim: trimCode || null,
-							offerType,
-							offerAmount: null,
-							apr: apr ? apr / 100 : null, // Convert percentage to decimal (5.9 -> 0.059)
-							termMonths,
-							cashBack,
-							dueAtSigning: null,
-							monthlyPayment: null,
-							milesPerYear: null,
-							expirationDate,
-							terms: purchaseOffer.description || purchaseOffer.header || null,
-							finePrint: purchaseOffer.disclaimer || null,
-							scrapedAt,
-						});
-					}
-				}
-			}
+              brand: "Mazda",
+              year,
+              make: "Mazda",
+              model: modelName,
+              modelCode,
+              trim: trimCode || null,
+              offerType,
+              offerAmount: null,
+              apr: apr ? apr / 100 : null, // Convert percentage to decimal (5.9 -> 0.059)
+              termMonths,
+              cashBack,
+              dueAtSigning: null,
+              monthlyPayment: null,
+              milesPerYear: null,
+              expirationDate,
+              terms: purchaseOffer.description || purchaseOffer.header || null,
+              finePrint: purchaseOffer.disclaimer || null,
+              scrapedAt,
+            });
+          }
+        }
+      }
 
-    //   // Process special offers (cash offers)
-    //   if (Array.isArray(vehicleSpecialOffers.specialOffersWithVehicles)) {
-    //     for (const specialOffer of vehicleSpecialOffers.specialOffersWithVehicles) {
-    //       const trimCode = specialOffer.offerTrimCode || specialOffer.vehicleTrimCode || "";
-    //       const year = extractYearFromTrimCode(trimCode);
-    //       const expirationDate = parseMazdaDate(specialOffer.expirationDate);
-          
-    //       // Try to extract cash amount from header (e.g., "$500 Mazda Military Appreciation Bonus Cash")
-    //       let cashBack: number | null = null;
-    //       const headerMatch = specialOffer.header?.match(/\$([\d,]+)/);
-    //       if (headerMatch) {
-    //         cashBack = parseNumber(headerMatch[1]);
-    //       }
+      //   // Process special offers (cash offers)
+      //   if (Array.isArray(vehicleSpecialOffers.specialOffersWithVehicles)) {
+      //     for (const specialOffer of vehicleSpecialOffers.specialOffersWithVehicles) {
+      //       const trimCode = specialOffer.offerTrimCode || specialOffer.vehicleTrimCode || "";
+      //       const year = extractYearFromTrimCode(trimCode);
+      //       const expirationDate = parseMazdaDate(specialOffer.expirationDate);
 
-    //       offers.push({
-    //         brand: "Mazda",
-    //         year,
-    //         make: "Mazda",
-    //         model: modelName,
-    //         modelCode,
-    //         trim: trimCode || null,
-    //         offerType: "cash",
-    //         offerAmount: cashBack,
-    //         apr: null,
-    //         termMonths: null,
-    //         cashBack,
-    //         dueAtSigning: null,
-    //         monthlyPayment: null,
-    //         milesPerYear: null,
-    //         expirationDate,
-    //         terms: specialOffer.description || specialOffer.header || null,
-    //         finePrint: specialOffer.disclaimer || null,
-    //         scrapedAt,
-    //       });
-    //     }
-    //   }
+      //       // Try to extract cash amount from header (e.g., "$500 Mazda Military Appreciation Bonus Cash")
+      //       let cashBack: number | null = null;
+      //       const headerMatch = specialOffer.header?.match(/\$([\d,]+)/);
+      //       if (headerMatch) {
+      //         cashBack = parseNumber(headerMatch[1]);
+      //       }
+
+      //       offers.push({
+      //         brand: "Mazda",
+      //         year,
+      //         make: "Mazda",
+      //         model: modelName,
+      //         modelCode,
+      //         trim: trimCode || null,
+      //         offerType: "cash",
+      //         offerAmount: cashBack,
+      //         apr: null,
+      //         termMonths: null,
+      //         cashBack,
+      //         dueAtSigning: null,
+      //         monthlyPayment: null,
+      //         milesPerYear: null,
+      //         expirationDate,
+      //         terms: specialOffer.description || specialOffer.header || null,
+      //         finePrint: specialOffer.disclaimer || null,
+      //         scrapedAt,
+      //       });
+      //     }
+      //   }
     }
 
     console.log("Mazda offers found:", offers.length);
@@ -234,7 +233,9 @@ export async function scrapeOffersFromMazda() {
     return { success: true, totalOffers: offers.length };
   } catch (error: any) {
     console.error("Error scraping Mazda offers:", error);
-    return { success: false, error: error?.message || "Internal server error while scraping Mazda offers" };
+    return {
+      success: false,
+      error: error?.message || "Internal server error while scraping Mazda offers",
+    };
   }
 }
-

@@ -179,12 +179,14 @@ export async function scrapeOffersFromCadillac() {
       // Don't populate offerAmount from monthlyPayment or cashBack - keep them separate
       // offerAmount should only be set if explicitly extracted from the offer content
       let offerAmount: number | null = null;
-      
+
       // Extract cashBack for cash offers from body text
       let cashBack: number | null = null;
       if (offerType === "cash") {
         // Look for patterns like "$X,XXX Purchase Allowance", "$X,XXX Competitive Cash Allowance", "$X,XXX Costco Executive Member Incentive"
-        const cashBackMatch = bodyText.match(/\$([\d,]+)\s+(?:Purchase\s+Allowance|Competitive\s+Cash\s+Allowance|Costco\s+Executive\s+Member\s+Incentive|off|discount)/i);
+        const cashBackMatch = bodyText.match(
+          /\$([\d,]+)\s+(?:Purchase\s+Allowance|Competitive\s+Cash\s+Allowance|Costco\s+Executive\s+Member\s+Incentive|off|discount)/i,
+        );
         if (cashBackMatch && cashBackMatch[1]) {
           cashBack = parseNumber(cashBackMatch[1]);
         }
@@ -294,4 +296,3 @@ export async function scrapeOffersFromCadillac() {
     };
   }
 }
-

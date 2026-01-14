@@ -111,9 +111,9 @@ export async function GET(request: NextRequest) {
     const dealerServices = await prisma.dealerService.findMany({
       where: {
         status: "allowed",
-				subscriptionId: {
-					not: null,
-				},
+        subscriptionId: {
+          not: null,
+        },
       },
       include: {
         dealer: {
@@ -133,8 +133,8 @@ export async function GET(request: NextRequest) {
       dealers: [] as Array<{
         dealerId: string;
         dealerName: string;
-				dealerServiceId: string;
-				orgName: string;
+        dealerServiceId: string;
+        orgName: string;
         created: number;
         updated: number;
         errors: number;
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
     for (const dealerService of dealerServices) {
       // Set current time once at the start of each loop iteration
       const now = new Date();
-      
+
       const departments = await prisma.dealerDepartment.findMany({
         where: {
           serviceId: dealerService.id,
@@ -159,12 +159,17 @@ export async function GET(request: NextRequest) {
         } as any,
       });
 
-      const saleDepartment = departments.find((department: any) => department.dmsType === "Finance");
+      const saleDepartment = departments.find(
+        (department: any) => department.dmsType === "Finance",
+      );
       if (saleDepartment?.id) {
         try {
           // Check if sync is in progress
           const syncInProgress = (saleDepartment as any).salesDataSyncInProgress as boolean;
-          const syncStartedAt = (saleDepartment as any).salesDataSyncStartedAt as Date | null | undefined;
+          const syncStartedAt = (saleDepartment as any).salesDataSyncStartedAt as
+            | Date
+            | null
+            | undefined;
 
           // If sync is in progress, check if it's been running too long (timeout after 30 minutes)
           const SYNC_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
@@ -182,7 +187,7 @@ export async function GET(request: NextRequest) {
               );
             }
           }
-          
+
           const lastSyncAt = (saleDepartment as any).lastSalesDataSyncAt as Date | null | undefined;
 
           // Acquire lock: set sync in progress flag
@@ -198,14 +203,13 @@ export async function GET(request: NextRequest) {
           // Bulk API requires end date to be at least 60 minutes ago
           const bulkEndDate = new Date(now.getTime() - 60 * 60 * 1000);
 
-          
           const fiveYearsAgo = new Date(now);
           const targetYear = now.getFullYear() - 5;
           const targetMonth = now.getMonth();
           const targetDate = now.getDate();
           // setFullYear handles Feb 29th edge case: if target year is not a leap year, it adjusts to Feb 28
           fiveYearsAgo.setFullYear(targetYear, targetMonth, targetDate);
-          const startDate = lastSyncAt ||  fiveYearsAgo;
+          const startDate = lastSyncAt || fiveYearsAgo;
           let dealerResults = {
             created: 0,
             updated: 0,
@@ -213,7 +217,7 @@ export async function GET(request: NextRequest) {
             total: 0,
           };
 
-          if(startDate <=historyEndDate) {
+          if (startDate <= historyEndDate) {
             await fetchAndStoreHistoryChunks(
               saleDepartment.id,
               dealerService.subscriptionId as string,
@@ -232,7 +236,7 @@ export async function GET(request: NextRequest) {
             bulkEndDate,
             dealerResults,
           );
-          
+
           // Update last sync time and release lock after sync completion
           await prisma.dealerDepartment.update({
             where: { id: saleDepartment.id },
@@ -278,7 +282,10 @@ export async function GET(request: NextRequest) {
               } as any,
             });
           } catch (lockError: any) {
-            console.error(`Error releasing lock for department ${saleDepartment.id}:`, lockError?.message);
+            console.error(
+              `Error releasing lock for department ${saleDepartment.id}:`,
+              lockError?.message,
+            );
           }
           allResults.totalErrors++;
         }

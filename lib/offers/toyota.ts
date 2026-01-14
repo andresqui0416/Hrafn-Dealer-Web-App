@@ -89,7 +89,7 @@ function extractCashBack(text: string | null | undefined): number | null {
       /\$([\d,]+)\s+(?:cash\s+back|customer\s+cash|bonus\s+cash|cash)/i,
       /\$([\d,]+)\s+off/i,
     ];
-    
+
     for (const pattern of patterns) {
       const match = text.match(pattern);
       if (match && match[1]) {
@@ -111,18 +111,18 @@ function extractExpirationDate(text: string | null | undefined): Date | null {
       /(?:take\s+delivery|expires|valid\s+until|must\s+take\s+delivery)\s+by?\s+(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/i,
       /\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})\b/,
     ];
-    
+
     for (const pattern of patterns) {
       const match = text.match(pattern);
       if (match) {
         let month = parseInt(match[1], 10);
         let day = parseInt(match[2], 10);
         let year = parseInt(match[3], 10);
-        
+
         if (year < 100) {
           year = 2000 + year;
         }
-        
+
         if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && year >= 2020 && year <= 2030) {
           const date = new Date(year, month - 1, day);
           if (!isNaN(date.getTime())) {
@@ -143,38 +143,38 @@ function extractJSONObject(str: string, startIndex: number): string | null {
   let inString = false;
   let escapeNext = false;
   let startPos = -1;
-  
+
   for (let i = startIndex; i < str.length; i++) {
     const char = str[i];
-    
+
     if (escapeNext) {
       escapeNext = false;
       continue;
     }
-    
-    if (char === '\\') {
+
+    if (char === "\\") {
       escapeNext = true;
       continue;
     }
-    
+
     if (char === '"' && !escapeNext) {
       inString = !inString;
       continue;
     }
-    
+
     if (inString) continue;
-    
-    if (char === '{') {
+
+    if (char === "{") {
       if (startPos === -1) startPos = i;
       braceCount++;
-    } else if (char === '}') {
+    } else if (char === "}") {
       braceCount--;
       if (braceCount === 0 && startPos !== -1) {
         return str.substring(startPos, i + 1);
       }
     }
   }
-  
+
   return null;
 }
 
@@ -182,61 +182,66 @@ function extractJSONObject(str: string, startIndex: number): string | null {
 function extractJSONFromScript(html: string): any {
   try {
     // Look for window.__SSR_STATE__ first (Toyota specific)
-    const ssrStateIndex = html.indexOf('window.__SSR_STATE__');
+    const ssrStateIndex = html.indexOf("window.__SSR_STATE__");
     if (ssrStateIndex !== -1) {
       // Find the equals sign after __SSR_STATE__
-      const equalsIndex = html.indexOf('=', ssrStateIndex);
+      const equalsIndex = html.indexOf("=", ssrStateIndex);
       if (equalsIndex !== -1) {
         // Find the closing script tag after the assignment
-        const scriptEndIndex = html.indexOf('</script>', equalsIndex);
+        const scriptEndIndex = html.indexOf("</script>", equalsIndex);
         if (scriptEndIndex !== -1) {
           // Extract everything between = and </script>
           const jsonStr = html.substring(equalsIndex + 1, scriptEndIndex).trim();
-          
+
           // Remove trailing semicolon if present
-          const cleanedJsonStr = jsonStr.replace(/;\s*$/, '').trim();
-          
+          const cleanedJsonStr = jsonStr.replace(/;\s*$/, "").trim();
+
           if (cleanedJsonStr) {
             try {
               // Replace undefined values with null to make valid JSON
               // JavaScript allows undefined in object literals, but JSON does not
               let cleanedJson = cleanedJsonStr;
-              
+
               // Replace :undefined, :undefined} with :null, :null}
-              cleanedJson = cleanedJson.replace(/:\s*undefined\s*([,}\]])/g, ': null$1');
+              cleanedJson = cleanedJson.replace(/:\s*undefined\s*([,}\]])/g, ": null$1");
               // Handle trailing undefined at end of lines
-              cleanedJson = cleanedJson.replace(/:\s*undefined\s*$/gm, ': null');
+              cleanedJson = cleanedJson.replace(/:\s*undefined\s*$/gm, ": null");
               // Remove standalone undefined in arrays: ,undefined, or ,undefined}
-              cleanedJson = cleanedJson.replace(/,\s*undefined\s*([,}\]])/g, '$1');
-              cleanedJson = cleanedJson.replace(/,\s*undefined\s*$/gm, '');
-              
+              cleanedJson = cleanedJson.replace(/,\s*undefined\s*([,}\]])/g, "$1");
+              cleanedJson = cleanedJson.replace(/,\s*undefined\s*$/gm, "");
+
               return JSON.parse(cleanedJson);
             } catch (parseError: any) {
-              console.warn("Failed to parse __SSR_STATE__ JSON:", parseError?.message || parseError);
+              console.warn(
+                "Failed to parse __SSR_STATE__ JSON:",
+                parseError?.message || parseError,
+              );
             }
           }
         }
       }
     }
-    
+
     // Look for __NEXT_DATA__ or similar
     const nextDataMatch = html.match(/<script[^>]*id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/i);
     if (nextDataMatch && nextDataMatch[1]) {
       return JSON.parse(nextDataMatch[1]);
     }
-    
+
     // Look for window.__INITIAL_STATE__ or similar
     const initialStateMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*({[\s\S]*?});/i);
     if (initialStateMatch && initialStateMatch[1]) {
       return JSON.parse(initialStateMatch[1]);
     }
-    
+
     // Look for any script tag with type="application/json"
-    const jsonScriptMatch = html.match(/<script[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/i);
+    const jsonScriptMatch = html.match(
+      /<script[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/i,
+    );
     if (jsonScriptMatch && jsonScriptMatch[1]) {
       return JSON.parse(jsonScriptMatch[1]);
     }
-    
+
     return null;
   } catch {
     return null;
@@ -249,7 +254,7 @@ export async function scrapeOffersFromToyota() {
       method: "GET",
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       },
       redirect: "follow" as RequestRedirect,
     });
@@ -281,10 +286,13 @@ export async function scrapeOffersFromToyota() {
           // The modules are in the second content item (index 1), not the first
           const contentWithModules = errorBoundary?.placeholders?.content?.[1];
           const modules = contentWithModules?.fields?.modules;
-          
+
           if (Array.isArray(modules)) {
             for (const moduleItem of modules) {
-              if (moduleItem?.type === "featuredVehicles" && Array.isArray(moduleItem.featuredVehicles)) {
+              if (
+                moduleItem?.type === "featuredVehicles" &&
+                Array.isArray(moduleItem.featuredVehicles)
+              ) {
                 for (const featuredVehicle of moduleItem.featuredVehicles) {
                   if (Array.isArray(featuredVehicle.offers)) {
                     offers.push(...featuredVehicle.offers);
@@ -302,25 +310,25 @@ export async function scrapeOffersFromToyota() {
       if (offers.length === 0) {
         function findOffersRecursive(obj: any, depth: number = 0): any[] {
           if (depth > 10) return []; // Prevent infinite recursion
-          if (!obj || typeof obj !== 'object') return [];
-          
+          if (!obj || typeof obj !== "object") return [];
+
           const found: any[] = [];
-          
+
           // Check if this object has an 'offers' array
           if (Array.isArray(obj.offers)) {
             found.push(...obj.offers);
           }
-          
+
           // Recursively search in nested objects
           for (const key in obj) {
-            if (obj.hasOwnProperty(key) && typeof obj[key] === 'object') {
+            if (obj.hasOwnProperty(key) && typeof obj[key] === "object") {
               found.push(...findOffersRecursive(obj[key], depth + 1));
             }
           }
-          
+
           return found;
         }
-        
+
         const recursiveOffers = findOffersRecursive(jsonData);
         if (recursiveOffers.length > 0) {
           offers = recursiveOffers;
@@ -344,16 +352,17 @@ export async function scrapeOffersFromToyota() {
       }
 
       // Extract model information from series array
-      const series = Array.isArray(offer.series) && offer.series.length > 0 ? offer.series[0] : null;
-      const modelName = series && Array.isArray(series.name) && series.name.length > 0 
-        ? series.name[0] 
-        : offer.seriesOrCardTitle || offer.offerTitle || null;
-      const modelCode = series && series.id && Array.isArray(series.id) && series.id.length > 0 
-        ? series.id[0] 
-        : null;
-      const year = series?.year 
-        ? parseInt(String(series.year), 10) 
-        : null;
+      const series =
+        Array.isArray(offer.series) && offer.series.length > 0 ? offer.series[0] : null;
+      const modelName =
+        series && Array.isArray(series.name) && series.name.length > 0
+          ? series.name[0]
+          : offer.seriesOrCardTitle || offer.offerTitle || null;
+      const modelCode =
+        series && series.id && Array.isArray(series.id) && series.id.length > 0
+          ? series.id[0]
+          : null;
+      const year = series?.year ? parseInt(String(series.year), 10) : null;
       const trim = offer.includedTrim || null;
 
       // Determine offer type from primaryLabel field
@@ -438,9 +447,10 @@ export async function scrapeOffersFromToyota() {
 
       // Extract terms and fine print
       const terms = offer.description || offer.offerTitle || null;
-      const finePrint = Array.isArray(offer.disclaimers) && offer.disclaimers.length > 0
-        ? offer.disclaimers.join("\n\n")
-        : null;
+      const finePrint =
+        Array.isArray(offer.disclaimers) && offer.disclaimers.length > 0
+          ? offer.disclaimers.join("\n\n")
+          : null;
 
       // Only create offer if we have meaningful data
       const hasValidData =

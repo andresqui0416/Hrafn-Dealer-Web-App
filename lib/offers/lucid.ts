@@ -109,18 +109,14 @@ export async function scrapeOffersFromLucid() {
     // Find all offer cards - look for the class OffersCard_offersCard__hs3qB
     // The HTML might be minified or have different structure, so try multiple approaches
     const offerCards: string[] = [];
-    
+
     // First, check if the class exists in the HTML
     const hasOffersCard = html.includes("OffersCard_offersCard");
-    
+
     if (!hasOffersCard) {
       // Try alternative class names or patterns
-      const alternativePatterns = [
-        /OffersCard[^"'\s]*/gi,
-        /offersCard/gi,
-        /offer-card/gi,
-      ];
-      
+      const alternativePatterns = [/OffersCard[^"'\s]*/gi, /offersCard/gi, /offer-card/gi];
+
       let foundAlternative = false;
       for (const pattern of alternativePatterns) {
         if (pattern.test(html)) {
@@ -128,7 +124,7 @@ export async function scrapeOffersFromLucid() {
           break;
         }
       }
-      
+
       if (!foundAlternative) {
         console.error("No offer card class found in HTML");
         return { success: false, error: "No offer card class found in HTML" };
@@ -139,38 +135,38 @@ export async function scrapeOffersFromLucid() {
     // Look for the class name and work backwards/forwards to find the complete div
     const classPattern = /OffersCard_offersCard__\w+/g;
     const classMatches = Array.from(html.matchAll(classPattern));
-    
+
     for (const classMatch of classMatches) {
       const classIndex = classMatch.index || 0;
-      
+
       // Find the opening <div> tag before this class
-      let divStart = html.lastIndexOf('<div', classIndex);
+      let divStart = html.lastIndexOf("<div", classIndex);
       if (divStart === -1) continue;
-      
+
       // Find the matching closing </div> by counting depth
       let depth = 0;
       let pos = divStart;
       let inString = false;
-      let stringChar = '';
-      
+      let stringChar = "";
+
       while (pos < html.length) {
         const char = html[pos];
-        
+
         // Handle strings (to avoid matching <div> inside attributes)
-        if ((char === '"' || char === "'") && html[pos - 1] !== '\\') {
+        if ((char === '"' || char === "'") && html[pos - 1] !== "\\") {
           if (!inString) {
             inString = true;
             stringChar = char;
           } else if (char === stringChar) {
             inString = false;
-            stringChar = '';
+            stringChar = "";
           }
         }
-        
+
         if (!inString) {
-          if (html.substring(pos, pos + 4) === '<div') {
+          if (html.substring(pos, pos + 4) === "<div") {
             depth++;
-          } else if (html.substring(pos, pos + 6) === '</div>') {
+          } else if (html.substring(pos, pos + 6) === "</div>") {
             depth--;
             if (depth === 0) {
               const divEnd = pos + 6;
@@ -186,8 +182,8 @@ export async function scrapeOffersFromLucid() {
 
     // Remove duplicates (cards that are substrings of other cards)
     const uniqueCards = offerCards.filter((card, index) => {
-      return !offerCards.some((otherCard, otherIndex) => 
-        otherIndex !== index && otherCard.includes(card)
+      return !offerCards.some(
+        (otherCard, otherIndex) => otherIndex !== index && otherCard.includes(card),
       );
     });
 
@@ -209,11 +205,15 @@ export async function scrapeOffersFromLucid() {
     for (const cardHtml of offerCardsFinal) {
       try {
         // Extract year (e.g., "2026") - look for span with Typography_label class
-        const yearMatch = cardHtml.match(/<span[^>]*class="[^"]*Typography_label[^"]*"[^>]*>(\d{4})<\/span>/i);
+        const yearMatch = cardHtml.match(
+          /<span[^>]*class="[^"]*Typography_label[^"]*"[^>]*>(\d{4})<\/span>/i,
+        );
         const year = yearMatch ? parseInt(yearMatch[1], 10) : null;
 
         // Extract model name (e.g., "Lucid Air Pure") - look for h3 with Typography_subtitle class
-        const modelMatch = cardHtml.match(/<h3[^>]*class="[^"]*Typography_subtitle[^"]*"[^>]*>([^<]+)<\/h3>/i);
+        const modelMatch = cardHtml.match(
+          /<h3[^>]*class="[^"]*Typography_subtitle[^"]*"[^>]*>([^<]+)<\/h3>/i,
+        );
         const model = modelMatch ? modelMatch[1].trim() : null;
 
         if (!model || !year) {
@@ -224,37 +224,39 @@ export async function scrapeOffersFromLucid() {
         // Extract all offer containers by finding payment type elements
         // Use the payment type element (class containing OffersCard_paymentType__) as the primary separator
         const offerContainers: string[] = [];
-        
+
         // Find all payment type elements (Lease, Finance, Cash)
         // Look for p tag with class containing OffersCard_paymentType__
-        const paymentTypePattern = /<p[^>]*class="[^"]*OffersCard_paymentType__[^"]*"[^>]*>([^<]+)<\/p>/gi;
+        const paymentTypePattern =
+          /<p[^>]*class="[^"]*OffersCard_paymentType__[^"]*"[^>]*>([^<]+)<\/p>/gi;
         const paymentTypeMatches = Array.from(cardHtml.matchAll(paymentTypePattern));
-        
+
         for (let i = 0; i < paymentTypeMatches.length; i++) {
           const paymentMatch = paymentTypeMatches[i];
           const paymentIndex = paymentMatch.index || 0;
           const paymentType = paymentMatch[1].trim();
-          
+
           // Find the start of this offer container - look backwards for the opening div
-          let containerStart = cardHtml.lastIndexOf('<div', paymentIndex);
+          let containerStart = cardHtml.lastIndexOf("<div", paymentIndex);
           if (containerStart === -1) continue;
-          
+
           // Find the end of this offer container
           // It ends either at the next payment type or at a closing div boundary
           let containerEnd = -1;
-          const nextPaymentIndex = i < paymentTypeMatches.length - 1 
-            ? (paymentTypeMatches[i + 1].index || cardHtml.length)
-            : cardHtml.length;
-          
+          const nextPaymentIndex =
+            i < paymentTypeMatches.length - 1
+              ? paymentTypeMatches[i + 1].index || cardHtml.length
+              : cardHtml.length;
+
           // Count div depth from containerStart to find the matching closing div
           // But stop before we hit the next payment type
           let depth = 0;
           let pos = containerStart;
-          
+
           while (pos < nextPaymentIndex && pos < cardHtml.length) {
-            if (cardHtml.substring(pos, pos + 4) === '<div') {
+            if (cardHtml.substring(pos, pos + 4) === "<div") {
               depth++;
-            } else if (cardHtml.substring(pos, pos + 6) === '</div>') {
+            } else if (cardHtml.substring(pos, pos + 6) === "</div>") {
               depth--;
               if (depth === 0) {
                 containerEnd = pos + 6;
@@ -263,18 +265,18 @@ export async function scrapeOffersFromLucid() {
             }
             pos++;
           }
-          
+
           // If we didn't find a closing div, use the next payment type as the boundary
           if (containerEnd === -1) {
             containerEnd = nextPaymentIndex;
           }
-          
+
           if (containerEnd > containerStart) {
             const containerHtml = cardHtml.substring(containerStart, containerEnd);
             offerContainers.push(containerHtml);
           }
         }
-        
+
         // Fallback: If no payment types found, try the old method
         if (offerContainers.length === 0) {
           console.warn(`No payment types found, trying fallback method for ${model} ${year}`);
@@ -289,9 +291,11 @@ export async function scrapeOffersFromLucid() {
         for (const containerHtml of offerContainers) {
           // Extract offer type (Lease, Finance, Cash)
           // Look for p with OffersCard_paymentType class
-          const typeMatch = containerHtml.match(/<p[^>]*class="[^"]*OffersCard_paymentType__[^"]*"[^>]*>([^<]+)<\/p>/i);
+          const typeMatch = containerHtml.match(
+            /<p[^>]*class="[^"]*OffersCard_paymentType__[^"]*"[^>]*>([^<]+)<\/p>/i,
+          );
           const offerTypeStr = typeMatch ? typeMatch[1].trim().toLowerCase() : "";
-          
+
           if (!offerTypeStr) {
             console.warn(`No offer type found in container for ${model} ${year}`);
             continue;
@@ -309,7 +313,7 @@ export async function scrapeOffersFromLucid() {
           // Extract all spec containers within this offer
           // Look for divs with Spec_specContainer class - use a more flexible approach
           const specContainers: string[] = [];
-          
+
           // Method 1: Try regex pattern
           const specContainerRegex =
             /<div[^>]*class="[^"]*Spec_specContainer__[^"]*"[^>]*>([\s\S]*?)(?=<div[^>]*class="[^"]*Spec_specContainer__|<\/div>\s*<\/div>\s*<\/div>)/gi;
@@ -317,24 +321,24 @@ export async function scrapeOffersFromLucid() {
           while ((specMatch = specContainerRegex.exec(containerHtml)) !== null) {
             specContainers.push(specMatch[0]);
           }
-          
+
           // Method 2: If regex didn't work, find by class name
           if (specContainers.length === 0) {
             const specClassPattern = /Spec_specContainer__\w+/g;
             const specClassMatches = Array.from(containerHtml.matchAll(specClassPattern));
-            
+
             for (const classMatch of specClassMatches) {
               const classIndex = classMatch.index || 0;
-              let divStart = containerHtml.lastIndexOf('<div', classIndex);
+              let divStart = containerHtml.lastIndexOf("<div", classIndex);
               if (divStart === -1) continue;
-              
+
               // Find matching closing div
               let depth = 0;
               let pos = divStart;
               while (pos < containerHtml.length) {
-                if (containerHtml.substring(pos, pos + 4) === '<div') {
+                if (containerHtml.substring(pos, pos + 4) === "<div") {
                   depth++;
-                } else if (containerHtml.substring(pos, pos + 6) === '</div>') {
+                } else if (containerHtml.substring(pos, pos + 6) === "</div>") {
                   depth--;
                   if (depth === 0) {
                     specContainers.push(containerHtml.substring(divStart, pos + 6));
@@ -369,13 +373,17 @@ export async function scrapeOffersFromLucid() {
 
           for (const specHtml of specContainers) {
             // Extract eyebrow (label) - look for p with Spec_eyebrow class
-            const eyebrowMatch = specHtml.match(/<p[^>]*class="[^"]*Spec_eyebrow__[^"]*"[^>]*>([^<]+)<\/p>/i);
+            const eyebrowMatch = specHtml.match(
+              /<p[^>]*class="[^"]*Spec_eyebrow__[^"]*"[^>]*>([^<]+)<\/p>/i,
+            );
             const eyebrow = eyebrowMatch ? eyebrowMatch[1].trim() : "";
 
             // Extract headline (value) - look for h2 with Typography_headline class
             // Handle superscript tags and other nested elements
             let headline = "";
-            const headlineMatch = specHtml.match(/<h2[^>]*class="[^"]*Typography_headline[^"]*"[^>]*>([\s\S]*?)<\/h2>/i);
+            const headlineMatch = specHtml.match(
+              /<h2[^>]*class="[^"]*Typography_headline[^"]*"[^>]*>([\s\S]*?)<\/h2>/i,
+            );
             if (headlineMatch && headlineMatch[1]) {
               // Remove superscript disclaimers and other nested tags, keep the main value
               headline = headlineMatch[1]
@@ -392,7 +400,7 @@ export async function scrapeOffersFromLucid() {
               /<p[^>]*class="[^"]*Spec_description__[^"]*"[^>]*>([\s\S]*?)<\/p>/i,
               /<p[^>]*class="[^"]*Spec_description[^"]*"[^>]*>([\s\S]*?)<\/p>/i,
             ];
-            
+
             for (const pattern of descPatterns) {
               const descMatch = specHtml.match(pattern);
               if (descMatch && descMatch[1]) {
@@ -409,7 +417,7 @@ export async function scrapeOffersFromLucid() {
             } else if (headline) {
               specText = headline;
             }
-            
+
             if (description) {
               if (specText) {
                 specText = `${specText} ${description}`;
@@ -443,11 +451,11 @@ export async function scrapeOffersFromLucid() {
               // Check description for credits (e.g., "Plus $12,500 Air Credit")
               if (description) {
                 const creditPatterns = [
-                  /(?:plus|including)\s+\$([\d,]+)/i,  // "Plus $12,500" or "Including $12,500"
-                  /\$([\d,]+)\s+(?:air\s+)?credit/i,   // "$12,500 Air Credit" or "$12,500 Credit"
-                  /\$([\d,]+)\s+air\s+credit/i,        // "$12,500 Air Credit" (more specific)
+                  /(?:plus|including)\s+\$([\d,]+)/i, // "Plus $12,500" or "Including $12,500"
+                  /\$([\d,]+)\s+(?:air\s+)?credit/i, // "$12,500 Air Credit" or "$12,500 Credit"
+                  /\$([\d,]+)\s+air\s+credit/i, // "$12,500 Air Credit" (more specific)
                 ];
-                
+
                 for (const pattern of creditPatterns) {
                   const creditMatch = description.match(pattern);
                   if (creditMatch && creditMatch[1]) {
@@ -484,7 +492,7 @@ export async function scrapeOffersFromLucid() {
                   /\$([\d,]+)\s+(?:air\s+)?credit/i,
                   /\$([\d,]+)\s+air\s+credit/i,
                 ];
-                
+
                 for (const pattern of creditPatterns) {
                   const creditMatch = description.match(pattern);
                   if (creditMatch && creditMatch[1]) {
@@ -525,12 +533,12 @@ export async function scrapeOffersFromLucid() {
               logData.apr = apr;
             }
           }
-          
+
           const hasValidData =
             (offerType === "lease" && monthlyPayment) ||
             (offerType === "financing" && apr) ||
             (offerType === "cash" && (offerAmount || cashBack));
-          
+
           if (!hasValidData) {
             console.warn(`Skipping ${offerType} offer for ${model} ${year} - insufficient data:`, {
               offerType,
@@ -541,7 +549,7 @@ export async function scrapeOffersFromLucid() {
               specContainersCount: specContainers.length,
             });
           }
-          
+
           if (hasValidData) {
             // Extract expiration date from terms (common expiration is December 31, 2025)
             const expirationDate = extractExpirationDateFromText(terms || "");
@@ -638,4 +646,3 @@ export async function scrapeOffersFromLucid() {
     };
   }
 }
-

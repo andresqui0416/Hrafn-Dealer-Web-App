@@ -121,4 +121,3 @@ export async function PUT(request: NextRequest) {
     await prisma.$disconnect();
   }
 }
-

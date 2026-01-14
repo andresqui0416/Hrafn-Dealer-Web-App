@@ -6,10 +6,7 @@ const prisma = new PrismaClient();
 export const dynamic = "force-dynamic";
 
 // GET chat details (admins only)
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Get adminId from middleware-set header (guaranteed to exist by auth middleware)
     const adminId = request.headers.get("x-admin-id")!;
@@ -39,7 +36,7 @@ export async function GET(
     if (chat.adminId && chat.adminId !== adminId) {
       return NextResponse.json(
         { error: "You can only access chats you are handling" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -53,10 +50,7 @@ export async function GET(
 }
 
 // PUT update chat status (admins only)
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Get adminId from middleware-set header (guaranteed to exist by auth middleware)
     const adminId = request.headers.get("x-admin-id")!;
@@ -68,7 +62,7 @@ export async function PUT(
     if (!status || !validStatuses.includes(status)) {
       return NextResponse.json(
         { error: "Invalid status. Must be one of: opened, accepted, closed" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -84,7 +78,7 @@ export async function PUT(
     if (chat.adminId && chat.adminId !== adminId) {
       return NextResponse.json(
         { error: "You can only update chats you are handling" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -101,4 +95,3 @@ export async function PUT(
     await prisma.$disconnect();
   }
 }
-

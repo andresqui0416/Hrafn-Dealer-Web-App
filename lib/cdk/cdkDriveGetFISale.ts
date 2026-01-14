@@ -1,7 +1,4 @@
-import {
-  generateUniqueRequestId,
-  getFortellisAccessToken,
-} from "./index";
+import { generateUniqueRequestId, getFortellisAccessToken } from "./index";
 
 async function getQueryResult(
   resultUrl: string,
@@ -116,7 +113,11 @@ async function pollOperationStatus(
           );
           // Refresh token before fetching result
           currentAccessToken = await getFortellisAccessToken();
-          return await getQueryResult(statusData._links.result.href, currentAccessToken, subscriptionId);
+          return await getQueryResult(
+            statusData._links.result.href,
+            currentAccessToken,
+            subscriptionId,
+          );
         }
       }
       continue;
@@ -137,7 +138,7 @@ export async function getFISalesData(
   endDate: string,
   retryCount: number = 0,
 ): Promise<any> {
-  if(retryCount >= 3) {
+  if (retryCount >= 3) {
     throw new Error("Failed to fetch FI Sales data from CDK API after 3 retries.");
   }
 
@@ -149,7 +150,9 @@ export async function getFISalesData(
   console.log("End date:", endDate);
   console.log("Fetching fresh access token...");
   let accessToken = await getFortellisAccessToken();
-  console.log(`Got access token (length: ${accessToken.length}, first 20 chars: ${accessToken.substring(0, 20)}...)`);
+  console.log(
+    `Got access token (length: ${accessToken.length}, first 20 chars: ${accessToken.substring(0, 20)}...)`,
+  );
 
   let deptId = departmentId;
 
@@ -189,12 +192,19 @@ export async function getFISalesData(
       },
     });
 
-    if(response.status === 401) {
+    if (response.status === 401) {
       console.error(await response.text());
       console.log("Token expired, refreshing token...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       accessToken = await getFortellisAccessToken(true);
-      return await getFISalesData(endpointPath, departmentId, subscriptionId, startDate, endDate, retryCount + 1);
+      return await getFISalesData(
+        endpointPath,
+        departmentId,
+        subscriptionId,
+        startDate,
+        endDate,
+        retryCount + 1,
+      );
     }
 
     if (!response.ok) {
@@ -228,7 +238,7 @@ export async function getFISalesHistoryData(
   endDate: string,
   retryCount: number = 0,
 ): Promise<any> {
-  if(retryCount > 3) {
+  if (retryCount > 3) {
     throw new Error("Failed to fetch historical data from CDK API after 3 retries.");
   }
   console.log("==============================================\n");
@@ -239,7 +249,7 @@ export async function getFISalesHistoryData(
   console.log("End date:", endDate);
   console.log("Fetching fresh access token for historical data...");
   let accessToken = await getFortellisAccessToken();
-  
+
   // Get subscription and department info
   // Priority: 1) Provided departmentId parameter, 2) Environment variables, 3) Fetch from API
   let deptId = departmentId;
@@ -286,12 +296,18 @@ export async function getFISalesHistoryData(
       },
     });
 
-    if(response.status === 401) {
+    if (response.status === 401) {
       console.error(await response.text());
       console.log("Token expired, refreshing token...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       accessToken = await getFortellisAccessToken(true);
-      return await getFISalesHistoryData(departmentId, subscriptionId, startDate, endDate, retryCount + 1);
+      return await getFISalesHistoryData(
+        departmentId,
+        subscriptionId,
+        startDate,
+        endDate,
+        retryCount + 1,
+      );
     }
 
     if (!response.ok) {

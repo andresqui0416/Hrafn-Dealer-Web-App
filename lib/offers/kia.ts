@@ -145,7 +145,7 @@ interface KiaOffer {
 export async function scrapeOffersFromKia(zipCode: string = "95556") {
   try {
     const url = `https://www.kia.com/us/services/en/offers/${zipCode}`;
-    
+
     // Build the request body with all vehicle series and years
     const vehicles = [
       { seriesId: "B", year: 2025 },
@@ -195,10 +195,10 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json, text/plain, */*",
+        Accept: "application/json, text/plain, */*",
         "Accept-Language": "en-US,en;q=0.9",
-        "Origin": "https://www.kia.com",
-        "Referer": "https://www.kia.com/",
+        Origin: "https://www.kia.com",
+        Referer: "https://www.kia.com/",
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       },
@@ -207,27 +207,34 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
     });
 
     const text = await response.text();
-    
+
     if (!response.ok) {
       // Check if response is HTML (error page)
       if (text.trim().startsWith("<!DOCTYPE") || text.trim().startsWith("<html")) {
         console.error("Kia API returned HTML error page:", response.status);
         console.error("Response preview:", text.substring(0, 500));
-        throw new Error(`Kia API request failed: ${response.status} - Server returned HTML error page. The API may require authentication or the endpoint may have changed.`);
+        throw new Error(
+          `Kia API request failed: ${response.status} - Server returned HTML error page. The API may require authentication or the endpoint may have changed.`,
+        );
       }
       console.error("Kia API error:", response.status, text.substring(0, 500));
       throw new Error(`Kia API request failed: ${response.status}`);
     }
 
     let data: any;
-    
+
     try {
       data = JSON.parse(text);
     } catch (parseError) {
       // Check if response is HTML instead of JSON
       if (text.trim().startsWith("<!DOCTYPE") || text.trim().startsWith("<html")) {
-        console.error("Kia API returned HTML instead of JSON. Response preview:", text.substring(0, 500));
-        throw new Error("Kia API returned HTML error page instead of JSON. The endpoint may require authentication or may have changed.");
+        console.error(
+          "Kia API returned HTML instead of JSON. Response preview:",
+          text.substring(0, 500),
+        );
+        throw new Error(
+          "Kia API returned HTML error page instead of JSON. The endpoint may require authentication or may have changed.",
+        );
       }
       console.error("Failed to parse Kia API response as JSON:", text.substring(0, 500));
       throw new Error("Invalid JSON response from Kia API");
@@ -249,10 +256,10 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
         const detailsResponse = await fetch(detailsUrl, {
           method: "GET",
           headers: {
-            "Accept": "application/json, text/plain, */*",
+            Accept: "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.9",
-            "Origin": "https://www.kia.com",
-            "Referer": `https://www.kia.com/us/en/offers`,
+            Origin: "https://www.kia.com",
+            Referer: `https://www.kia.com/us/en/offers`,
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
           },
@@ -301,11 +308,11 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
       const modelName = vehicle.series || "";
       const seriesId = vehicle.seriesId || null;
       const years = vehicle.years || [];
-      
+
       for (const yearData of years) {
         const modelYear = yearData.year;
         const offersList = yearData.offers || [];
-        
+
         for (const offer of offersList) {
           offerDetails.push({
             offer,
@@ -322,11 +329,11 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
     // Second pass: fetch detailed data for each offer
     for (const { offer, modelName, seriesId, modelYear } of offerDetails) {
       let detailedData: any = null;
-      
+
       // Fetch detailed data if we have offerId and vehicleId
       if (offer.offerId && offer.vehicleId) {
         detailedData = await fetchOfferDetails(zipCode, offer.offerId, offer.vehicleId);
-        
+
         // Add a small delay to avoid rate limiting
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
@@ -336,7 +343,7 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
       const heading = offer.heading || "";
       const description = offer.description || [];
       const descriptionText = Array.isArray(description) ? description.join(" ") : "";
-      
+
       // Use detailed data if available, otherwise use basic offer data
       const finalTitle = detailedData?.details?.title || title;
       const finalHeading = detailedData?.details?.heading || heading;
@@ -345,7 +352,7 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
         ? finalDescription.join(" ")
         : finalDescription || descriptionText;
       const finalTrimName = detailedData?.trimName || offer.trimName || null;
-      
+
       // Collect disclaimers from detailed data
       let finePrint: string | null = null;
       if (detailedData?.disclaimers && Array.isArray(detailedData.disclaimers)) {
@@ -358,7 +365,7 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
           .filter((text: string) => text.trim().length > 0);
         finePrint = disclaimerTexts.join(" ").trim() || null;
       }
-      
+
       // Determine offer type based on category
       let offerType: "lease" | "financing" | "cash" = "cash";
       if (categoryName === "Lease") {
@@ -368,7 +375,7 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
       } else if (categoryName === "Cash") {
         offerType = "cash";
       }
-      
+
       // Extract offer-specific data
       let monthlyPayment: number | null = null;
       let apr: number | null = null;
@@ -377,7 +384,7 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
       let termMonths: number | null = null;
       let dueAtSigning: number | null = null;
       let bonusCash: number | null = null;
-      
+
       if (offerType === "lease") {
         monthlyPayment = extractMonthlyPayment(finalTitle);
         termMonths = extractTermMonths(finalHeading);
@@ -405,14 +412,14 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
           }
         }
       }
-      
+
       // Build terms string
       const termsParts: string[] = [];
       if (finalTitle) termsParts.push(finalTitle);
       if (finalHeading) termsParts.push(finalHeading);
       if (finalDescriptionText) termsParts.push(finalDescriptionText);
       const terms = termsParts.join(" ").trim() || null;
-      
+
       offers.push({
         brand: "Kia",
         year: modelYear,
@@ -499,4 +506,3 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
     };
   }
 }
-

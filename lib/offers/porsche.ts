@@ -61,7 +61,7 @@ function extractExpirationDate(text: string): string | null {
   // Look for pattern "Must take delivery by 1/02/2026"
   const pattern = /must take delivery by\s+(\d{1,2}\/\d{1,2}\/\d{4})/i;
   const match = text.match(pattern);
-  
+
   if (match) {
     try {
       const dateStr = match[1];
@@ -80,7 +80,7 @@ function extractMilesPerYear(text: string): number | null {
   // Look for patterns like "over 32,500 miles" or "over 32500 miles"
   const pattern = /over\s+([\d,]+)\s+miles/i;
   const match = text.match(pattern);
-  
+
   if (match) {
     const milesStr = match[1].replace(/,/g, "");
     const miles = parseInt(milesStr, 10);
@@ -90,7 +90,8 @@ function extractMilesPerYear(text: string): number | null {
 }
 
 const fetchOfferData = async () => {
-  const url = "https://www.porsche.com/usa/accessoriesandservice/porschefinancialservices/pfs-leasing-offers";
+  const url =
+    "https://www.porsche.com/usa/accessoriesandservice/porschefinancialservices/pfs-leasing-offers";
   const response = await fetch(url, {
     method: "GET",
     redirect: "follow" as RequestRedirect,
@@ -111,25 +112,25 @@ const fetchOfferData = async () => {
   const offerContainerMatches: Array<{ start: number; end: number; content: string }> = [];
   const containerStartRegex = /<div[^>]*class="[^"]*leasing-offer-container[^"]*"[^>]*>/gi;
   let match;
-  
+
   while ((match = containerStartRegex.exec(html)) !== null) {
     const startIndex = match.index;
     const startTagEnd = match.index + match[0].length;
     let depth = 1;
     let pos = startTagEnd;
-    
+
     while (pos < html.length && depth > 0) {
       const remaining = html.substring(pos);
       const closeMatch = remaining.match(/<\/div>/i);
       const openMatch = remaining.match(/<div[^>]*>/i);
-      
+
       if (closeMatch && (!openMatch || closeMatch.index! < openMatch.index!)) {
         depth--;
         if (depth === 0) {
           offerContainerMatches.push({
             start: startIndex,
             end: pos + closeMatch.index! + closeMatch[0].length,
-            content: html.substring(startTagEnd, pos + closeMatch.index!)
+            content: html.substring(startTagEnd, pos + closeMatch.index!),
           });
           break;
         }
@@ -147,27 +148,41 @@ const fetchOfferData = async () => {
     const offerHtml = containerMatch.content;
 
     // Extract headline (model and year)
-    const headlineMatch = offerHtml.match(/<h3[^>]*class="[^"]*offer-headline[^"]*"[^>]*>([^<]+)<\/h3>/i);
+    const headlineMatch = offerHtml.match(
+      /<h3[^>]*class="[^"]*offer-headline[^"]*"[^>]*>([^<]+)<\/h3>/i,
+    );
     if (!headlineMatch) continue;
 
     const headline = extractTextFromHTML(headlineMatch[1]);
     const { year, model } = parseModelYear(headline);
 
     // Extract monthly payment - handle newlines and whitespace
-    const monthlyPaymentMatch = offerHtml.match(/<b[^>]*>Monthly Payment:<\/b>[\s\S]*?<div[^>]*class="[^"]*payment-numbers[^"]*"[^>]*>([^<]+)<\/div>/i);
+    const monthlyPaymentMatch = offerHtml.match(
+      /<b[^>]*>Monthly Payment:<\/b>[\s\S]*?<div[^>]*class="[^"]*payment-numbers[^"]*"[^>]*>([^<]+)<\/div>/i,
+    );
     const monthlyPayment = monthlyPaymentMatch ? extractNumber(monthlyPaymentMatch[1]) : null;
 
     // Extract term in months - handle newlines and whitespace
-    const termMatch = offerHtml.match(/<b[^>]*>Term in months:<\/b>[\s\S]*?<div[^>]*class="[^"]*payment-numbers[^"]*"[^>]*>([^<]+)<\/div>/i);
+    const termMatch = offerHtml.match(
+      /<b[^>]*>Term in months:<\/b>[\s\S]*?<div[^>]*class="[^"]*payment-numbers[^"]*"[^>]*>([^<]+)<\/div>/i,
+    );
     const termMonths = termMatch ? parseInt(termMatch[1].trim(), 10) : null;
 
     // Extract due at signing - handle multiple classes
-    const dueAtSigningMatch = offerHtml.match(/<div[^>]*class="[^"]*downPayment[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
-    const dueAtSigning = dueAtSigningMatch ? extractDueAtSigning(extractTextFromHTML(dueAtSigningMatch[1])) : null;
+    const dueAtSigningMatch = offerHtml.match(
+      /<div[^>]*class="[^"]*downPayment[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+    );
+    const dueAtSigning = dueAtSigningMatch
+      ? extractDueAtSigning(extractTextFromHTML(dueAtSigningMatch[1]))
+      : null;
 
     // Extract short disclaimer - handle multiple classes and multiline content
-    const shortDisclaimerMatch = offerHtml.match(/<div[^>]*class="[^"]*ShortDisclaimer[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
-    const shortDisclaimer = shortDisclaimerMatch ? extractTextFromHTML(shortDisclaimerMatch[1]) : null;
+    const shortDisclaimerMatch = offerHtml.match(
+      /<div[^>]*class="[^"]*ShortDisclaimer[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+    );
+    const shortDisclaimer = shortDisclaimerMatch
+      ? extractTextFromHTML(shortDisclaimerMatch[1])
+      : null;
 
     // Find corresponding terms and conditions in the disclaimer section
     // The terms are linked via anchor tags like <a href="#terms1">
@@ -180,25 +195,29 @@ const fetchOfferData = async () => {
       // Find the corresponding disclaimer section by ID
       const disclaimerSectionRegex = new RegExp(
         `<div[^>]*class="[^"]*offer-disclaimer[^"]*"[^>]*id="terms${termsId}"[^>]*>([\\s\\S]*?)<\\/div>\\s*<div[^>]*class="[^"]*disclaimer-tandc[^"]*"[^>]*>([\\s\\S]*?)<\\/div>`,
-        "i"
+        "i",
       );
       const disclaimerMatch = html.match(disclaimerSectionRegex);
-      
+
       if (disclaimerMatch) {
         // Extract model name from the offer-disclaimer section (e.g., "<sup>1</sup>2025 Macan Electric")
         const offerDisclaimerHtml = disclaimerMatch[1];
         const modelNameInTermsMatch = offerDisclaimerHtml.match(/<sup>\d+<\/sup>([^<]+)/i);
-        
+
         if (modelNameInTermsMatch) {
           const modelNameInTerms = extractTextFromHTML(modelNameInTermsMatch[1]).trim();
           const { model: modelInTerms } = parseModelYear(modelNameInTerms);
-          
+
           // Normalize model names for comparison (remove extra spaces, case insensitive)
           const normalizedOfferModel = model.toLowerCase().replace(/\s+/g, " ").trim();
           const normalizedTermsModel = modelInTerms.toLowerCase().replace(/\s+/g, " ").trim();
-          
+
           // Match the model name in terms with the offer model
-          if (normalizedOfferModel === normalizedTermsModel || modelInTerms.includes(model) || model.includes(modelInTerms)) {
+          if (
+            normalizedOfferModel === normalizedTermsModel ||
+            modelInTerms.includes(model) ||
+            model.includes(modelInTerms)
+          ) {
             finePrint = extractTextFromHTML(disclaimerMatch[2]);
             expirationDate = extractExpirationDate(finePrint);
           } else {
@@ -219,7 +238,9 @@ const fetchOfferData = async () => {
     }
 
     // Extract description if available
-    const descriptionMatch = offerHtml.match(/<div[^>]*class="[^"]*description[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+    const descriptionMatch = offerHtml.match(
+      /<div[^>]*class="[^"]*description[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+    );
     const description = descriptionMatch ? extractTextFromHTML(descriptionMatch[1]) : null;
 
     offers.push({
