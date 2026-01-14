@@ -70,7 +70,7 @@ export async function scrapeOffersFromBMW() {
         // Extract model information
         const modelName = modelData.name;
         const modelCode = modelData.code;
-        const year = modelData.year;
+        const year = modelData.model_year;
         const trim = modelData.trim || null;
 
         // Process lease_offer if it exists
