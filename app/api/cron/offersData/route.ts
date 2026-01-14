@@ -283,22 +283,22 @@ export async function GET(_request: NextRequest) {
     //   results.ram.error = error?.message || "Failed to scrape RAM offers";
     // }
 
-    // Scrape Dodge offers
-    try {
-      const dodgeResult = (await scrapeOffersFromDodge()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.dodge = {
-        success: dodgeResult.success,
-        totalOffers: dodgeResult.totalOffers || 0,
-        error: dodgeResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Dodge offers:", error?.message || error);
-      results.dodge.error = error?.message || "Failed to scrape Dodge offers";
-    }
+    // // Scrape Dodge offers
+    // try {
+    //   const dodgeResult = (await scrapeOffersFromDodge()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.dodge = {
+    //     success: dodgeResult.success,
+    //     totalOffers: dodgeResult.totalOffers || 0,
+    //     error: dodgeResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Dodge offers:", error?.message || error);
+    //   results.dodge.error = error?.message || "Failed to scrape Dodge offers";
+    // }
 
     // // Scrape Porsche offers
     // try {
