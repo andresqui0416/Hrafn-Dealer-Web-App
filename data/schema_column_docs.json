@@ -1,0 +1,6465 @@
+[
+  {
+    "id": "col:Dealer.id",
+    "text": "Column \"Dealer\".\"id\" (Prisma: Dealer.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Dealer",
+      "mapped_table": "Dealer",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:Dealer.name",
+    "text": "Column \"Dealer\".\"name\" (Prisma: Dealer.name). Type: String. Constraints: unique. Synonyms: name.",
+    "metadata": {
+      "kind": "column",
+      "table": "Dealer",
+      "mapped_table": "Dealer",
+      "column": "name",
+      "mapped_column": "name",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "name"
+      ]
+    }
+  },
+  {
+    "id": "col:Dealer.address",
+    "text": "Column \"Dealer\".\"address\" (Prisma: Dealer.address). Type: String. Synonyms: address.",
+    "metadata": {
+      "kind": "column",
+      "table": "Dealer",
+      "mapped_table": "Dealer",
+      "column": "address",
+      "mapped_column": "address",
+      "type": "String",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "address"
+      ]
+    }
+  },
+  {
+    "id": "col:Dealer.createdAt",
+    "text": "Column \"Dealer\".\"createdAt\" (Prisma: Dealer.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Dealer",
+      "mapped_table": "Dealer",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:Dealer.updatedAt",
+    "text": "Column \"Dealer\".\"updatedAt\" (Prisma: Dealer.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Dealer",
+      "mapped_table": "Dealer",
+      "column": "updatedAt",
+      "mapped_column": "updatedAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:DealerDepartment.id",
+    "text": "Column \"DealerDepartment\".\"id\" (Prisma: DealerDepartment.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerDepartment",
+      "mapped_table": "DealerDepartment",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:DealerDepartment.dmsType",
+    "text": "Column \"DealerDepartment\".\"dmsType\" (Prisma: DealerDepartment.dmsType). Type: DmsType. Synonyms: dms type. Enum values: Parts, Service, Accounting, Finance.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerDepartment",
+      "mapped_table": "DealerDepartment",
+      "column": "dmsType",
+      "mapped_column": "dmsType",
+      "type": "DmsType",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "dms type"
+      ]
+    }
+  },
+  {
+    "id": "col:DealerDepartment.dealerId",
+    "text": "Column \"DealerDepartment\".\"dealerId\" (Prisma: DealerDepartment.dealerId). Type: String. FK to Dealer (table \"Dealer\") via id. Synonyms: dealer id, dealership id, store id.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerDepartment",
+      "mapped_table": "DealerDepartment",
+      "column": "dealerId",
+      "mapped_column": "dealerId",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "dealer id",
+        "dealership id",
+        "store id"
+      ],
+      "is_fk": true,
+      "fk_target": "Dealer(id)"
+    }
+  },
+  {
+    "id": "col:DealerDepartment.serviceId",
+    "text": "Column \"DealerDepartment\".\"serviceId\" (Prisma: DealerDepartment.serviceId). Type: String. FK to DealerService (table \"DealerService\") via id. Synonyms: service id.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerDepartment",
+      "mapped_table": "DealerDepartment",
+      "column": "serviceId",
+      "mapped_column": "serviceId",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "service id"
+      ],
+      "is_fk": true,
+      "fk_target": "DealerService(id)"
+    }
+  },
+  {
+    "id": "col:DealerDepartment.lastSalesDataSyncAt",
+    "text": "Column \"DealerDepartment\".\"lastSalesDataSyncAt\" (Prisma: DealerDepartment.lastSalesDataSyncAt). Type: DateTime?. Synonyms: last sales data sync at.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerDepartment",
+      "mapped_table": "DealerDepartment",
+      "column": "lastSalesDataSyncAt",
+      "mapped_column": "lastSalesDataSyncAt",
+      "type": "DateTime?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "last sales data sync at"
+      ]
+    }
+  },
+  {
+    "id": "col:DealerDepartment.salesDataSyncInProgress",
+    "text": "Column \"DealerDepartment\".\"salesDataSyncInProgress\" (Prisma: DealerDepartment.salesDataSyncInProgress). Type: Boolean. Synonyms: sales data sync in progress.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerDepartment",
+      "mapped_table": "DealerDepartment",
+      "column": "salesDataSyncInProgress",
+      "mapped_column": "salesDataSyncInProgress",
+      "type": "Boolean",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "sales data sync in progress"
+      ]
+    }
+  },
+  {
+    "id": "col:DealerDepartment.salesDataSyncStartedAt",
+    "text": "Column \"DealerDepartment\".\"salesDataSyncStartedAt\" (Prisma: DealerDepartment.salesDataSyncStartedAt). Type: DateTime?. Synonyms: sales data sync started at.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerDepartment",
+      "mapped_table": "DealerDepartment",
+      "column": "salesDataSyncStartedAt",
+      "mapped_column": "salesDataSyncStartedAt",
+      "type": "DateTime?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "sales data sync started at"
+      ]
+    }
+  },
+  {
+    "id": "col:DealerDepartment.createdAt",
+    "text": "Column \"DealerDepartment\".\"createdAt\" (Prisma: DealerDepartment.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerDepartment",
+      "mapped_table": "DealerDepartment",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:DealerDepartment.updatedAt",
+    "text": "Column \"DealerDepartment\".\"updatedAt\" (Prisma: DealerDepartment.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerDepartment",
+      "mapped_table": "DealerDepartment",
+      "column": "updatedAt",
+      "mapped_column": "updatedAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:User.id",
+    "text": "Column \"User\".\"id\" (Prisma: User.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "User",
+      "mapped_table": "User",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:User.email",
+    "text": "Column \"User\".\"email\" (Prisma: User.email). Type: String. Constraints: unique. Synonyms: email.",
+    "metadata": {
+      "kind": "column",
+      "table": "User",
+      "mapped_table": "User",
+      "column": "email",
+      "mapped_column": "email",
+      "type": "String",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "email"
+      ]
+    }
+  },
+  {
+    "id": "col:User.name",
+    "text": "Column \"User\".\"name\" (Prisma: User.name). Type: String. Synonyms: name.",
+    "metadata": {
+      "kind": "column",
+      "table": "User",
+      "mapped_table": "User",
+      "column": "name",
+      "mapped_column": "name",
+      "type": "String",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "name"
+      ]
+    }
+  },
+  {
+    "id": "col:User.passwordHash",
+    "text": "Column \"User\".\"passwordHash\" (Prisma: User.passwordHash). Type: String. Synonyms: password hash.",
+    "metadata": {
+      "kind": "column",
+      "table": "User",
+      "mapped_table": "User",
+      "column": "passwordHash",
+      "mapped_column": "passwordHash",
+      "type": "String",
+      "importance": "low",
+      "domain": "auth",
+      "synonyms": [
+        "password hash"
+      ]
+    }
+  },
+  {
+    "id": "col:User.phone",
+    "text": "Column \"User\".\"phone\" (Prisma: User.phone). Type: String. Synonyms: phone.",
+    "metadata": {
+      "kind": "column",
+      "table": "User",
+      "mapped_table": "User",
+      "column": "phone",
+      "mapped_column": "phone",
+      "type": "String",
+      "importance": "low",
+      "domain": "auth",
+      "synonyms": [
+        "phone"
+      ]
+    }
+  },
+  {
+    "id": "col:User.avatar",
+    "text": "Column \"User\".\"avatar\" (Prisma: User.avatar). Type: String?. Synonyms: avatar.",
+    "metadata": {
+      "kind": "column",
+      "table": "User",
+      "mapped_table": "User",
+      "column": "avatar",
+      "mapped_column": "avatar",
+      "type": "String?",
+      "importance": "low",
+      "domain": "auth",
+      "synonyms": [
+        "avatar"
+      ]
+    }
+  },
+  {
+    "id": "col:User.createdAt",
+    "text": "Column \"User\".\"createdAt\" (Prisma: User.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "User",
+      "mapped_table": "User",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:User.updatedAt",
+    "text": "Column \"User\".\"updatedAt\" (Prisma: User.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "User",
+      "mapped_table": "User",
+      "column": "updatedAt",
+      "mapped_column": "updatedAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:Admin.id",
+    "text": "Column \"Admin\".\"id\" (Prisma: Admin.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Admin",
+      "mapped_table": "Admin",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "admin",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:Admin.email",
+    "text": "Column \"Admin\".\"email\" (Prisma: Admin.email). Type: String. Constraints: unique. Synonyms: email.",
+    "metadata": {
+      "kind": "column",
+      "table": "Admin",
+      "mapped_table": "Admin",
+      "column": "email",
+      "mapped_column": "email",
+      "type": "String",
+      "importance": "high",
+      "domain": "admin",
+      "synonyms": [
+        "email"
+      ]
+    }
+  },
+  {
+    "id": "col:Admin.name",
+    "text": "Column \"Admin\".\"name\" (Prisma: Admin.name). Type: String. Synonyms: name.",
+    "metadata": {
+      "kind": "column",
+      "table": "Admin",
+      "mapped_table": "Admin",
+      "column": "name",
+      "mapped_column": "name",
+      "type": "String",
+      "importance": "high",
+      "domain": "admin",
+      "synonyms": [
+        "name"
+      ]
+    }
+  },
+  {
+    "id": "col:Admin.passwordHash",
+    "text": "Column \"Admin\".\"passwordHash\" (Prisma: Admin.passwordHash). Type: String. Synonyms: password hash.",
+    "metadata": {
+      "kind": "column",
+      "table": "Admin",
+      "mapped_table": "Admin",
+      "column": "passwordHash",
+      "mapped_column": "passwordHash",
+      "type": "String",
+      "importance": "low",
+      "domain": "admin",
+      "synonyms": [
+        "password hash"
+      ]
+    }
+  },
+  {
+    "id": "col:Admin.role",
+    "text": "Column \"Admin\".\"role\" (Prisma: Admin.role). Type: AdminRole. Synonyms: role. Enum values: super_admin, admin, moderator.",
+    "metadata": {
+      "kind": "column",
+      "table": "Admin",
+      "mapped_table": "Admin",
+      "column": "role",
+      "mapped_column": "role",
+      "type": "AdminRole",
+      "importance": "high",
+      "domain": "admin",
+      "synonyms": [
+        "role"
+      ]
+    }
+  },
+  {
+    "id": "col:Admin.isActive",
+    "text": "Column \"Admin\".\"isActive\" (Prisma: Admin.isActive). Type: Boolean. Synonyms: is active.",
+    "metadata": {
+      "kind": "column",
+      "table": "Admin",
+      "mapped_table": "Admin",
+      "column": "isActive",
+      "mapped_column": "isActive",
+      "type": "Boolean",
+      "importance": "low",
+      "domain": "admin",
+      "synonyms": [
+        "is active"
+      ]
+    }
+  },
+  {
+    "id": "col:Admin.createdAt",
+    "text": "Column \"Admin\".\"createdAt\" (Prisma: Admin.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Admin",
+      "mapped_table": "Admin",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "admin",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:Admin.updatedAt",
+    "text": "Column \"Admin\".\"updatedAt\" (Prisma: Admin.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Admin",
+      "mapped_table": "Admin",
+      "column": "updatedAt",
+      "mapped_column": "updatedAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "admin",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:Session.id",
+    "text": "Column \"Session\".\"id\" (Prisma: Session.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Session",
+      "mapped_table": "Session",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:Session.userId",
+    "text": "Column \"Session\".\"userId\" (Prisma: Session.userId). Type: String. FK to User (table \"User\") via id. Synonyms: user id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Session",
+      "mapped_table": "Session",
+      "column": "userId",
+      "mapped_column": "userId",
+      "type": "String",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "user id"
+      ],
+      "is_fk": true,
+      "fk_target": "User(id)"
+    }
+  },
+  {
+    "id": "col:Session.jwtId",
+    "text": "Column \"Session\".\"jwtId\" (Prisma: Session.jwtId). Type: String. Constraints: unique. Synonyms: jwt id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Session",
+      "mapped_table": "Session",
+      "column": "jwtId",
+      "mapped_column": "jwtId",
+      "type": "String",
+      "importance": "low",
+      "domain": "auth",
+      "synonyms": [
+        "jwt id"
+      ]
+    }
+  },
+  {
+    "id": "col:Session.expiresAt",
+    "text": "Column \"Session\".\"expiresAt\" (Prisma: Session.expiresAt). Type: DateTime. Synonyms: expires at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Session",
+      "mapped_table": "Session",
+      "column": "expiresAt",
+      "mapped_column": "expiresAt",
+      "type": "DateTime",
+      "importance": "low",
+      "domain": "auth",
+      "synonyms": [
+        "expires at"
+      ]
+    }
+  },
+  {
+    "id": "col:Session.createdAt",
+    "text": "Column \"Session\".\"createdAt\" (Prisma: Session.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Session",
+      "mapped_table": "Session",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:AdminSession.id",
+    "text": "Column \"AdminSession\".\"id\" (Prisma: AdminSession.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "AdminSession",
+      "mapped_table": "AdminSession",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "admin",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:AdminSession.adminId",
+    "text": "Column \"AdminSession\".\"adminId\" (Prisma: AdminSession.adminId). Type: String. FK to Admin (table \"Admin\") via id. Synonyms: admin id.",
+    "metadata": {
+      "kind": "column",
+      "table": "AdminSession",
+      "mapped_table": "AdminSession",
+      "column": "adminId",
+      "mapped_column": "adminId",
+      "type": "String",
+      "importance": "high",
+      "domain": "admin",
+      "synonyms": [
+        "admin id"
+      ],
+      "is_fk": true,
+      "fk_target": "Admin(id)"
+    }
+  },
+  {
+    "id": "col:AdminSession.jwtId",
+    "text": "Column \"AdminSession\".\"jwtId\" (Prisma: AdminSession.jwtId). Type: String. Constraints: unique. Synonyms: jwt id.",
+    "metadata": {
+      "kind": "column",
+      "table": "AdminSession",
+      "mapped_table": "AdminSession",
+      "column": "jwtId",
+      "mapped_column": "jwtId",
+      "type": "String",
+      "importance": "low",
+      "domain": "admin",
+      "synonyms": [
+        "jwt id"
+      ]
+    }
+  },
+  {
+    "id": "col:AdminSession.expiresAt",
+    "text": "Column \"AdminSession\".\"expiresAt\" (Prisma: AdminSession.expiresAt). Type: DateTime. Synonyms: expires at.",
+    "metadata": {
+      "kind": "column",
+      "table": "AdminSession",
+      "mapped_table": "AdminSession",
+      "column": "expiresAt",
+      "mapped_column": "expiresAt",
+      "type": "DateTime",
+      "importance": "low",
+      "domain": "admin",
+      "synonyms": [
+        "expires at"
+      ]
+    }
+  },
+  {
+    "id": "col:AdminSession.createdAt",
+    "text": "Column \"AdminSession\".\"createdAt\" (Prisma: AdminSession.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "AdminSession",
+      "mapped_table": "AdminSession",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "admin",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.id",
+    "text": "Column \"Inventory\".\"id\" (Prisma: InventoryListing.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:InventoryListing.dealerId",
+    "text": "Column \"Inventory\".\"dealerId\" (Prisma: InventoryListing.dealerId). Type: String. FK to Dealer (table \"Dealer\") via id. Constraints: part of unique(dealerId, vin). Synonyms: dealer id, dealership id, store id.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "dealerId",
+      "mapped_column": "dealerId",
+      "type": "String",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "dealer id",
+        "dealership id",
+        "store id"
+      ],
+      "is_fk": true,
+      "fk_target": "Dealer(id)"
+    }
+  },
+  {
+    "id": "col:InventoryListing.vin",
+    "text": "Column \"Inventory\".\"vin\" (Prisma: InventoryListing.vin). Type: String. Constraints: part of unique(dealerId, vin). Synonyms: vin, vehicle vin, chassis number, vehicle identification number.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "vin",
+      "mapped_column": "vin",
+      "type": "String",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "vin",
+        "vehicle vin",
+        "chassis number",
+        "vehicle identification number"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.year",
+    "text": "Column \"Inventory\".\"year\" (Prisma: InventoryListing.year). Type: Int. Synonyms: year.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "year",
+      "mapped_column": "year",
+      "type": "Int",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "year"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.make",
+    "text": "Column \"Inventory\".\"make\" (Prisma: InventoryListing.make). Type: String. Synonyms: make.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "make",
+      "mapped_column": "make",
+      "type": "String",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "make"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.model",
+    "text": "Column \"Inventory\".\"model\" (Prisma: InventoryListing.model). Type: String. Synonyms: model.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "model",
+      "mapped_column": "model",
+      "type": "String",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "model"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.trim",
+    "text": "Column \"Inventory\".\"trim\" (Prisma: InventoryListing.trim). Type: String?. Synonyms: trim.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "trim",
+      "mapped_column": "trim",
+      "type": "String?",
+      "importance": "low",
+      "domain": "inventory",
+      "synonyms": [
+        "trim"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.bodyStyle",
+    "text": "Column \"Inventory\".\"body_style\" (Prisma: InventoryListing.bodyStyle). Type: String?. Synonyms: body style, vehicle type, body.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "bodyStyle",
+      "mapped_column": "body_style",
+      "type": "String?",
+      "importance": "medium",
+      "domain": "inventory",
+      "synonyms": [
+        "body style",
+        "vehicle type",
+        "body"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.drivetrain",
+    "text": "Column \"Inventory\".\"drivetrain\" (Prisma: InventoryListing.drivetrain). Type: String?. Synonyms: drivetrain.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "drivetrain",
+      "mapped_column": "drivetrain",
+      "type": "String?",
+      "importance": "low",
+      "domain": "inventory",
+      "synonyms": [
+        "drivetrain"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.msrp",
+    "text": "Column \"Inventory\".\"msrp\" (Prisma: InventoryListing.msrp). Type: Decimal?. Synonyms: msrp, sticker price.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "msrp",
+      "mapped_column": "msrp",
+      "type": "Decimal?",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "msrp",
+        "sticker price"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.price",
+    "text": "Column \"Inventory\".\"price\" (Prisma: InventoryListing.price). Type: Decimal?. Synonyms: price, sale price, listing price.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "price",
+      "mapped_column": "price",
+      "type": "Decimal?",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "price",
+        "sale price",
+        "listing price"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.mileage",
+    "text": "Column \"Inventory\".\"mileage\" (Prisma: InventoryListing.mileage). Type: Int. Synonyms: mileage, odometer.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "mileage",
+      "mapped_column": "mileage",
+      "type": "Int",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "mileage",
+        "odometer"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.status",
+    "text": "Column \"Inventory\".\"status\" (Prisma: InventoryListing.status). Type: InventoryStatus. Synonyms: status, state. Enum values: pending, available, unavailable, sold.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "status",
+      "mapped_column": "status",
+      "type": "InventoryStatus",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "status",
+        "state"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.scrapedAt",
+    "text": "Column \"Inventory\".\"scraped_at\" (Prisma: InventoryListing.scrapedAt). Type: DateTime. Synonyms: scraped at.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "scrapedAt",
+      "mapped_column": "scraped_at",
+      "type": "DateTime",
+      "importance": "medium",
+      "domain": "inventory",
+      "synonyms": [
+        "scraped at"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.createdAt",
+    "text": "Column \"Inventory\".\"created_at\" (Prisma: InventoryListing.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "createdAt",
+      "mapped_column": "created_at",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:InventoryListing.updatedAt",
+    "text": "Column \"Inventory\".\"updated_at\" (Prisma: InventoryListing.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "InventoryListing",
+      "mapped_table": "Inventory",
+      "column": "updatedAt",
+      "mapped_column": "updated_at",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "inventory",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.id",
+    "text": "Column \"Offers\".\"id\" (Prisma: Offers.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:Offers.brand",
+    "text": "Column \"Offers\".\"brand\" (Prisma: Offers.brand). Type: String. Synonyms: brand.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "brand",
+      "mapped_column": "brand",
+      "type": "String",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "brand"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.year",
+    "text": "Column \"Offers\".\"year\" (Prisma: Offers.year). Type: Int?. Synonyms: year.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "year",
+      "mapped_column": "year",
+      "type": "Int?",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "year"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.make",
+    "text": "Column \"Offers\".\"make\" (Prisma: Offers.make). Type: String?. Synonyms: make.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "make",
+      "mapped_column": "make",
+      "type": "String?",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "make"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.model",
+    "text": "Column \"Offers\".\"model\" (Prisma: Offers.model). Type: String?. Synonyms: model.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "model",
+      "mapped_column": "model",
+      "type": "String?",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "model"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.modelCode",
+    "text": "Column \"Offers\".\"model_code\" (Prisma: Offers.modelCode). Type: String?. Synonyms: model code.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "modelCode",
+      "mapped_column": "model_code",
+      "type": "String?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "model code"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.trim",
+    "text": "Column \"Offers\".\"trim\" (Prisma: Offers.trim). Type: String?. Synonyms: trim.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "trim",
+      "mapped_column": "trim",
+      "type": "String?",
+      "importance": "low",
+      "domain": "offers",
+      "synonyms": [
+        "trim"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.offerType",
+    "text": "Column \"Offers\".\"offer_type\" (Prisma: Offers.offerType). Type: String. Synonyms: offer type, offer category.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "offerType",
+      "mapped_column": "offer_type",
+      "type": "String",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "offer type",
+        "offer category"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.offerAmount",
+    "text": "Column \"Offers\".\"offer_amount\" (Prisma: Offers.offerAmount). Type: Decimal?. Synonyms: offer amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "offerAmount",
+      "mapped_column": "offer_amount",
+      "type": "Decimal?",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "offer amount"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.apr",
+    "text": "Column \"Offers\".\"apr\" (Prisma: Offers.apr). Type: Decimal?. Synonyms: apr.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "apr",
+      "mapped_column": "apr",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "offers",
+      "synonyms": [
+        "apr"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.termMonths",
+    "text": "Column \"Offers\".\"term_months\" (Prisma: Offers.termMonths). Type: Int?. Synonyms: term months.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "termMonths",
+      "mapped_column": "term_months",
+      "type": "Int?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "term months"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.cashBack",
+    "text": "Column \"Offers\".\"cash_back\" (Prisma: Offers.cashBack). Type: Decimal?. Synonyms: cash back.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "cashBack",
+      "mapped_column": "cash_back",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "cash back"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.tradeDiscount",
+    "text": "Column \"Offers\".\"trade_discount\" (Prisma: Offers.tradeDiscount). Type: Decimal?. Synonyms: trade discount.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "tradeDiscount",
+      "mapped_column": "trade_discount",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "trade discount"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.dueAtSigning",
+    "text": "Column \"Offers\".\"due_at_signing\" (Prisma: Offers.dueAtSigning). Type: Decimal?. Synonyms: due at signing.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "dueAtSigning",
+      "mapped_column": "due_at_signing",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "due at signing"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.monthlyPayment",
+    "text": "Column \"Offers\".\"monthly_payment\" (Prisma: Offers.monthlyPayment). Type: Decimal?. Synonyms: monthly payment.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "monthlyPayment",
+      "mapped_column": "monthly_payment",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "monthly payment"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.milesPerYear",
+    "text": "Column \"Offers\".\"miles_per_year\" (Prisma: Offers.milesPerYear). Type: Int?. Synonyms: miles per year.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "milesPerYear",
+      "mapped_column": "miles_per_year",
+      "type": "Int?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "miles per year"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.expirationDate",
+    "text": "Column \"Offers\".\"expiration_date\" (Prisma: Offers.expirationDate). Type: DateTime?. Synonyms: expiration, expires, end date, expiration date.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "expirationDate",
+      "mapped_column": "expiration_date",
+      "type": "DateTime?",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "expiration",
+        "expires",
+        "end date",
+        "expiration date"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.terms",
+    "text": "Column \"Offers\".\"terms\" (Prisma: Offers.terms). Type: String?. Synonyms: terms.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "terms",
+      "mapped_column": "terms",
+      "type": "String?",
+      "importance": "low",
+      "domain": "offers",
+      "synonyms": [
+        "terms"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.finePrint",
+    "text": "Column \"Offers\".\"fine_print\" (Prisma: Offers.finePrint). Type: String?. Synonyms: fine print.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "finePrint",
+      "mapped_column": "fine_print",
+      "type": "String?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "fine print"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.scrapedAt",
+    "text": "Column \"Offers\".\"scraped_at\" (Prisma: Offers.scrapedAt). Type: DateTime. Synonyms: scraped at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "scrapedAt",
+      "mapped_column": "scraped_at",
+      "type": "DateTime",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "scraped at"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.createdAt",
+    "text": "Column \"Offers\".\"created_at\" (Prisma: Offers.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "createdAt",
+      "mapped_column": "created_at",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.updatedAt",
+    "text": "Column \"Offers\".\"updated_at\" (Prisma: Offers.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "updatedAt",
+      "mapped_column": "updated_at",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:UserDealerRole.id",
+    "text": "Column \"UserDealerRole\".\"id\" (Prisma: UserDealerRole.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "UserDealerRole",
+      "mapped_table": "UserDealerRole",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:UserDealerRole.userId",
+    "text": "Column \"UserDealerRole\".\"userId\" (Prisma: UserDealerRole.userId). Type: String. FK to User (table \"User\") via id. Constraints: part of unique(userId, dealerId, role). Synonyms: user id.",
+    "metadata": {
+      "kind": "column",
+      "table": "UserDealerRole",
+      "mapped_table": "UserDealerRole",
+      "column": "userId",
+      "mapped_column": "userId",
+      "type": "String",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "user id"
+      ],
+      "is_fk": true,
+      "fk_target": "User(id)"
+    }
+  },
+  {
+    "id": "col:UserDealerRole.dealerId",
+    "text": "Column \"UserDealerRole\".\"dealerId\" (Prisma: UserDealerRole.dealerId). Type: String. FK to Dealer (table \"Dealer\") via id. Constraints: part of unique(userId, dealerId, role). Synonyms: dealer id, dealership id, store id.",
+    "metadata": {
+      "kind": "column",
+      "table": "UserDealerRole",
+      "mapped_table": "UserDealerRole",
+      "column": "dealerId",
+      "mapped_column": "dealerId",
+      "type": "String",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "dealer id",
+        "dealership id",
+        "store id"
+      ],
+      "is_fk": true,
+      "fk_target": "Dealer(id)"
+    }
+  },
+  {
+    "id": "col:UserDealerRole.role",
+    "text": "Column \"UserDealerRole\".\"role\" (Prisma: UserDealerRole.role). Type: Role. Constraints: part of unique(userId, dealerId, role). Synonyms: role. Enum values: admin, manager, viewer.",
+    "metadata": {
+      "kind": "column",
+      "table": "UserDealerRole",
+      "mapped_table": "UserDealerRole",
+      "column": "role",
+      "mapped_column": "role",
+      "type": "Role",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "role"
+      ]
+    }
+  },
+  {
+    "id": "col:UserDealerRole.createdAt",
+    "text": "Column \"UserDealerRole\".\"createdAt\" (Prisma: UserDealerRole.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "UserDealerRole",
+      "mapped_table": "UserDealerRole",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "auth",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:ServiceKind.id",
+    "text": "Column \"ServiceKind\".\"id\" (Prisma: ServiceKind.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "ServiceKind",
+      "mapped_table": "ServiceKind",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:ServiceKind.name",
+    "text": "Column \"ServiceKind\".\"name\" (Prisma: ServiceKind.name). Type: String. Constraints: unique. Synonyms: name.",
+    "metadata": {
+      "kind": "column",
+      "table": "ServiceKind",
+      "mapped_table": "ServiceKind",
+      "column": "name",
+      "mapped_column": "name",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "name"
+      ]
+    }
+  },
+  {
+    "id": "col:ServiceKind.description",
+    "text": "Column \"ServiceKind\".\"description\" (Prisma: ServiceKind.description). Type: String?. Synonyms: description.",
+    "metadata": {
+      "kind": "column",
+      "table": "ServiceKind",
+      "mapped_table": "ServiceKind",
+      "column": "description",
+      "mapped_column": "description",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "description"
+      ]
+    }
+  },
+  {
+    "id": "col:ServiceKind.createdAt",
+    "text": "Column \"ServiceKind\".\"createdAt\" (Prisma: ServiceKind.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "ServiceKind",
+      "mapped_table": "ServiceKind",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:ServiceKind.updatedAt",
+    "text": "Column \"ServiceKind\".\"updatedAt\" (Prisma: ServiceKind.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "ServiceKind",
+      "mapped_table": "ServiceKind",
+      "column": "updatedAt",
+      "mapped_column": "updatedAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:DealerService.id",
+    "text": "Column \"DealerService\".\"id\" (Prisma: DealerService.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerService",
+      "mapped_table": "DealerService",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:DealerService.dealerId",
+    "text": "Column \"DealerService\".\"dealerId\" (Prisma: DealerService.dealerId). Type: String. FK to Dealer (table \"Dealer\") via id. Constraints: part of unique(dealerId, serviceKindId). Synonyms: dealer id, dealership id, store id.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerService",
+      "mapped_table": "DealerService",
+      "column": "dealerId",
+      "mapped_column": "dealerId",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "dealer id",
+        "dealership id",
+        "store id"
+      ],
+      "is_fk": true,
+      "fk_target": "Dealer(id)"
+    }
+  },
+  {
+    "id": "col:DealerService.serviceKindId",
+    "text": "Column \"DealerService\".\"serviceKindId\" (Prisma: DealerService.serviceKindId). Type: String. FK to ServiceKind (table \"ServiceKind\") via id. Constraints: part of unique(dealerId, serviceKindId). Synonyms: service kind id.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerService",
+      "mapped_table": "DealerService",
+      "column": "serviceKindId",
+      "mapped_column": "serviceKindId",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "service kind id"
+      ],
+      "is_fk": true,
+      "fk_target": "ServiceKind(id)"
+    }
+  },
+  {
+    "id": "col:DealerService.orgName",
+    "text": "Column \"DealerService\".\"orgName\" (Prisma: DealerService.orgName). Type: String. Synonyms: org name.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerService",
+      "mapped_table": "DealerService",
+      "column": "orgName",
+      "mapped_column": "orgName",
+      "type": "String",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "org name"
+      ]
+    }
+  },
+  {
+    "id": "col:DealerService.subscriptionId",
+    "text": "Column \"DealerService\".\"subscriptionId\" (Prisma: DealerService.subscriptionId). Type: String?. Synonyms: subscription id.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerService",
+      "mapped_table": "DealerService",
+      "column": "subscriptionId",
+      "mapped_column": "subscriptionId",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "subscription id"
+      ]
+    }
+  },
+  {
+    "id": "col:DealerService.status",
+    "text": "Column \"DealerService\".\"status\" (Prisma: DealerService.status). Type: ServiceStatus. Synonyms: status, state. Enum values: pending, reviewing, rejected, allowed.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerService",
+      "mapped_table": "DealerService",
+      "column": "status",
+      "mapped_column": "status",
+      "type": "ServiceStatus",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "status",
+        "state"
+      ]
+    }
+  },
+  {
+    "id": "col:DealerService.createdAt",
+    "text": "Column \"DealerService\".\"createdAt\" (Prisma: DealerService.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerService",
+      "mapped_table": "DealerService",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:DealerService.updatedAt",
+    "text": "Column \"DealerService\".\"updatedAt\" (Prisma: DealerService.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "DealerService",
+      "mapped_table": "DealerService",
+      "column": "updatedAt",
+      "mapped_column": "updatedAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:Chat.id",
+    "text": "Column \"Chat\".\"id\" (Prisma: Chat.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Chat",
+      "mapped_table": "Chat",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "chat",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:Chat.userId",
+    "text": "Column \"Chat\".\"userId\" (Prisma: Chat.userId). Type: String. FK to User (table \"User\") via id. Synonyms: user id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Chat",
+      "mapped_table": "Chat",
+      "column": "userId",
+      "mapped_column": "userId",
+      "type": "String",
+      "importance": "high",
+      "domain": "chat",
+      "synonyms": [
+        "user id"
+      ],
+      "is_fk": true,
+      "fk_target": "User(id)"
+    }
+  },
+  {
+    "id": "col:Chat.adminId",
+    "text": "Column \"Chat\".\"adminId\" (Prisma: Chat.adminId). Type: String?. FK to Admin (table \"Admin\") via id. Synonyms: admin id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Chat",
+      "mapped_table": "Chat",
+      "column": "adminId",
+      "mapped_column": "adminId",
+      "type": "String?",
+      "importance": "high",
+      "domain": "chat",
+      "synonyms": [
+        "admin id"
+      ],
+      "is_fk": true,
+      "fk_target": "Admin(id)"
+    }
+  },
+  {
+    "id": "col:Chat.subject",
+    "text": "Column \"Chat\".\"subject\" (Prisma: Chat.subject). Type: String. Synonyms: subject.",
+    "metadata": {
+      "kind": "column",
+      "table": "Chat",
+      "mapped_table": "Chat",
+      "column": "subject",
+      "mapped_column": "subject",
+      "type": "String",
+      "importance": "high",
+      "domain": "chat",
+      "synonyms": [
+        "subject"
+      ]
+    }
+  },
+  {
+    "id": "col:Chat.status",
+    "text": "Column \"Chat\".\"status\" (Prisma: Chat.status). Type: ChatStatus. Synonyms: status, state. Enum values: opened, accepted, closed.",
+    "metadata": {
+      "kind": "column",
+      "table": "Chat",
+      "mapped_table": "Chat",
+      "column": "status",
+      "mapped_column": "status",
+      "type": "ChatStatus",
+      "importance": "high",
+      "domain": "chat",
+      "synonyms": [
+        "status",
+        "state"
+      ]
+    }
+  },
+  {
+    "id": "col:Chat.createdAt",
+    "text": "Column \"Chat\".\"createdAt\" (Prisma: Chat.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Chat",
+      "mapped_table": "Chat",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "chat",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:Chat.updatedAt",
+    "text": "Column \"Chat\".\"updatedAt\" (Prisma: Chat.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Chat",
+      "mapped_table": "Chat",
+      "column": "updatedAt",
+      "mapped_column": "updatedAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "chat",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:Message.id",
+    "text": "Column \"Message\".\"id\" (Prisma: Message.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Message",
+      "mapped_table": "Message",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "chat",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:Message.chatId",
+    "text": "Column \"Message\".\"chatId\" (Prisma: Message.chatId). Type: String. FK to Chat (table \"Chat\") via id. Synonyms: chat id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Message",
+      "mapped_table": "Message",
+      "column": "chatId",
+      "mapped_column": "chatId",
+      "type": "String",
+      "importance": "high",
+      "domain": "chat",
+      "synonyms": [
+        "chat id"
+      ],
+      "is_fk": true,
+      "fk_target": "Chat(id)"
+    }
+  },
+  {
+    "id": "col:Message.senderId",
+    "text": "Column \"Message\".\"senderId\" (Prisma: Message.senderId). Type: String. Synonyms: sender id.",
+    "metadata": {
+      "kind": "column",
+      "table": "Message",
+      "mapped_table": "Message",
+      "column": "senderId",
+      "mapped_column": "senderId",
+      "type": "String",
+      "importance": "low",
+      "domain": "chat",
+      "synonyms": [
+        "sender id"
+      ]
+    }
+  },
+  {
+    "id": "col:Message.senderType",
+    "text": "Column \"Message\".\"senderType\" (Prisma: Message.senderType). Type: String. Synonyms: sender type.",
+    "metadata": {
+      "kind": "column",
+      "table": "Message",
+      "mapped_table": "Message",
+      "column": "senderType",
+      "mapped_column": "senderType",
+      "type": "String",
+      "importance": "low",
+      "domain": "chat",
+      "synonyms": [
+        "sender type"
+      ]
+    }
+  },
+  {
+    "id": "col:Message.content",
+    "text": "Column \"Message\".\"content\" (Prisma: Message.content). Type: String. Synonyms: content.",
+    "metadata": {
+      "kind": "column",
+      "table": "Message",
+      "mapped_table": "Message",
+      "column": "content",
+      "mapped_column": "content",
+      "type": "String",
+      "importance": "high",
+      "domain": "chat",
+      "synonyms": [
+        "content"
+      ]
+    }
+  },
+  {
+    "id": "col:Message.createdAt",
+    "text": "Column \"Message\".\"createdAt\" (Prisma: Message.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Message",
+      "mapped_table": "Message",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "chat",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.id",
+    "text": "Column \"SaleData\".\"id\" (Prisma: SaleData.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleData.dealerId",
+    "text": "Column \"SaleData\".\"dealerId\" (Prisma: SaleData.dealerId). Type: String. FK to Dealer (table \"Dealer\") via id. Synonyms: dealer id, dealership id, store id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "dealerId",
+      "mapped_column": "dealerId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "dealer id",
+        "dealership id",
+        "store id"
+      ],
+      "is_fk": true,
+      "fk_target": "Dealer(id)"
+    }
+  },
+  {
+    "id": "col:SaleData.dealNo",
+    "text": "Column \"SaleData\".\"dealNo\" (Prisma: SaleData.dealNo). Type: String. Constraints: unique. Synonyms: deal number, deal id, sale deal number, deal no.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "dealNo",
+      "mapped_column": "dealNo",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "deal number",
+        "deal id",
+        "sale deal number",
+        "deal no"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.status",
+    "text": "Column \"SaleData\".\"status\" (Prisma: SaleData.status). Type: String?. Synonyms: status, state.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "status",
+      "mapped_column": "status",
+      "type": "String?",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "status",
+        "state"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.dealStatusDate",
+    "text": "Column \"SaleData\".\"dealStatusDate\" (Prisma: SaleData.dealStatusDate). Type: DateTime?. Synonyms: deal status date.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "dealStatusDate",
+      "mapped_column": "dealStatusDate",
+      "type": "DateTime?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "deal status date"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.changedDate",
+    "text": "Column \"SaleData\".\"changedDate\" (Prisma: SaleData.changedDate). Type: DateTime?. Synonyms: changed date.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "changedDate",
+      "mapped_column": "changedDate",
+      "type": "DateTime?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "changed date"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.createdAt",
+    "text": "Column \"SaleData\".\"createdAt\" (Prisma: SaleData.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.updatedAt",
+    "text": "Column \"SaleData\".\"updatedAt\" (Prisma: SaleData.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "updatedAt",
+      "mapped_column": "updatedAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.commission",
+    "text": "Column \"SaleData\".\"commission\" (Prisma: SaleData.commission). Type: SaleCommission?. Synonyms: commission.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "commission",
+      "mapped_column": "commission",
+      "type": "SaleCommission?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "commission"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.deal",
+    "text": "Column \"SaleData\".\"deal\" (Prisma: SaleData.deal). Type: SaleDeal?. Synonyms: deal.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "deal",
+      "mapped_column": "deal",
+      "type": "SaleDeal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "deal"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.dealAuxiliary",
+    "text": "Column \"SaleData\".\"dealAuxiliary\" (Prisma: SaleData.dealAuxiliary). Type: SaleDealAuxiliary?. Synonyms: deal auxiliary.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "dealAuxiliary",
+      "mapped_column": "dealAuxiliary",
+      "type": "SaleDealAuxiliary?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "deal auxiliary"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.incentives",
+    "text": "Column \"SaleData\".\"incentives\" (Prisma: SaleData.incentives). Type: SaleIncentive?. Synonyms: incentives.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "incentives",
+      "mapped_column": "incentives",
+      "type": "SaleIncentive?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "incentives"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.insurance",
+    "text": "Column \"SaleData\".\"insurance\" (Prisma: SaleData.insurance). Type: SaleInsurance?. Synonyms: insurance.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "insurance",
+      "mapped_column": "insurance",
+      "type": "SaleInsurance?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "insurance"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.salesPersons",
+    "text": "Column \"SaleData\".\"salesPersons\" (Prisma: SaleData.salesPersons). Type: SaleSalesPerson?. Synonyms: sales persons.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "salesPersons",
+      "mapped_column": "salesPersons",
+      "type": "SaleSalesPerson?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sales persons"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.tax",
+    "text": "Column \"SaleData\".\"tax\" (Prisma: SaleData.tax). Type: SaleTax?. Synonyms: tax.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "tax",
+      "mapped_column": "tax",
+      "type": "SaleTax?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "tax"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.totals",
+    "text": "Column \"SaleData\".\"totals\" (Prisma: SaleData.totals). Type: SaleTotal?. Synonyms: totals.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "totals",
+      "mapped_column": "totals",
+      "type": "SaleTotal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "totals"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleData.vehicle",
+    "text": "Column \"SaleData\".\"vehicle\" (Prisma: SaleData.vehicle). Type: SaleVehicle?. Synonyms: vehicle.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleData",
+      "mapped_table": "SaleData",
+      "column": "vehicle",
+      "mapped_column": "vehicle",
+      "type": "SaleVehicle?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "vehicle"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.id",
+    "text": "Column \"SaleCommission\".\"id\" (Prisma: SaleCommission.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleCommission.saleDataId",
+    "text": "Column \"SaleCommission\".\"saleDataId\" (Prisma: SaleCommission.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Constraints: unique. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleCommission.commissionGross",
+    "text": "Column \"SaleCommission\".\"commissionGross\" (Prisma: SaleCommission.commissionGross). Type: Decimal?. Synonyms: commission gross.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "commissionGross",
+      "mapped_column": "commissionGross",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "commission gross"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.commissionPack",
+    "text": "Column \"SaleCommission\".\"commissionPack\" (Prisma: SaleCommission.commissionPack). Type: Decimal?. Synonyms: commission pack.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "commissionPack",
+      "mapped_column": "commissionPack",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "commission pack"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.commOnSaleDlr",
+    "text": "Column \"SaleCommission\".\"commOnSaleDlr\" (Prisma: SaleCommission.commOnSaleDlr). Type: Decimal?. Synonyms: comm on sale dlr.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "commOnSaleDlr",
+      "mapped_column": "commOnSaleDlr",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "comm on sale dlr"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.surplusCash",
+    "text": "Column \"SaleCommission\".\"surplusCash\" (Prisma: SaleCommission.surplusCash). Type: Decimal?. Synonyms: surplus cash.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "surplusCash",
+      "mapped_column": "surplusCash",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "surplus cash"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.optionsCommDlr",
+    "text": "Column \"SaleCommission\".\"optionsCommDlr\" (Prisma: SaleCommission.optionsCommDlr). Type: Decimal?. Synonyms: options comm dlr.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "optionsCommDlr",
+      "mapped_column": "optionsCommDlr",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "options comm dlr"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.commissionsBase",
+    "text": "Column \"SaleCommission\".\"commissionsBase\" (Prisma: SaleCommission.commissionsBase). Type: Json?. Synonyms: commissions base.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "commissionsBase",
+      "mapped_column": "commissionsBase",
+      "type": "Json?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "commissions base"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp1Bonus",
+    "text": "Column \"SaleCommission\".\"sp1Bonus\" (Prisma: SaleCommission.sp1Bonus). Type: Decimal?. Synonyms: sp1 bonus.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp1Bonus",
+      "mapped_column": "sp1Bonus",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp1 bonus"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp1Commission",
+    "text": "Column \"SaleCommission\".\"sp1Commission\" (Prisma: SaleCommission.sp1Commission). Type: String?. Synonyms: sp1 commission.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp1Commission",
+      "mapped_column": "sp1Commission",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp1 commission"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp1SaleCreditSP",
+    "text": "Column \"SaleCommission\".\"sp1SaleCreditSP\" (Prisma: SaleCommission.sp1SaleCreditSP). Type: String?. Synonyms: sp1 sale credit sp.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp1SaleCreditSP",
+      "mapped_column": "sp1SaleCreditSP",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp1 sale credit sp"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp1SurplusCash",
+    "text": "Column \"SaleCommission\".\"sp1SurplusCash\" (Prisma: SaleCommission.sp1SurplusCash). Type: String?. Synonyms: sp1 surplus cash.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp1SurplusCash",
+      "mapped_column": "sp1SurplusCash",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp1 surplus cash"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp1TotalCommission",
+    "text": "Column \"SaleCommission\".\"sp1TotalCommission\" (Prisma: SaleCommission.sp1TotalCommission). Type: Decimal?. Synonyms: sp1 total commission.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp1TotalCommission",
+      "mapped_column": "sp1TotalCommission",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp1 total commission"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp2Bonus",
+    "text": "Column \"SaleCommission\".\"sp2Bonus\" (Prisma: SaleCommission.sp2Bonus). Type: Decimal?. Synonyms: sp2 bonus.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp2Bonus",
+      "mapped_column": "sp2Bonus",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp2 bonus"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp2Commission",
+    "text": "Column \"SaleCommission\".\"sp2Commission\" (Prisma: SaleCommission.sp2Commission). Type: String?. Synonyms: sp2 commission.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp2Commission",
+      "mapped_column": "sp2Commission",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp2 commission"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp2SaleCreditSP",
+    "text": "Column \"SaleCommission\".\"sp2SaleCreditSP\" (Prisma: SaleCommission.sp2SaleCreditSP). Type: String?. Synonyms: sp2 sale credit sp.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp2SaleCreditSP",
+      "mapped_column": "sp2SaleCreditSP",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp2 sale credit sp"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp2SurplusCash",
+    "text": "Column \"SaleCommission\".\"sp2SurplusCash\" (Prisma: SaleCommission.sp2SurplusCash). Type: String?. Synonyms: sp2 surplus cash.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp2SurplusCash",
+      "mapped_column": "sp2SurplusCash",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp2 surplus cash"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp2TotalCommission",
+    "text": "Column \"SaleCommission\".\"sp2TotalCommission\" (Prisma: SaleCommission.sp2TotalCommission). Type: Decimal?. Synonyms: sp2 total commission.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp2TotalCommission",
+      "mapped_column": "sp2TotalCommission",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp2 total commission"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp2PurchaseMBISPCommAmount",
+    "text": "Column \"SaleCommission\".\"sp2PurchaseMBISPCommAmount\" (Prisma: SaleCommission.sp2PurchaseMBISPCommAmount). Type: Decimal?. Synonyms: sp2 purchase mbispcomm amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp2PurchaseMBISPCommAmount",
+      "mapped_column": "sp2PurchaseMBISPCommAmount",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp2 purchase mbispcomm amount"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp3Bonus",
+    "text": "Column \"SaleCommission\".\"sp3Bonus\" (Prisma: SaleCommission.sp3Bonus). Type: Decimal?. Synonyms: sp3 bonus.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp3Bonus",
+      "mapped_column": "sp3Bonus",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp3 bonus"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp3Commission",
+    "text": "Column \"SaleCommission\".\"sp3Commission\" (Prisma: SaleCommission.sp3Commission). Type: String?. Synonyms: sp3 commission.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp3Commission",
+      "mapped_column": "sp3Commission",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp3 commission"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp3SaleCreditSP",
+    "text": "Column \"SaleCommission\".\"sp3SaleCreditSP\" (Prisma: SaleCommission.sp3SaleCreditSP). Type: String?. Synonyms: sp3 sale credit sp.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp3SaleCreditSP",
+      "mapped_column": "sp3SaleCreditSP",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp3 sale credit sp"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleCommission.sp3SurplusCash",
+    "text": "Column \"SaleCommission\".\"sp3SurplusCash\" (Prisma: SaleCommission.sp3SurplusCash). Type: String?. Synonyms: sp3 surplus cash.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleCommission",
+      "mapped_table": "SaleCommission",
+      "column": "sp3SurplusCash",
+      "mapped_column": "sp3SurplusCash",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sp3 surplus cash"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDeal.id",
+    "text": "Column \"SaleDeal\".\"id\" (Prisma: SaleDeal.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDeal",
+      "mapped_table": "SaleDeal",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleDeal.saleDataId",
+    "text": "Column \"SaleDeal\".\"saleDataId\" (Prisma: SaleDeal.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Constraints: unique. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDeal",
+      "mapped_table": "SaleDeal",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleDeal.dealNo",
+    "text": "Column \"SaleDeal\".\"dealNo\" (Prisma: SaleDeal.dealNo). Type: String?. Synonyms: deal number, deal id, sale deal number, deal no.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDeal",
+      "mapped_table": "SaleDeal",
+      "column": "dealNo",
+      "mapped_column": "dealNo",
+      "type": "String?",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "deal number",
+        "deal id",
+        "sale deal number",
+        "deal no"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDeal.msrp",
+    "text": "Column \"SaleDeal\".\"msrp\" (Prisma: SaleDeal.msrp). Type: Decimal?. Synonyms: msrp, sticker price.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDeal",
+      "mapped_table": "SaleDeal",
+      "column": "msrp",
+      "mapped_column": "msrp",
+      "type": "Decimal?",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "msrp",
+        "sticker price"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.id",
+    "text": "Column \"SaleDealAuxiliary\".\"id\" (Prisma: SaleDealAuxiliary.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.saleDataId",
+    "text": "Column \"SaleDealAuxiliary\".\"saleDataId\" (Prisma: SaleDealAuxiliary.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Constraints: unique. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux1",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux1\" (Prisma: SaleDealAuxiliary.fiAux1). Type: String?. Synonyms: fi aux1.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux1",
+      "mapped_column": "fiAux1",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux1"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux2",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux2\" (Prisma: SaleDealAuxiliary.fiAux2). Type: String?. Synonyms: fi aux2.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux2",
+      "mapped_column": "fiAux2",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux2"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux3",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux3\" (Prisma: SaleDealAuxiliary.fiAux3). Type: String?. Synonyms: fi aux3.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux3",
+      "mapped_column": "fiAux3",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux3"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux4",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux4\" (Prisma: SaleDealAuxiliary.fiAux4). Type: String?. Synonyms: fi aux4.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux4",
+      "mapped_column": "fiAux4",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux4"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux5",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux5\" (Prisma: SaleDealAuxiliary.fiAux5). Type: String?. Synonyms: fi aux5.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux5",
+      "mapped_column": "fiAux5",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux5"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux6",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux6\" (Prisma: SaleDealAuxiliary.fiAux6). Type: String?. Synonyms: fi aux6.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux6",
+      "mapped_column": "fiAux6",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux6"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux7",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux7\" (Prisma: SaleDealAuxiliary.fiAux7). Type: String?. Synonyms: fi aux7.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux7",
+      "mapped_column": "fiAux7",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux7"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux8",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux8\" (Prisma: SaleDealAuxiliary.fiAux8). Type: String?. Synonyms: fi aux8.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux8",
+      "mapped_column": "fiAux8",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux8"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux9",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux9\" (Prisma: SaleDealAuxiliary.fiAux9). Type: String?. Synonyms: fi aux9.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux9",
+      "mapped_column": "fiAux9",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux9"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux10",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux10\" (Prisma: SaleDealAuxiliary.fiAux10). Type: String?. Synonyms: fi aux10.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux10",
+      "mapped_column": "fiAux10",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux10"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux11",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux11\" (Prisma: SaleDealAuxiliary.fiAux11). Type: String?. Synonyms: fi aux11.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux11",
+      "mapped_column": "fiAux11",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux11"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux12",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux12\" (Prisma: SaleDealAuxiliary.fiAux12). Type: String?. Synonyms: fi aux12.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux12",
+      "mapped_column": "fiAux12",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux12"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux13",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux13\" (Prisma: SaleDealAuxiliary.fiAux13). Type: String?. Synonyms: fi aux13.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux13",
+      "mapped_column": "fiAux13",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux13"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux14",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux14\" (Prisma: SaleDealAuxiliary.fiAux14). Type: String?. Synonyms: fi aux14.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux14",
+      "mapped_column": "fiAux14",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux14"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux15",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux15\" (Prisma: SaleDealAuxiliary.fiAux15). Type: String?. Synonyms: fi aux15.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux15",
+      "mapped_column": "fiAux15",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux15"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux16",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux16\" (Prisma: SaleDealAuxiliary.fiAux16). Type: String?. Synonyms: fi aux16.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux16",
+      "mapped_column": "fiAux16",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux16"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux17",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux17\" (Prisma: SaleDealAuxiliary.fiAux17). Type: String?. Synonyms: fi aux17.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux17",
+      "mapped_column": "fiAux17",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux17"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux18",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux18\" (Prisma: SaleDealAuxiliary.fiAux18). Type: String?. Synonyms: fi aux18.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux18",
+      "mapped_column": "fiAux18",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux18"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux19",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux19\" (Prisma: SaleDealAuxiliary.fiAux19). Type: String?. Synonyms: fi aux19.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux19",
+      "mapped_column": "fiAux19",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux19"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux20",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux20\" (Prisma: SaleDealAuxiliary.fiAux20). Type: String?. Synonyms: fi aux20.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux20",
+      "mapped_column": "fiAux20",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux20"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux21",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux21\" (Prisma: SaleDealAuxiliary.fiAux21). Type: String?. Synonyms: fi aux21.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux21",
+      "mapped_column": "fiAux21",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux21"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux22",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux22\" (Prisma: SaleDealAuxiliary.fiAux22). Type: String?. Synonyms: fi aux22.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux22",
+      "mapped_column": "fiAux22",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux22"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux23",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux23\" (Prisma: SaleDealAuxiliary.fiAux23). Type: String?. Synonyms: fi aux23.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux23",
+      "mapped_column": "fiAux23",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux23"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux24",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux24\" (Prisma: SaleDealAuxiliary.fiAux24). Type: String?. Synonyms: fi aux24.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux24",
+      "mapped_column": "fiAux24",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux24"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux25",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux25\" (Prisma: SaleDealAuxiliary.fiAux25). Type: String?. Synonyms: fi aux25.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux25",
+      "mapped_column": "fiAux25",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux25"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux26",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux26\" (Prisma: SaleDealAuxiliary.fiAux26). Type: String?. Synonyms: fi aux26.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux26",
+      "mapped_column": "fiAux26",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux26"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux27",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux27\" (Prisma: SaleDealAuxiliary.fiAux27). Type: String?. Synonyms: fi aux27.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux27",
+      "mapped_column": "fiAux27",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux27"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux28",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux28\" (Prisma: SaleDealAuxiliary.fiAux28). Type: String?. Synonyms: fi aux28.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux28",
+      "mapped_column": "fiAux28",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux28"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux29",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux29\" (Prisma: SaleDealAuxiliary.fiAux29). Type: String?. Synonyms: fi aux29.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux29",
+      "mapped_column": "fiAux29",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux29"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux30",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux30\" (Prisma: SaleDealAuxiliary.fiAux30). Type: String?. Synonyms: fi aux30.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux30",
+      "mapped_column": "fiAux30",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux30"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux31",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux31\" (Prisma: SaleDealAuxiliary.fiAux31). Type: String?. Synonyms: fi aux31.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux31",
+      "mapped_column": "fiAux31",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux31"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux32",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux32\" (Prisma: SaleDealAuxiliary.fiAux32). Type: String?. Synonyms: fi aux32.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux32",
+      "mapped_column": "fiAux32",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux32"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux33",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux33\" (Prisma: SaleDealAuxiliary.fiAux33). Type: String?. Synonyms: fi aux33.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux33",
+      "mapped_column": "fiAux33",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux33"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux34",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux34\" (Prisma: SaleDealAuxiliary.fiAux34). Type: String?. Synonyms: fi aux34.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux34",
+      "mapped_column": "fiAux34",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux34"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux35",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux35\" (Prisma: SaleDealAuxiliary.fiAux35). Type: String?. Synonyms: fi aux35.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux35",
+      "mapped_column": "fiAux35",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux35"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux36",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux36\" (Prisma: SaleDealAuxiliary.fiAux36). Type: String?. Synonyms: fi aux36.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux36",
+      "mapped_column": "fiAux36",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux36"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux37",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux37\" (Prisma: SaleDealAuxiliary.fiAux37). Type: String?. Synonyms: fi aux37.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux37",
+      "mapped_column": "fiAux37",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux37"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux38",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux38\" (Prisma: SaleDealAuxiliary.fiAux38). Type: String?. Synonyms: fi aux38.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux38",
+      "mapped_column": "fiAux38",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux38"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux39",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux39\" (Prisma: SaleDealAuxiliary.fiAux39). Type: String?. Synonyms: fi aux39.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux39",
+      "mapped_column": "fiAux39",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux39"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux40",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux40\" (Prisma: SaleDealAuxiliary.fiAux40). Type: String?. Synonyms: fi aux40.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux40",
+      "mapped_column": "fiAux40",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux40"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux41",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux41\" (Prisma: SaleDealAuxiliary.fiAux41). Type: String?. Synonyms: fi aux41.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux41",
+      "mapped_column": "fiAux41",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux41"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux42",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux42\" (Prisma: SaleDealAuxiliary.fiAux42). Type: String?. Synonyms: fi aux42.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux42",
+      "mapped_column": "fiAux42",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux42"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux43",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux43\" (Prisma: SaleDealAuxiliary.fiAux43). Type: String?. Synonyms: fi aux43.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux43",
+      "mapped_column": "fiAux43",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux43"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux44",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux44\" (Prisma: SaleDealAuxiliary.fiAux44). Type: String?. Synonyms: fi aux44.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux44",
+      "mapped_column": "fiAux44",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux44"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux45",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux45\" (Prisma: SaleDealAuxiliary.fiAux45). Type: String?. Synonyms: fi aux45.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux45",
+      "mapped_column": "fiAux45",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux45"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux46",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux46\" (Prisma: SaleDealAuxiliary.fiAux46). Type: String?. Synonyms: fi aux46.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux46",
+      "mapped_column": "fiAux46",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux46"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux47",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux47\" (Prisma: SaleDealAuxiliary.fiAux47). Type: String?. Synonyms: fi aux47.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux47",
+      "mapped_column": "fiAux47",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux47"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux48",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux48\" (Prisma: SaleDealAuxiliary.fiAux48). Type: String?. Synonyms: fi aux48.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux48",
+      "mapped_column": "fiAux48",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux48"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux49",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux49\" (Prisma: SaleDealAuxiliary.fiAux49). Type: String?. Synonyms: fi aux49.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux49",
+      "mapped_column": "fiAux49",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux49"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealAuxiliary.fiAux50",
+    "text": "Column \"SaleDealAuxiliary\".\"fiAux50\" (Prisma: SaleDealAuxiliary.fiAux50). Type: String?. Synonyms: fi aux50.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealAuxiliary",
+      "mapped_table": "SaleDealAuxiliary",
+      "column": "fiAux50",
+      "mapped_column": "fiAux50",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi aux50"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealEvent.id",
+    "text": "Column \"SaleDealEvent\".\"id\" (Prisma: SaleDealEvent.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealEvent",
+      "mapped_table": "SaleDealEvent",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleDealEvent.saleDataId",
+    "text": "Column \"SaleDealEvent\".\"saleDataId\" (Prisma: SaleDealEvent.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealEvent",
+      "mapped_table": "SaleDealEvent",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleDealEvent.specialContract1Date",
+    "text": "Column \"SaleDealEvent\".\"specialContract1Date\" (Prisma: SaleDealEvent.specialContract1Date). Type: DateTime?. Synonyms: special contract1 date.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealEvent",
+      "mapped_table": "SaleDealEvent",
+      "column": "specialContract1Date",
+      "mapped_column": "specialContract1Date",
+      "type": "DateTime?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "special contract1 date"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealEvent.specialContract1Reason",
+    "text": "Column \"SaleDealEvent\".\"specialContract1Reason\" (Prisma: SaleDealEvent.specialContract1Reason). Type: String?. Synonyms: special contract1 reason.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealEvent",
+      "mapped_table": "SaleDealEvent",
+      "column": "specialContract1Reason",
+      "mapped_column": "specialContract1Reason",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "special contract1 reason"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealEvent.specialContract2Date",
+    "text": "Column \"SaleDealEvent\".\"specialContract2Date\" (Prisma: SaleDealEvent.specialContract2Date). Type: DateTime?. Synonyms: special contract2 date.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealEvent",
+      "mapped_table": "SaleDealEvent",
+      "column": "specialContract2Date",
+      "mapped_column": "specialContract2Date",
+      "type": "DateTime?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "special contract2 date"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealEvent.specialContract2Reason",
+    "text": "Column \"SaleDealEvent\".\"specialContract2Reason\" (Prisma: SaleDealEvent.specialContract2Reason). Type: String?. Synonyms: special contract2 reason.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealEvent",
+      "mapped_table": "SaleDealEvent",
+      "column": "specialContract2Reason",
+      "mapped_column": "specialContract2Reason",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "special contract2 reason"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealEvent.dealEvent",
+    "text": "Column \"SaleDealEvent\".\"dealEvent\" (Prisma: SaleDealEvent.dealEvent). Type: String?. Synonyms: deal event.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealEvent",
+      "mapped_table": "SaleDealEvent",
+      "column": "dealEvent",
+      "mapped_column": "dealEvent",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "deal event"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealEvent.dealEventDate",
+    "text": "Column \"SaleDealEvent\".\"dealEventDate\" (Prisma: SaleDealEvent.dealEventDate). Type: DateTime?. Synonyms: deal event date.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealEvent",
+      "mapped_table": "SaleDealEvent",
+      "column": "dealEventDate",
+      "mapped_column": "dealEventDate",
+      "type": "DateTime?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "deal event date"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleDealEvent.eventOrder",
+    "text": "Column \"SaleDealEvent\".\"eventOrder\" (Prisma: SaleDealEvent.eventOrder). Type: Int?. Synonyms: event order.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleDealEvent",
+      "mapped_table": "SaleDealEvent",
+      "column": "eventOrder",
+      "mapped_column": "eventOrder",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "event order"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleFee.id",
+    "text": "Column \"SaleFee\".\"id\" (Prisma: SaleFee.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleFee",
+      "mapped_table": "SaleFee",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleFee.saleDataId",
+    "text": "Column \"SaleFee\".\"saleDataId\" (Prisma: SaleFee.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleFee",
+      "mapped_table": "SaleFee",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleFee.feeType",
+    "text": "Column \"SaleFee\".\"feeType\" (Prisma: SaleFee.feeType). Type: String. Synonyms: fee type.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleFee",
+      "mapped_table": "SaleFee",
+      "column": "feeType",
+      "mapped_column": "feeType",
+      "type": "String",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fee type"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleFee.amount",
+    "text": "Column \"SaleFee\".\"amount\" (Prisma: SaleFee.amount). Type: Decimal?. Synonyms: amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleFee",
+      "mapped_table": "SaleFee",
+      "column": "amount",
+      "mapped_column": "amount",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "amount"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleFee.name",
+    "text": "Column \"SaleFee\".\"name\" (Prisma: SaleFee.name). Type: String?. Synonyms: name.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleFee",
+      "mapped_table": "SaleFee",
+      "column": "name",
+      "mapped_column": "name",
+      "type": "String?",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "name"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleFee.costAmount",
+    "text": "Column \"SaleFee\".\"costAmount\" (Prisma: SaleFee.costAmount). Type: Decimal?. Synonyms: cost amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleFee",
+      "mapped_table": "SaleFee",
+      "column": "costAmount",
+      "mapped_column": "costAmount",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "cost amount"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleFee.profitType",
+    "text": "Column \"SaleFee\".\"profitType\" (Prisma: SaleFee.profitType). Type: String?. Synonyms: profit type.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleFee",
+      "mapped_table": "SaleFee",
+      "column": "profitType",
+      "mapped_column": "profitType",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "profit type"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleFee.flag",
+    "text": "Column \"SaleFee\".\"flag\" (Prisma: SaleFee.flag). Type: Boolean?. Synonyms: flag.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleFee",
+      "mapped_table": "SaleFee",
+      "column": "flag",
+      "mapped_column": "flag",
+      "type": "Boolean?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "flag"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleFee.orderIndex",
+    "text": "Column \"SaleFee\".\"orderIndex\" (Prisma: SaleFee.orderIndex). Type: Int?. Synonyms: order index.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleFee",
+      "mapped_table": "SaleFee",
+      "column": "orderIndex",
+      "mapped_column": "orderIndex",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "order index"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleIncentive.id",
+    "text": "Column \"SaleIncentive\".\"id\" (Prisma: SaleIncentive.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleIncentive",
+      "mapped_table": "SaleIncentive",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleIncentive.saleDataId",
+    "text": "Column \"SaleIncentive\".\"saleDataId\" (Prisma: SaleIncentive.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Constraints: unique. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleIncentive",
+      "mapped_table": "SaleIncentive",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleIncentive.incentiveDealer",
+    "text": "Column \"SaleIncentive\".\"incentiveDealer\" (Prisma: SaleIncentive.incentiveDealer). Type: Decimal?. Synonyms: incentive dealer.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleIncentive",
+      "mapped_table": "SaleIncentive",
+      "column": "incentiveDealer",
+      "mapped_column": "incentiveDealer",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "incentive dealer"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleIncentive.incentiveProgram",
+    "text": "Column \"SaleIncentive\".\"incentiveProgram\" (Prisma: SaleIncentive.incentiveProgram). Type: Decimal?. Synonyms: incentive program.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleIncentive",
+      "mapped_table": "SaleIncentive",
+      "column": "incentiveProgram",
+      "mapped_column": "incentiveProgram",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "incentive program"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleIncentive.rebateAmount",
+    "text": "Column \"SaleIncentive\".\"rebateAmount\" (Prisma: SaleIncentive.rebateAmount). Type: Decimal?. Synonyms: rebate amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleIncentive",
+      "mapped_table": "SaleIncentive",
+      "column": "rebateAmount",
+      "mapped_column": "rebateAmount",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "rebate amount"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleIncentive.commonRebateDetails",
+    "text": "Column \"SaleIncentive\".\"commonRebateDetails\" (Prisma: SaleIncentive.commonRebateDetails). Type: Json?. Synonyms: common rebate details.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleIncentive",
+      "mapped_table": "SaleIncentive",
+      "column": "commonRebateDetails",
+      "mapped_column": "commonRebateDetails",
+      "type": "Json?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "common rebate details"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.id",
+    "text": "Column \"SaleInsurance\".\"id\" (Prisma: SaleInsurance.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleInsurance.saleDataId",
+    "text": "Column \"SaleInsurance\".\"saleDataId\" (Prisma: SaleInsurance.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Constraints: unique. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleInsurance.extWarrantyExpMilesLease",
+    "text": "Column \"SaleInsurance\".\"extWarrantyExpMilesLease\" (Prisma: SaleInsurance.extWarrantyExpMilesLease). Type: Int?. Synonyms: ext warranty exp miles lease.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "extWarrantyExpMilesLease",
+      "mapped_column": "extWarrantyExpMilesLease",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "ext warranty exp miles lease"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.extWarrantyTermLease",
+    "text": "Column \"SaleInsurance\".\"extWarrantyTermLease\" (Prisma: SaleInsurance.extWarrantyTermLease). Type: Int?. Synonyms: ext warranty term lease.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "extWarrantyTermLease",
+      "mapped_column": "extWarrantyTermLease",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "ext warranty term lease"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.insuranceTypeCode",
+    "text": "Column \"SaleInsurance\".\"insuranceTypeCode\" (Prisma: SaleInsurance.insuranceTypeCode). Type: String?. Synonyms: insurance type code.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "insuranceTypeCode",
+      "mapped_column": "insuranceTypeCode",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "insurance type code"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.texasGAPInsuranceAmount",
+    "text": "Column \"SaleInsurance\".\"texasGAPInsuranceAmount\" (Prisma: SaleInsurance.texasGAPInsuranceAmount). Type: Decimal?. Synonyms: texas gapinsurance amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "texasGAPInsuranceAmount",
+      "mapped_column": "texasGAPInsuranceAmount",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "texas gapinsurance amount"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.insurance1",
+    "text": "Column \"SaleInsurance\".\"insurance1\" (Prisma: SaleInsurance.insurance1). Type: Json?. Synonyms: insurance1.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "insurance1",
+      "mapped_column": "insurance1",
+      "type": "Json?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "insurance1"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.insurance2",
+    "text": "Column \"SaleInsurance\".\"insurance2\" (Prisma: SaleInsurance.insurance2). Type: Json?. Synonyms: insurance2.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "insurance2",
+      "mapped_column": "insurance2",
+      "type": "Json?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "insurance2"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.insurance3",
+    "text": "Column \"SaleInsurance\".\"insurance3\" (Prisma: SaleInsurance.insurance3). Type: Json?. Synonyms: insurance3.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "insurance3",
+      "mapped_column": "insurance3",
+      "type": "Json?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "insurance3"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.ahiCost",
+    "text": "Column \"SaleInsurance\".\"ahiCost\" (Prisma: SaleInsurance.ahiCost). Type: Decimal?. Synonyms: ahi cost.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "ahiCost",
+      "mapped_column": "ahiCost",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "ahi cost"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.ahiIncome",
+    "text": "Column \"SaleInsurance\".\"ahiIncome\" (Prisma: SaleInsurance.ahiIncome). Type: Decimal?. Synonyms: ahi income.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "ahiIncome",
+      "mapped_column": "ahiIncome",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "ahi income"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.ahiMonthlyMaxAmount",
+    "text": "Column \"SaleInsurance\".\"ahiMonthlyMaxAmount\" (Prisma: SaleInsurance.ahiMonthlyMaxAmount). Type: Decimal?. Synonyms: ahi monthly max amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "ahiMonthlyMaxAmount",
+      "mapped_column": "ahiMonthlyMaxAmount",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "ahi monthly max amount"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.ahiPremium",
+    "text": "Column \"SaleInsurance\".\"ahiPremium\" (Prisma: SaleInsurance.ahiPremium). Type: Decimal?. Synonyms: ahi premium.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "ahiPremium",
+      "mapped_column": "ahiPremium",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "ahi premium"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.ahiRate",
+    "text": "Column \"SaleInsurance\".\"ahiRate\" (Prisma: SaleInsurance.ahiRate). Type: Decimal?. Synonyms: ahi rate.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "ahiRate",
+      "mapped_column": "ahiRate",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "ahi rate"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.ahiTerm",
+    "text": "Column \"SaleInsurance\".\"ahiTerm\" (Prisma: SaleInsurance.ahiTerm). Type: Int?. Synonyms: ahi term.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "ahiTerm",
+      "mapped_column": "ahiTerm",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "ahi term"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.cliCost",
+    "text": "Column \"SaleInsurance\".\"cliCost\" (Prisma: SaleInsurance.cliCost). Type: Decimal?. Synonyms: cli cost.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "cliCost",
+      "mapped_column": "cliCost",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "cli cost"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.cliIncome",
+    "text": "Column \"SaleInsurance\".\"cliIncome\" (Prisma: SaleInsurance.cliIncome). Type: Decimal?. Synonyms: cli income.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "cliIncome",
+      "mapped_column": "cliIncome",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "cli income"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.cliMonthlyMaxAmount",
+    "text": "Column \"SaleInsurance\".\"cliMonthlyMaxAmount\" (Prisma: SaleInsurance.cliMonthlyMaxAmount). Type: Decimal?. Synonyms: cli monthly max amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "cliMonthlyMaxAmount",
+      "mapped_column": "cliMonthlyMaxAmount",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "cli monthly max amount"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.cliPremium",
+    "text": "Column \"SaleInsurance\".\"cliPremium\" (Prisma: SaleInsurance.cliPremium). Type: Decimal?. Synonyms: cli premium.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "cliPremium",
+      "mapped_column": "cliPremium",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "cli premium"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.cliRate",
+    "text": "Column \"SaleInsurance\".\"cliRate\" (Prisma: SaleInsurance.cliRate). Type: Decimal?. Synonyms: cli rate.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "cliRate",
+      "mapped_column": "cliRate",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "cli rate"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.cliTerm",
+    "text": "Column \"SaleInsurance\".\"cliTerm\" (Prisma: SaleInsurance.cliTerm). Type: Int?. Synonyms: cli term.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "cliTerm",
+      "mapped_column": "cliTerm",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "cli term"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.cliInsuranceType",
+    "text": "Column \"SaleInsurance\".\"cliInsuranceType\" (Prisma: SaleInsurance.cliInsuranceType). Type: String?. Synonyms: cli insurance type.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "cliInsuranceType",
+      "mapped_column": "cliInsuranceType",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "cli insurance type"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiCarrier",
+    "text": "Column \"SaleInsurance\".\"mbiCarrier\" (Prisma: SaleInsurance.mbiCarrier). Type: String?. Synonyms: mbi carrier.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiCarrier",
+      "mapped_column": "mbiCarrier",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi carrier"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiCost",
+    "text": "Column \"SaleInsurance\".\"mbiCost\" (Prisma: SaleInsurance.mbiCost). Type: Decimal?. Synonyms: mbi cost.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiCost",
+      "mapped_column": "mbiCost",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi cost"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiDeductible",
+    "text": "Column \"SaleInsurance\".\"mbiDeductible\" (Prisma: SaleInsurance.mbiDeductible). Type: Decimal?. Synonyms: mbi deductible.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiDeductible",
+      "mapped_column": "mbiDeductible",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi deductible"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiEligComment",
+    "text": "Column \"SaleInsurance\".\"mbiEligComment\" (Prisma: SaleInsurance.mbiEligComment). Type: String?. Synonyms: mbi elig comment.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiEligComment",
+      "mapped_column": "mbiEligComment",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi elig comment"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiEligFlag",
+    "text": "Column \"SaleInsurance\".\"mbiEligFlag\" (Prisma: SaleInsurance.mbiEligFlag). Type: Boolean?. Synonyms: mbi elig flag.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiEligFlag",
+      "mapped_column": "mbiEligFlag",
+      "type": "Boolean?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi elig flag"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiFee",
+    "text": "Column \"SaleInsurance\".\"mbiFee\" (Prisma: SaleInsurance.mbiFee). Type: Decimal?. Synonyms: mbi fee.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiFee",
+      "mapped_column": "mbiFee",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi fee"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiIncome",
+    "text": "Column \"SaleInsurance\".\"mbiIncome\" (Prisma: SaleInsurance.mbiIncome). Type: Decimal?. Synonyms: mbi income.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiIncome",
+      "mapped_column": "mbiIncome",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi income"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiLimit",
+    "text": "Column \"SaleInsurance\".\"mbiLimit\" (Prisma: SaleInsurance.mbiLimit). Type: Int?. Synonyms: mbi limit.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiLimit",
+      "mapped_column": "mbiLimit",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi limit"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiLimitMax",
+    "text": "Column \"SaleInsurance\".\"mbiLimitMax\" (Prisma: SaleInsurance.mbiLimitMax). Type: String?. Synonyms: mbi limit max.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiLimitMax",
+      "mapped_column": "mbiLimitMax",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi limit max"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiName",
+    "text": "Column \"SaleInsurance\".\"mbiName\" (Prisma: SaleInsurance.mbiName). Type: String?. Synonyms: mbi name.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiName",
+      "mapped_column": "mbiName",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi name"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiTerm",
+    "text": "Column \"SaleInsurance\".\"mbiTerm\" (Prisma: SaleInsurance.mbiTerm). Type: Int?. Synonyms: mbi term.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiTerm",
+      "mapped_column": "mbiTerm",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi term"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiPolicyNo",
+    "text": "Column \"SaleInsurance\".\"mbiPolicyNo\" (Prisma: SaleInsurance.mbiPolicyNo). Type: String?. Synonyms: mbi policy no.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiPolicyNo",
+      "mapped_column": "mbiPolicyNo",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi policy no"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleInsurance.mbiPurchaseCost",
+    "text": "Column \"SaleInsurance\".\"mbiPurchaseCost\" (Prisma: SaleInsurance.mbiPurchaseCost). Type: Decimal?. Synonyms: mbi purchase cost.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleInsurance",
+      "mapped_table": "SaleInsurance",
+      "column": "mbiPurchaseCost",
+      "mapped_column": "mbiPurchaseCost",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "mbi purchase cost"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.id",
+    "text": "Column \"SaleSalesPerson\".\"id\" (Prisma: SaleSalesPerson.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.saleDataId",
+    "text": "Column \"SaleSalesPerson\".\"saleDataId\" (Prisma: SaleSalesPerson.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Constraints: unique. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.assnSlsperson",
+    "text": "Column \"SaleSalesPerson\".\"assnSlsperson\" (Prisma: SaleSalesPerson.assnSlsperson). Type: String?. Synonyms: assn slsperson.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "assnSlsperson",
+      "mapped_column": "assnSlsperson",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "assn slsperson"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.billingClerk",
+    "text": "Column \"SaleSalesPerson\".\"billingClerk\" (Prisma: SaleSalesPerson.billingClerk). Type: String?. Synonyms: billing clerk.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "billingClerk",
+      "mapped_column": "billingClerk",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "billing clerk"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.closingMgr",
+    "text": "Column \"SaleSalesPerson\".\"closingMgr\" (Prisma: SaleSalesPerson.closingMgr). Type: String?. Synonyms: closing mgr.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "closingMgr",
+      "mapped_column": "closingMgr",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "closing mgr"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.deliveryCoord",
+    "text": "Column \"SaleSalesPerson\".\"deliveryCoord\" (Prisma: SaleSalesPerson.deliveryCoord). Type: String?. Synonyms: delivery coord.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "deliveryCoord",
+      "mapped_column": "deliveryCoord",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "delivery coord"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.fiMgr1",
+    "text": "Column \"SaleSalesPerson\".\"fiMgr1\" (Prisma: SaleSalesPerson.fiMgr1). Type: String?. Synonyms: fi mgr1.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "fiMgr1",
+      "mapped_column": "fiMgr1",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi mgr1"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.fiMgr2",
+    "text": "Column \"SaleSalesPerson\".\"fiMgr2\" (Prisma: SaleSalesPerson.fiMgr2). Type: String?. Synonyms: fi mgr2.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "fiMgr2",
+      "mapped_column": "fiMgr2",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "fi mgr2"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.salesMgr",
+    "text": "Column \"SaleSalesPerson\".\"salesMgr\" (Prisma: SaleSalesPerson.salesMgr). Type: String?. Synonyms: sales mgr.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "salesMgr",
+      "mapped_column": "salesMgr",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sales mgr"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.salesperson1",
+    "text": "Column \"SaleSalesPerson\".\"salesperson1\" (Prisma: SaleSalesPerson.salesperson1). Type: String?. Synonyms: salesperson1.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "salesperson1",
+      "mapped_column": "salesperson1",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "salesperson1"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.salesperson2",
+    "text": "Column \"SaleSalesPerson\".\"salesperson2\" (Prisma: SaleSalesPerson.salesperson2). Type: String?. Synonyms: salesperson2.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "salesperson2",
+      "mapped_column": "salesperson2",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "salesperson2"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleSalesPerson.salesperson3",
+    "text": "Column \"SaleSalesPerson\".\"salesperson3\" (Prisma: SaleSalesPerson.salesperson3). Type: String?. Synonyms: salesperson3.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleSalesPerson",
+      "mapped_table": "SaleSalesPerson",
+      "column": "salesperson3",
+      "mapped_column": "salesperson3",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "salesperson3"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTax.id",
+    "text": "Column \"SaleTax\".\"id\" (Prisma: SaleTax.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTax",
+      "mapped_table": "SaleTax",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleTax.saleDataId",
+    "text": "Column \"SaleTax\".\"saleDataId\" (Prisma: SaleTax.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Constraints: unique. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTax",
+      "mapped_table": "SaleTax",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleTax.serviceTaxAmount",
+    "text": "Column \"SaleTax\".\"serviceTaxAmount\" (Prisma: SaleTax.serviceTaxAmount). Type: Decimal?. Synonyms: service tax amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTax",
+      "mapped_table": "SaleTax",
+      "column": "serviceTaxAmount",
+      "mapped_column": "serviceTaxAmount",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "service tax amount"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTax.leaseFlexibleTax1Amount",
+    "text": "Column \"SaleTax\".\"leaseFlexibleTax1Amount\" (Prisma: SaleTax.leaseFlexibleTax1Amount). Type: Decimal?. Synonyms: lease flexible tax1 amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTax",
+      "mapped_table": "SaleTax",
+      "column": "leaseFlexibleTax1Amount",
+      "mapped_column": "leaseFlexibleTax1Amount",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "lease flexible tax1 amount"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTax.leaseFlexibleTax2Amount",
+    "text": "Column \"SaleTax\".\"leaseFlexibleTax2Amount\" (Prisma: SaleTax.leaseFlexibleTax2Amount). Type: Decimal?. Synonyms: lease flexible tax2 amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTax",
+      "mapped_table": "SaleTax",
+      "column": "leaseFlexibleTax2Amount",
+      "mapped_column": "leaseFlexibleTax2Amount",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "lease flexible tax2 amount"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTax.goodsAndServicesTaxDetails",
+    "text": "Column \"SaleTax\".\"goodsAndServicesTaxDetails\" (Prisma: SaleTax.goodsAndServicesTaxDetails). Type: Json?. Synonyms: goods and services tax details.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTax",
+      "mapped_table": "SaleTax",
+      "column": "goodsAndServicesTaxDetails",
+      "mapped_column": "goodsAndServicesTaxDetails",
+      "type": "Json?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "goods and services tax details"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTax.luxuryTaxDetails",
+    "text": "Column \"SaleTax\".\"luxuryTaxDetails\" (Prisma: SaleTax.luxuryTaxDetails). Type: Json?. Synonyms: luxury tax details.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTax",
+      "mapped_table": "SaleTax",
+      "column": "luxuryTaxDetails",
+      "mapped_column": "luxuryTaxDetails",
+      "type": "Json?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "luxury tax details"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTax.salesTaxDetails",
+    "text": "Column \"SaleTax\".\"salesTaxDetails\" (Prisma: SaleTax.salesTaxDetails). Type: Json?. Synonyms: sales tax details.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTax",
+      "mapped_table": "SaleTax",
+      "column": "salesTaxDetails",
+      "mapped_column": "salesTaxDetails",
+      "type": "Json?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "sales tax details"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTax.purchaseFlexibleTaxDetails",
+    "text": "Column \"SaleTax\".\"purchaseFlexibleTaxDetails\" (Prisma: SaleTax.purchaseFlexibleTaxDetails). Type: Json?. Synonyms: purchase flexible tax details.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTax",
+      "mapped_table": "SaleTax",
+      "column": "purchaseFlexibleTaxDetails",
+      "mapped_column": "purchaseFlexibleTaxDetails",
+      "type": "Json?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "purchase flexible tax details"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTax.taxCommonDetails",
+    "text": "Column \"SaleTax\".\"taxCommonDetails\" (Prisma: SaleTax.taxCommonDetails). Type: Json?. Synonyms: tax common details.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTax",
+      "mapped_table": "SaleTax",
+      "column": "taxCommonDetails",
+      "mapped_column": "taxCommonDetails",
+      "type": "Json?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "tax common details"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.id",
+    "text": "Column \"SaleTotal\".\"id\" (Prisma: SaleTotal.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleTotal.saleDataId",
+    "text": "Column \"SaleTotal\".\"saleDataId\" (Prisma: SaleTotal.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Constraints: unique. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalTradeAllowance",
+    "text": "Column \"SaleTotal\".\"totalTradeAllowance\" (Prisma: SaleTotal.totalTradeAllowance). Type: Decimal?. Synonyms: total trade allowance.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalTradeAllowance",
+      "mapped_column": "totalTradeAllowance",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total trade allowance"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalTradesACV",
+    "text": "Column \"SaleTotal\".\"totalTradesACV\" (Prisma: SaleTotal.totalTradesACV). Type: Decimal?. Synonyms: total trades acv.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalTradesACV",
+      "mapped_column": "totalTradesACV",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total trades acv"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalTradesNet",
+    "text": "Column \"SaleTotal\".\"totalTradesNet\" (Prisma: SaleTotal.totalTradesNet). Type: Decimal?. Synonyms: total trades net.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalTradesNet",
+      "mapped_column": "totalTradesNet",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total trades net"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalTradesOver",
+    "text": "Column \"SaleTotal\".\"totalTradesOver\" (Prisma: SaleTotal.totalTradesOver). Type: Decimal?. Synonyms: total trades over.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalTradesOver",
+      "mapped_column": "totalTradesOver",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total trades over"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalTradesPayoff",
+    "text": "Column \"SaleTotal\".\"totalTradesPayoff\" (Prisma: SaleTotal.totalTradesPayoff). Type: Decimal?. Synonyms: total trades payoff.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalTradesPayoff",
+      "mapped_column": "totalTradesPayoff",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total trades payoff"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalAnnFees",
+    "text": "Column \"SaleTotal\".\"totalAnnFees\" (Prisma: SaleTotal.totalAnnFees). Type: Decimal?. Synonyms: total ann fees.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalAnnFees",
+      "mapped_column": "totalAnnFees",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total ann fees"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalBackCostAdjustments",
+    "text": "Column \"SaleTotal\".\"totalBackCostAdjustments\" (Prisma: SaleTotal.totalBackCostAdjustments). Type: Decimal?. Synonyms: total back cost adjustments.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalBackCostAdjustments",
+      "mapped_column": "totalBackCostAdjustments",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total back cost adjustments"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalBasePrice",
+    "text": "Column \"SaleTotal\".\"totalBasePrice\" (Prisma: SaleTotal.totalBasePrice). Type: Decimal?. Synonyms: total base price.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalBasePrice",
+      "mapped_column": "totalBasePrice",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total base price"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalCapReduction",
+    "text": "Column \"SaleTotal\".\"totalCapReduction\" (Prisma: SaleTotal.totalCapReduction). Type: Decimal?. Synonyms: total cap reduction.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalCapReduction",
+      "mapped_column": "totalCapReduction",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total cap reduction"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalCashSurplus",
+    "text": "Column \"SaleTotal\".\"totalCashSurplus\" (Prisma: SaleTotal.totalCashSurplus). Type: Decimal?. Synonyms: total cash surplus.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalCashSurplus",
+      "mapped_column": "totalCashSurplus",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total cash surplus"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalCommission",
+    "text": "Column \"SaleTotal\".\"totalCommission\" (Prisma: SaleTotal.totalCommission). Type: Decimal?. Synonyms: total commission.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalCommission",
+      "mapped_column": "totalCommission",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total commission"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalDMVLicenseFeeCalifornia",
+    "text": "Column \"SaleTotal\".\"totalDMVLicenseFeeCalifornia\" (Prisma: SaleTotal.totalDMVLicenseFeeCalifornia). Type: Decimal?. Synonyms: total dmvlicense fee california.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalDMVLicenseFeeCalifornia",
+      "mapped_column": "totalDMVLicenseFeeCalifornia",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total dmvlicense fee california"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalDown",
+    "text": "Column \"SaleTotal\".\"totalDown\" (Prisma: SaleTotal.totalDown). Type: Decimal?. Synonyms: total down.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalDown",
+      "mapped_column": "totalDown",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total down"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalFinancedFeeOptions",
+    "text": "Column \"SaleTotal\".\"totalFinancedFeeOptions\" (Prisma: SaleTotal.totalFinancedFeeOptions). Type: Decimal?. Synonyms: total financed fee options.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalFinancedFeeOptions",
+      "mapped_column": "totalFinancedFeeOptions",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total financed fee options"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalFrontCostAdjustments",
+    "text": "Column \"SaleTotal\".\"totalFrontCostAdjustments\" (Prisma: SaleTotal.totalFrontCostAdjustments). Type: Decimal?. Synonyms: total front cost adjustments.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalFrontCostAdjustments",
+      "mapped_column": "totalFrontCostAdjustments",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total front cost adjustments"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalInsurancePremiums",
+    "text": "Column \"SaleTotal\".\"totalInsurancePremiums\" (Prisma: SaleTotal.totalInsurancePremiums). Type: Decimal?. Synonyms: total insurance premiums.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalInsurancePremiums",
+      "mapped_column": "totalInsurancePremiums",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total insurance premiums"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalGross",
+    "text": "Column \"SaleTotal\".\"totalGross\" (Prisma: SaleTotal.totalGross). Type: Decimal?. Synonyms: total gross.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalGross",
+      "mapped_column": "totalGross",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total gross"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalInitFees",
+    "text": "Column \"SaleTotal\".\"totalInitFees\" (Prisma: SaleTotal.totalInitFees). Type: Decimal?. Synonyms: total init fees.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalInitFees",
+      "mapped_column": "totalInitFees",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total init fees"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalOfMonthlyPayments",
+    "text": "Column \"SaleTotal\".\"totalOfMonthlyPayments\" (Prisma: SaleTotal.totalOfMonthlyPayments). Type: Decimal?. Synonyms: total of monthly payments.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalOfMonthlyPayments",
+      "mapped_column": "totalOfMonthlyPayments",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total of monthly payments"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalOptionsFees",
+    "text": "Column \"SaleTotal\".\"totalOptionsFees\" (Prisma: SaleTotal.totalOptionsFees). Type: Decimal?. Synonyms: total options fees.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalOptionsFees",
+      "mapped_column": "totalOptionsFees",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total options fees"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalTaxableFees",
+    "text": "Column \"SaleTotal\".\"totalTaxableFees\" (Prisma: SaleTotal.totalTaxableFees). Type: Decimal?. Synonyms: total taxable fees.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalTaxableFees",
+      "mapped_column": "totalTaxableFees",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total taxable fees"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.totalTaxRate",
+    "text": "Column \"SaleTotal\".\"totalTaxRate\" (Prisma: SaleTotal.totalTaxRate). Type: Decimal?. Synonyms: total tax rate.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "totalTaxRate",
+      "mapped_column": "totalTaxRate",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "total tax rate"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.weOweCostTotal",
+    "text": "Column \"SaleTotal\".\"weOweCostTotal\" (Prisma: SaleTotal.weOweCostTotal). Type: Decimal?. Synonyms: we owe cost total.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "weOweCostTotal",
+      "mapped_column": "weOweCostTotal",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "we owe cost total"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.weOweSaleTotal",
+    "text": "Column \"SaleTotal\".\"weOweSaleTotal\" (Prisma: SaleTotal.weOweSaleTotal). Type: Decimal?. Synonyms: we owe sale total.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "weOweSaleTotal",
+      "mapped_column": "weOweSaleTotal",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "we owe sale total"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTotal.tax",
+    "text": "Column \"SaleTotal\".\"tax\" (Prisma: SaleTotal.tax). Type: Decimal?. Synonyms: tax.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTotal",
+      "mapped_table": "SaleTotal",
+      "column": "tax",
+      "mapped_column": "tax",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "tax"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.id",
+    "text": "Column \"SaleTrade\".\"id\" (Prisma: SaleTrade.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleTrade.saleDataId",
+    "text": "Column \"SaleTrade\".\"saleDataId\" (Prisma: SaleTrade.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleTrade.netTrade",
+    "text": "Column \"SaleTrade\".\"netTrade\" (Prisma: SaleTrade.netTrade). Type: Decimal?. Synonyms: net trade.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "netTrade",
+      "mapped_column": "netTrade",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "net trade"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeACV",
+    "text": "Column \"SaleTrade\".\"tradeACV\" (Prisma: SaleTrade.tradeACV). Type: String?. Synonyms: trade acv.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeACV",
+      "mapped_column": "tradeACV",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade acv"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeColor",
+    "text": "Column \"SaleTrade\".\"tradeColor\" (Prisma: SaleTrade.tradeColor). Type: String?. Synonyms: trade color.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeColor",
+      "mapped_column": "tradeColor",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade color"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeGross",
+    "text": "Column \"SaleTrade\".\"tradeGross\" (Prisma: SaleTrade.tradeGross). Type: Decimal?. Synonyms: trade gross.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeGross",
+      "mapped_column": "tradeGross",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade gross"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeMake",
+    "text": "Column \"SaleTrade\".\"tradeMake\" (Prisma: SaleTrade.tradeMake). Type: String?. Synonyms: trade make.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeMake",
+      "mapped_column": "tradeMake",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade make"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeMakeName",
+    "text": "Column \"SaleTrade\".\"tradeMakeName\" (Prisma: SaleTrade.tradeMakeName). Type: String?. Synonyms: trade make name.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeMakeName",
+      "mapped_column": "tradeMakeName",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade make name"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeMileage",
+    "text": "Column \"SaleTrade\".\"tradeMileage\" (Prisma: SaleTrade.tradeMileage). Type: String?. Synonyms: trade mileage.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeMileage",
+      "mapped_column": "tradeMileage",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade mileage"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeModel",
+    "text": "Column \"SaleTrade\".\"tradeModel\" (Prisma: SaleTrade.tradeModel). Type: String?. Synonyms: trade model.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeModel",
+      "mapped_column": "tradeModel",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade model"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeModelName",
+    "text": "Column \"SaleTrade\".\"tradeModelName\" (Prisma: SaleTrade.tradeModelName). Type: String?. Synonyms: trade model name.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeModelName",
+      "mapped_column": "tradeModelName",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade model name"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeModelNo",
+    "text": "Column \"SaleTrade\".\"tradeModelNo\" (Prisma: SaleTrade.tradeModelNo). Type: String?. Synonyms: trade model no.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeModelNo",
+      "mapped_column": "tradeModelNo",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade model no"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeModelType",
+    "text": "Column \"SaleTrade\".\"tradeModelType\" (Prisma: SaleTrade.tradeModelType). Type: String?. Synonyms: trade model type.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeModelType",
+      "mapped_column": "tradeModelType",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade model type"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeOver",
+    "text": "Column \"SaleTrade\".\"tradeOver\" (Prisma: SaleTrade.tradeOver). Type: Decimal?. Synonyms: trade over.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeOver",
+      "mapped_column": "tradeOver",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade over"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradePayOff",
+    "text": "Column \"SaleTrade\".\"tradePayOff\" (Prisma: SaleTrade.tradePayOff). Type: String?. Synonyms: trade pay off.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradePayOff",
+      "mapped_column": "tradePayOff",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade pay off"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeStock",
+    "text": "Column \"SaleTrade\".\"tradeStock\" (Prisma: SaleTrade.tradeStock). Type: String?. Synonyms: trade stock.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeStock",
+      "mapped_column": "tradeStock",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade stock"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeStyle",
+    "text": "Column \"SaleTrade\".\"tradeStyle\" (Prisma: SaleTrade.tradeStyle). Type: String?. Synonyms: trade style.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeStyle",
+      "mapped_column": "tradeStyle",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade style"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeVIN",
+    "text": "Column \"SaleTrade\".\"tradeVIN\" (Prisma: SaleTrade.tradeVIN). Type: String?. Synonyms: trade vin.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeVIN",
+      "mapped_column": "tradeVIN",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade vin"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeYear",
+    "text": "Column \"SaleTrade\".\"tradeYear\" (Prisma: SaleTrade.tradeYear). Type: Int?. Synonyms: trade year.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeYear",
+      "mapped_column": "tradeYear",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade year"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.orderIndex",
+    "text": "Column \"SaleTrade\".\"orderIndex\" (Prisma: SaleTrade.orderIndex). Type: Int?. Synonyms: order index.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "orderIndex",
+      "mapped_column": "orderIndex",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "order index"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeDealerDefined1",
+    "text": "Column \"SaleTrade\".\"tradeDealerDefined1\" (Prisma: SaleTrade.tradeDealerDefined1). Type: String?. Synonyms: trade dealer defined1.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeDealerDefined1",
+      "mapped_column": "tradeDealerDefined1",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade dealer defined1"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeDealerDefined2",
+    "text": "Column \"SaleTrade\".\"tradeDealerDefined2\" (Prisma: SaleTrade.tradeDealerDefined2). Type: String?. Synonyms: trade dealer defined2.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeDealerDefined2",
+      "mapped_column": "tradeDealerDefined2",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade dealer defined2"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeDealerDefined3",
+    "text": "Column \"SaleTrade\".\"tradeDealerDefined3\" (Prisma: SaleTrade.tradeDealerDefined3). Type: String?. Synonyms: trade dealer defined3.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeDealerDefined3",
+      "mapped_column": "tradeDealerDefined3",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade dealer defined3"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeDealerDefined4",
+    "text": "Column \"SaleTrade\".\"tradeDealerDefined4\" (Prisma: SaleTrade.tradeDealerDefined4). Type: String?. Synonyms: trade dealer defined4.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeDealerDefined4",
+      "mapped_column": "tradeDealerDefined4",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade dealer defined4"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeDealerDefined5",
+    "text": "Column \"SaleTrade\".\"tradeDealerDefined5\" (Prisma: SaleTrade.tradeDealerDefined5). Type: String?. Synonyms: trade dealer defined5.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeDealerDefined5",
+      "mapped_column": "tradeDealerDefined5",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade dealer defined5"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeDealerDefined6",
+    "text": "Column \"SaleTrade\".\"tradeDealerDefined6\" (Prisma: SaleTrade.tradeDealerDefined6). Type: String?. Synonyms: trade dealer defined6.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeDealerDefined6",
+      "mapped_column": "tradeDealerDefined6",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade dealer defined6"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeDealerDefined7",
+    "text": "Column \"SaleTrade\".\"tradeDealerDefined7\" (Prisma: SaleTrade.tradeDealerDefined7). Type: String?. Synonyms: trade dealer defined7.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeDealerDefined7",
+      "mapped_column": "tradeDealerDefined7",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade dealer defined7"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleTrade.tradeDealerDefined8",
+    "text": "Column \"SaleTrade\".\"tradeDealerDefined8\" (Prisma: SaleTrade.tradeDealerDefined8). Type: String?. Synonyms: trade dealer defined8.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleTrade",
+      "mapped_table": "SaleTrade",
+      "column": "tradeDealerDefined8",
+      "mapped_column": "tradeDealerDefined8",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "trade dealer defined8"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.id",
+    "text": "Column \"SaleVehicle\".\"id\" (Prisma: SaleVehicle.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:SaleVehicle.saleDataId",
+    "text": "Column \"SaleVehicle\".\"saleDataId\" (Prisma: SaleVehicle.saleDataId). Type: String. FK to SaleData (table \"SaleData\") via id. Constraints: unique. Synonyms: sale data id.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "saleDataId",
+      "mapped_column": "saleDataId",
+      "type": "String",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "sale data id"
+      ],
+      "is_fk": true,
+      "fk_target": "SaleData(id)"
+    }
+  },
+  {
+    "id": "col:SaleVehicle.vin",
+    "text": "Column \"SaleVehicle\".\"vin\" (Prisma: SaleVehicle.vin). Type: String?. Synonyms: vin, vehicle vin, chassis number, vehicle identification number.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "vin",
+      "mapped_column": "vin",
+      "type": "String?",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "vin",
+        "vehicle vin",
+        "chassis number",
+        "vehicle identification number"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.make",
+    "text": "Column \"SaleVehicle\".\"make\" (Prisma: SaleVehicle.make). Type: String?. Synonyms: make.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "make",
+      "mapped_column": "make",
+      "type": "String?",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "make"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.makeName",
+    "text": "Column \"SaleVehicle\".\"makeName\" (Prisma: SaleVehicle.makeName). Type: String?. Synonyms: make name.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "makeName",
+      "mapped_column": "makeName",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "make name"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.model",
+    "text": "Column \"SaleVehicle\".\"model\" (Prisma: SaleVehicle.model). Type: String?. Synonyms: model.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "model",
+      "mapped_column": "model",
+      "type": "String?",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "model"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.modelName",
+    "text": "Column \"SaleVehicle\".\"modelName\" (Prisma: SaleVehicle.modelName). Type: String?. Synonyms: model name.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "modelName",
+      "mapped_column": "modelName",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "model name"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.modelNo",
+    "text": "Column \"SaleVehicle\".\"modelNo\" (Prisma: SaleVehicle.modelNo). Type: String?. Synonyms: model no.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "modelNo",
+      "mapped_column": "modelNo",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "model no"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.modelType",
+    "text": "Column \"SaleVehicle\".\"modelType\" (Prisma: SaleVehicle.modelType). Type: String?. Synonyms: model type.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "modelType",
+      "mapped_column": "modelType",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "model type"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.year",
+    "text": "Column \"SaleVehicle\".\"year\" (Prisma: SaleVehicle.year). Type: Int?. Synonyms: year.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "year",
+      "mapped_column": "year",
+      "type": "Int?",
+      "importance": "high",
+      "domain": "sales",
+      "synonyms": [
+        "year"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.age",
+    "text": "Column \"SaleVehicle\".\"age\" (Prisma: SaleVehicle.age). Type: Int?. Synonyms: age.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "age",
+      "mapped_column": "age",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "age"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.bodyStyle",
+    "text": "Column \"SaleVehicle\".\"bodyStyle\" (Prisma: SaleVehicle.bodyStyle). Type: String?. Synonyms: body style, vehicle type, body.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "bodyStyle",
+      "mapped_column": "bodyStyle",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "body style",
+        "vehicle type",
+        "body"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.color",
+    "text": "Column \"SaleVehicle\".\"color\" (Prisma: SaleVehicle.color). Type: String?. Synonyms: color.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "color",
+      "mapped_column": "color",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "color"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.stockNo",
+    "text": "Column \"SaleVehicle\".\"stockNo\" (Prisma: SaleVehicle.stockNo). Type: String?. Synonyms: stock no.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "stockNo",
+      "mapped_column": "stockNo",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "stock no"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.vehicleMileage",
+    "text": "Column \"SaleVehicle\".\"vehicleMileage\" (Prisma: SaleVehicle.vehicleMileage). Type: Int?. Synonyms: vehicle mileage.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "vehicleMileage",
+      "mapped_column": "vehicleMileage",
+      "type": "Int?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "vehicle mileage"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.vehInventoryCompany",
+    "text": "Column \"SaleVehicle\".\"vehInventoryCompany\" (Prisma: SaleVehicle.vehInventoryCompany). Type: String?. Synonyms: veh inventory company.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "vehInventoryCompany",
+      "mapped_column": "vehInventoryCompany",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "veh inventory company"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.vehSaleCompany",
+    "text": "Column \"SaleVehicle\".\"vehSaleCompany\" (Prisma: SaleVehicle.vehSaleCompany). Type: String?. Synonyms: veh sale company.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "vehSaleCompany",
+      "mapped_column": "vehSaleCompany",
+      "type": "String?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "veh sale company"
+      ]
+    }
+  },
+  {
+    "id": "col:SaleVehicle.glVehicleCost",
+    "text": "Column \"SaleVehicle\".\"glVehicleCost\" (Prisma: SaleVehicle.glVehicleCost). Type: Decimal?. Synonyms: gl vehicle cost.",
+    "metadata": {
+      "kind": "column",
+      "table": "SaleVehicle",
+      "mapped_table": "SaleVehicle",
+      "column": "glVehicleCost",
+      "mapped_column": "glVehicleCost",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "sales",
+      "synonyms": [
+        "gl vehicle cost"
+      ]
+    }
+  },
+  {
+    "id": "col:CrmApiAccessToken.id",
+    "text": "Column \"CrmApiAccessToken\".\"id\" (Prisma: CrmApiAccessToken.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "CrmApiAccessToken",
+      "mapped_table": "CrmApiAccessToken",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:CrmApiAccessToken.accessToken",
+    "text": "Column \"CrmApiAccessToken\".\"accessToken\" (Prisma: CrmApiAccessToken.accessToken). Type: String. Synonyms: access token.",
+    "metadata": {
+      "kind": "column",
+      "table": "CrmApiAccessToken",
+      "mapped_table": "CrmApiAccessToken",
+      "column": "accessToken",
+      "mapped_column": "accessToken",
+      "type": "String",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "access token"
+      ]
+    }
+  },
+  {
+    "id": "col:CrmApiAccessToken.expiresAt",
+    "text": "Column \"CrmApiAccessToken\".\"expiresAt\" (Prisma: CrmApiAccessToken.expiresAt). Type: DateTime. Synonyms: expires at.",
+    "metadata": {
+      "kind": "column",
+      "table": "CrmApiAccessToken",
+      "mapped_table": "CrmApiAccessToken",
+      "column": "expiresAt",
+      "mapped_column": "expiresAt",
+      "type": "DateTime",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "expires at"
+      ]
+    }
+  },
+  {
+    "id": "col:CrmApiAccessToken.createdAt",
+    "text": "Column \"CrmApiAccessToken\".\"createdAt\" (Prisma: CrmApiAccessToken.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "CrmApiAccessToken",
+      "mapped_table": "CrmApiAccessToken",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:CrmApiAccessToken.updatedAt",
+    "text": "Column \"CrmApiAccessToken\".\"updatedAt\" (Prisma: CrmApiAccessToken.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "CrmApiAccessToken",
+      "mapped_table": "CrmApiAccessToken",
+      "column": "updatedAt",
+      "mapped_column": "updatedAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:FineTuningSample.id",
+    "text": "Column \"FineTuningSample\".\"id\" (Prisma: FineTuningSample.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "FineTuningSample",
+      "mapped_table": "FineTuningSample",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "fine_tuning",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:FineTuningSample.type",
+    "text": "Column \"FineTuningSample\".\"type\" (Prisma: FineTuningSample.type). Type: FineTuningSampleType. Synonyms: type. Enum values: NLQ, FAQ.",
+    "metadata": {
+      "kind": "column",
+      "table": "FineTuningSample",
+      "mapped_table": "FineTuningSample",
+      "column": "type",
+      "mapped_column": "type",
+      "type": "FineTuningSampleType",
+      "importance": "high",
+      "domain": "fine_tuning",
+      "synonyms": [
+        "type"
+      ]
+    }
+  },
+  {
+    "id": "col:FineTuningSample.question",
+    "text": "Column \"FineTuningSample\".\"question\" (Prisma: FineTuningSample.question). Type: String. Synonyms: question.",
+    "metadata": {
+      "kind": "column",
+      "table": "FineTuningSample",
+      "mapped_table": "FineTuningSample",
+      "column": "question",
+      "mapped_column": "question",
+      "type": "String",
+      "importance": "high",
+      "domain": "fine_tuning",
+      "synonyms": [
+        "question"
+      ]
+    }
+  },
+  {
+    "id": "col:FineTuningSample.answer",
+    "text": "Column \"FineTuningSample\".\"answer\" (Prisma: FineTuningSample.answer). Type: String. Synonyms: answer.",
+    "metadata": {
+      "kind": "column",
+      "table": "FineTuningSample",
+      "mapped_table": "FineTuningSample",
+      "column": "answer",
+      "mapped_column": "answer",
+      "type": "String",
+      "importance": "high",
+      "domain": "fine_tuning",
+      "synonyms": [
+        "answer"
+      ]
+    }
+  },
+  {
+    "id": "col:FineTuningSample.createdAt",
+    "text": "Column \"FineTuningSample\".\"createdAt\" (Prisma: FineTuningSample.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "FineTuningSample",
+      "mapped_table": "FineTuningSample",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "fine_tuning",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:FineTuningSample.updatedAt",
+    "text": "Column \"FineTuningSample\".\"updatedAt\" (Prisma: FineTuningSample.updatedAt). Type: DateTime. Synonyms: updated date, updated time, updated at.",
+    "metadata": {
+      "kind": "column",
+      "table": "FineTuningSample",
+      "mapped_table": "FineTuningSample",
+      "column": "updatedAt",
+      "mapped_column": "updatedAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "fine_tuning",
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  }
+]

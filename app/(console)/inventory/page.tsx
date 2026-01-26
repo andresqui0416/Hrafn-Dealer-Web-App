@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBoxOpen, faSpinner, faFilter } from "@fortawesome/free-solid-svg-icons";
+import { faBoxOpen, faSpinner, faFilter, faRotateRight, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 type InventoryItem = {
   id: string;
@@ -43,7 +43,54 @@ export default function InventoryPage() {
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [pageInput, setPageInput] = useState("1");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const loadInventory = async (signal?: AbortSignal) => {
+    try {
+      setInventoryLoading(true);
+      setIsRefreshing(true);
+      const statusParam =
+        statusFilter.length > 0 ? `&${statusFilter.map((s) => `status=${s}`).join("&")}` : "";
+      const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
+      const response = await fetch(
+        `/api/inventory?page=${currentPage}&limit=${itemsPerPage}${statusParam}${searchParam}`,
+        { signal },
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setInventory(data.inventory || []);
+        setPagination(data.pagination || null);
+        // Update page input to match current page
+        if (data.pagination) {
+          setPageInput(data.pagination.page.toString());
+        }
+      }
+    } catch (error) {
+      // Ignore abort errors
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
+      console.error("Error loading inventory:", error);
+    } finally {
+      setInventoryLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    // Cancel any existing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new abort controller for this request
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    loadInventory(abortController.signal);
+  };
 
   useEffect(() => {
     // Cancel any existing request
@@ -55,44 +102,13 @@ export default function InventoryPage() {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
-    const loadInventory = async () => {
-      try {
-        setInventoryLoading(true);
-        const statusParam =
-          statusFilter.length > 0 ? `&${statusFilter.map((s) => `status=${s}`).join("&")}` : "";
-        const response = await fetch(
-          `/api/inventory?page=${currentPage}&limit=${itemsPerPage}${statusParam}`,
-          { signal: abortController.signal },
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setInventory(data.inventory || []);
-          setPagination(data.pagination || null);
-          // Update page input to match current page
-          if (data.pagination) {
-            setPageInput(data.pagination.page.toString());
-          }
-        }
-      } catch (error) {
-        // Ignore abort errors
-        if (error instanceof Error && error.name === "AbortError") {
-          return;
-        }
-        console.error("Error loading inventory:", error);
-      } finally {
-        if (!abortController.signal.aborted) {
-          setInventoryLoading(false);
-        }
-      }
-    };
-
-    loadInventory();
+    loadInventory(abortController.signal);
 
     // Cleanup function to cancel the request if component unmounts or dependencies change
     return () => {
       abortController.abort();
     };
-  }, [currentPage, itemsPerPage, statusFilter]);
+  }, [currentPage, itemsPerPage, statusFilter, searchQuery]);
 
   const statusOptions = [
     { value: "available", label: "Available" },
@@ -113,12 +129,47 @@ export default function InventoryPage() {
     setPageInput("1");
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+    setPageInput("1");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold">Inventory</h2>
           <p className="text-sm text-muted-foreground">Manage your inventory</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <FontAwesomeIcon
+              icon={faSearch}
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"
+            />
+            <Input
+              type="text"
+              placeholder="Search by VIN, make, model, trim, or year..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              disabled={inventoryLoading}
+              className="pl-9 w-64 bg-background text-foreground"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={inventoryLoading || isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <FontAwesomeIcon
+              icon={faRotateRight}
+              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            <span>Refresh</span>
+          </Button>
         </div>
       </div>
 
