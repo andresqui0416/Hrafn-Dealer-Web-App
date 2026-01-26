@@ -1,0 +1,118 @@
+{
+  "enums": [
+    {
+      "name": "Role",
+      "values": [
+        "admin",
+        "manager",
+        "viewer"
+      ],
+      "usedInTables": [
+        {
+          "table": "UserDealerRole",
+          "mappedTable": "UserDealerRole",
+          "field": "role",
+          "mappedColumn": "role"
+        }
+      ]
+    },
+    {
+      "name": "AdminRole",
+      "values": [
+        "super_admin",
+        "admin",
+        "moderator"
+      ],
+      "usedInTables": [
+        {
+          "table": "Admin",
+          "mappedTable": "Admin",
+          "field": "role",
+          "mappedColumn": "role"
+        }
+      ]
+    },
+    {
+      "name": "ServiceStatus",
+      "values": [
+        "pending",
+        "reviewing",
+        "rejected",
+        "allowed"
+      ],
+      "usedInTables": [
+        {
+          "table": "DealerService",
+          "mappedTable": "DealerService",
+          "field": "status",
+          "mappedColumn": "status"
+        }
+      ]
+    },
+    {
+      "name": "ChatStatus",
+      "values": [
+        "opened",
+        "accepted",
+        "closed"
+      ],
+      "usedInTables": [
+        {
+          "table": "Chat",
+          "mappedTable": "Chat",
+          "field": "status",
+          "mappedColumn": "status"
+        }
+      ]
+    },
+    {
+      "name": "DmsType",
+      "values": [
+        "Parts",
+        "Service",
+        "Accounting",
+        "Finance"
+      ],
+      "usedInTables": [
+        {
+          "table": "DealerDepartment",
+          "mappedTable": "DealerDepartment",
+          "field": "dmsType",
+          "mappedColumn": "dmsType"
+        }
+      ]
+    },
+    {
+      "name": "InventoryStatus",
+      "values": [
+        "pending",
+        "available",
+        "unavailable",
+        "sold"
+      ],
+      "usedInTables": [
+        {
+          "table": "InventoryListing",
+          "mappedTable": "Inventory",
+          "field": "status",
+          "mappedColumn": "status"
+        }
+      ]
+    },
+    {
+      "name": "FineTuningSampleType",
+      "values": [
+        "NLQ",
+        "FAQ"
+      ],
+      "usedInTables": [
+        {
+          "table": "FineTuningSample",
+          "mappedTable": "FineTuningSample",
+          "field": "type",
+          "mappedColumn": "type"
+        }
+      ]
+    }
+  ]
+}

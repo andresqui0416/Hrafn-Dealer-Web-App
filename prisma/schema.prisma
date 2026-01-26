@@ -39,6 +39,12 @@ enum DmsType {
   Finance
 }
 
+enum InventoryStatus {
+  pending
+  available
+  unavailable
+  sold
+}
 
 model Dealer {
   id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
@@ -142,7 +148,7 @@ model InventoryListing {
   msrp       Decimal?  @db.Decimal(10, 2)
   price      Decimal?  @db.Decimal(10, 2)
   mileage    Int       @default(0)
-  status     String    @default("available")
+  status     InventoryStatus @default(available)
   scrapedAt  DateTime  @default(now()) @map("scraped_at") @db.Timestamptz(6)
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -812,4 +818,21 @@ model CrmApiAccessToken {
   updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
   @@map("CrmApiAccessToken")
+}
+
+enum FineTuningSampleType {
+  NLQ
+  FAQ
+}
+
+model FineTuningSample {
+  id          String                @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  type        FineTuningSampleType
+  question    String                @db.Text
+  answer      String                @db.Text
+  createdAt   DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime              @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([type], map: "idx_fts_type")
+  @@map("FineTuningSample")
 }
