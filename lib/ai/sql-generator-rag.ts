@@ -3,7 +3,7 @@ import type { NLQExample } from "@/lib/ai/rag/examples_store";
 
 function formatExamples(examples: NLQExample[]) {
   if (!examples.length) return "";
-  const lines: string[] = ["Similar examples:"];
+  const lines: string[] = ["Generate based on similar examples:"];
   examples.forEach((ex, i) => {
     lines.push(`Example ${i + 1} NL: ${ex.question}`);
     lines.push(`Example ${i + 1} SQL: ${ex.sql}`);
