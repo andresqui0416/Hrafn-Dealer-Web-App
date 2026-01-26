@@ -311,7 +311,9 @@ export async function POST(req: NextRequest) {
       {
         role: "system",
         content:
-          `Recent chat summary (last 5 messages):\n${lastFiveSummary}\n\nUse this summary to correctly interpret the user's latest request.`,
+          `Recent chat summary (last 5 messages):\n${lastFiveSummary}\n\nUse this summary to correctly interpret the user's latest request.\n`+
+          `When a user requests all data that satisfies a certain condition, you need to get the total number of data that satisfies that condition, the starting count, and the ending count (to support pagination).\n`+
+          `Don't make the fake data and if there isn't any data from the database, say so.`,
       },
       ...messages.map((m: any) => ({ role: m.role, content: m.content })),
     ];

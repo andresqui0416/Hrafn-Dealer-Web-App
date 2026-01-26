@@ -3,7 +3,7 @@ import type { NLQExample } from "@/lib/ai/rag/examples_store";
 
 function formatExamples(examples: NLQExample[]) {
   if (!examples.length) return "";
-  const lines: string[] = ["Generate based on similar examples:"];
+  const lines: string[] = ["Generate based on similar examples and follow the style of the examples:"];
   examples.forEach((ex, i) => {
     lines.push(`Example ${i + 1} NL: ${ex.question}`);
     lines.push(`Example ${i + 1} SQL: ${ex.sql}`);
@@ -32,6 +32,8 @@ export async function generateSQLFromNaturalLanguageRAG(args: {
     `- Use single quotes for string literals.`,
     `- Output must be a single SELECT statement (CTEs allowed via WITH).`,
     `- Never include destructive statements (INSERT/UPDATE/DELETE/ALTER/DROP/etc).`,
+    `- Use the enums listed in SCHEMA when appropriate.`,
+    `- When a user requests all data that satisfies a certain condition, you need to get the total number of data that satisfies that condition, the starting count, and the ending count (to support pagination).`,
     `- CRITICAL: ALL queries that return multiple rows MUST include LIMIT 10. Maximum 10 rows. This is mandatory.`,
     ``,
     `Dealer scoping rule:`,
