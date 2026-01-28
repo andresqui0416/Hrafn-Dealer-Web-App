@@ -22,7 +22,9 @@ export const dynamic = "force-dynamic";
 
 type ChatMessage = { role: string; content: any };
 
-function normalizeChatMessages(messages: any[]): Array<{ role: "user" | "assistant"; content: string }> {
+function normalizeChatMessages(
+  messages: any[],
+): Array<{ role: "user" | "assistant"; content: string }> {
   const out: Array<{ role: "user" | "assistant"; content: string }> = [];
   for (const m of messages) {
     const role = m?.role;
@@ -180,13 +182,12 @@ export async function POST(req: NextRequest) {
     const dealerId = userDealerRole?.dealerId;
     const nowIso = new Date().toISOString();
 
-    const dealer =
-      dealerId
-        ? await prisma.dealer.findUnique({
-            where: { id: dealerId },
-            select: { id: true, name: true, address: true },
-          })
-        : null;
+    const dealer = dealerId
+      ? await prisma.dealer.findUnique({
+          where: { id: dealerId },
+          select: { id: true, name: true, address: true },
+        })
+      : null;
 
     // Define tools the model can call (Responses API function tool)
     const tools: any[] = [
@@ -236,8 +237,14 @@ export async function POST(req: NextRequest) {
         if (!mappedTables.length) throw new Error("No relevant tables found for this question");
 
         // 2) Retrieve relevant columns within those tables (Pinecone column docs, filtered by mapped_table)
-        const columnDocs = await retrieveSchemaColumnDocsForTables(contextualQuestion, mappedTables, 120);
-        console.log(`[NLQ RAG] Retrieved ${columnDocs.length} column docs for tables: ${mappedTables.join(", ")}`);
+        const columnDocs = await retrieveSchemaColumnDocsForTables(
+          contextualQuestion,
+          mappedTables,
+          120,
+        );
+        console.log(
+          `[NLQ RAG] Retrieved ${columnDocs.length} column docs for tables: ${mappedTables.join(", ")}`,
+        );
         if (columnDocs.length > 0) {
           console.log(`[NLQ RAG] Sample column doc:`, {
             table: columnDocs[0].metadata?.mapped_table,
@@ -268,8 +275,7 @@ export async function POST(req: NextRequest) {
           validateIdentifiersAgainstSchema(sql, schemaBlock);
           await explainSQL(sql);
         } catch (err) {
-          const errorHint =
-            err instanceof Error ? err.message : "Unknown SQL validation error";
+          const errorHint = err instanceof Error ? err.message : "Unknown SQL validation error";
           sql = await generateSQLFromNaturalLanguageRAG({
             question: contextualQuestion,
             dealerId,
@@ -311,8 +317,8 @@ export async function POST(req: NextRequest) {
       {
         role: "system",
         content:
-          `Recent chat summary (last 5 messages):\n${lastFiveSummary}\n\nUse this summary to correctly interpret the user's latest request.\n`+
-          `When a user requests all data that satisfies a certain condition, you need to get the total number of data that satisfies that condition, the starting count, and the ending count (to support pagination).\n`+
+          `Recent chat summary (last 5 messages):\n${lastFiveSummary}\n\nUse this summary to correctly interpret the user's latest request.\n` +
+          `When a user requests all data that satisfies a certain condition, you need to get the total number of data that satisfies that condition, the starting count, and the ending count (to support pagination).\n` +
           `Don't make the fake data and if there isn't any data from the database, say so.`,
       },
       ...messages.map((m: any) => ({ role: m.role, content: m.content })),

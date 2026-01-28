@@ -126,7 +126,7 @@ export default function ChatPage() {
                         parts.push(
                           <strong key={key++} className="font-semibold">
                             {match[1]}
-                          </strong>
+                          </strong>,
                         );
                         lastIndex = match.index + match[0].length;
                       }

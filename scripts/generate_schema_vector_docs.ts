@@ -20,10 +20,7 @@ type ModelDef = {
   mappedTable: string;
   scalars: ScalarField[];
   // fkFieldName -> { targetModel, targetMappedTable, references[] }
-  fkMap: Record<
-    string,
-    { targetModel: string; targetMappedTable: string; references: string[] }
-  >;
+  fkMap: Record<string, { targetModel: string; targetMappedTable: string; references: string[] }>;
   uniqueConstraints: string[][];
 };
 
@@ -40,11 +37,14 @@ function uniq<T>(arr: T[]) {
 }
 
 function detectDomain(modelName: string) {
-  if (modelName === "InventoryListing" || modelName.toLowerCase().includes("inventory")) return "inventory";
+  if (modelName === "InventoryListing" || modelName.toLowerCase().includes("inventory"))
+    return "inventory";
   if (modelName === "Offers" || modelName.toLowerCase().includes("offer")) return "offers";
   if (modelName.startsWith("Sale")) return "sales";
-  if (modelName === "Chat" || modelName === "Message" || modelName.toLowerCase().includes("inbox")) return "chat";
-  if (modelName === "User" || modelName === "Session" || modelName === "UserDealerRole") return "auth";
+  if (modelName === "Chat" || modelName === "Message" || modelName.toLowerCase().includes("inbox"))
+    return "chat";
+  if (modelName === "User" || modelName === "Session" || modelName === "UserDealerRole")
+    return "auth";
   if (modelName === "Admin" || modelName === "AdminSession") return "admin";
   if (modelName === "FineTuningSample") return "fine_tuning";
   return "general";
@@ -92,14 +92,14 @@ function importanceForField(model: ModelDef, field: ScalarField) {
 }
 
 function synonymsForField(model: ModelDef, field: ScalarField) {
-  const base = uniq([
-    splitCamelCase(field.name),
-    splitCamelCase(field.mappedColumn),
-  ]).filter(Boolean);
+  const base = uniq([splitCamelCase(field.name), splitCamelCase(field.mappedColumn)]).filter(
+    Boolean,
+  );
 
   const extra: string[] = [];
   // A few high-signal, schema-specific synonyms
-  if (field.name === "vin") extra.push("vin", "vehicle vin", "chassis number", "vehicle identification number");
+  if (field.name === "vin")
+    extra.push("vin", "vehicle vin", "chassis number", "vehicle identification number");
   if (field.name === "dealNo") extra.push("deal number", "deal id", "sale deal number");
   if (field.name === "dealerId") extra.push("dealer id", "dealership id", "store id");
   if (field.name === "offerType") extra.push("offer type", "offer category");
@@ -150,7 +150,8 @@ function parsePrismaSchema(schemaText: string) {
     if (modelMatch) {
       const name = modelMatch[1];
       const scalars: ScalarField[] = [];
-      const fkRefs: Array<{ relationTargetModel: string; fields: string[]; references: string[] }> = [];
+      const fkRefs: Array<{ relationTargetModel: string; fields: string[]; references: string[] }> =
+        [];
       const uniqueConstraints: string[][] = [];
       let mappedTable = name;
 
@@ -213,10 +214,16 @@ function parsePrismaSchema(schemaText: string) {
           const fieldsMatch = relArgs.match(/fields:\s*\[([^\]]+)\]/);
           const refsMatch = relArgs.match(/references:\s*\[([^\]]+)\]/);
           const fields = fieldsMatch
-            ? fieldsMatch[1].split(",").map((s) => s.trim()).filter(Boolean)
+            ? fieldsMatch[1]
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
             : [];
           const references = refsMatch
-            ? refsMatch[1].split(",").map((s) => s.trim()).filter(Boolean)
+            ? refsMatch[1]
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
             : [];
 
           if (fields.length > 0 && references.length > 0) {
@@ -283,11 +290,12 @@ function parsePrismaSchema(schemaText: string) {
   // Fill fkMap
   for (const m of models) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const fkRefs = ((m as any).__fkRefs as Array<{
-      relationTargetModel: string;
-      fields: string[];
-      references: string[];
-    }>) || [];
+    const fkRefs =
+      ((m as any).__fkRefs as Array<{
+        relationTargetModel: string;
+        fields: string[];
+        references: string[];
+      }>) || [];
 
     for (const ref of fkRefs) {
       for (const fkField of ref.fields) {
@@ -312,8 +320,9 @@ function buildColumnDoc(model: ModelDef, field: ScalarField, enums: Record<strin
   const domain = detectDomain(model.name);
   const synonyms = synonymsForField(model, field);
 
-  const enumInfo =
-    enums[field.baseType] ? ` Enum values: ${enums[field.baseType].values.join(", ")}.` : "";
+  const enumInfo = enums[field.baseType]
+    ? ` Enum values: ${enums[field.baseType].values.join(", ")}.`
+    : "";
 
   const fk = model.fkMap[field.name];
   const fkInfo = fk
@@ -328,7 +337,9 @@ function buildColumnDoc(model: ModelDef, field: ScalarField, enums: Record<strin
       uniqueInfoParts.push(`part of unique(${uc.join(", ")})`);
     }
   }
-  const uniqueInfo = uniqueInfoParts.length ? ` Constraints: ${uniq(uniqueInfoParts).join("; ")}.` : "";
+  const uniqueInfo = uniqueInfoParts.length
+    ? ` Constraints: ${uniq(uniqueInfoParts).join("; ")}.`
+    : "";
 
   const text =
     `Column "${mappedTable}"."${mappedCol}" (Prisma: ${model.name}.${field.name}). ` +
@@ -535,4 +546,3 @@ function main() {
 }
 
 main();
-

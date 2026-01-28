@@ -10,4 +10,3 @@ export function getPineconeIndex() {
 export function pineconeEnabled() {
   return Boolean(process.env.PINECONE_API_KEY && process.env.PINECONE_INDEX);
 }
-

@@ -189,8 +189,7 @@ export async function GET(_request: NextRequest) {
         totalOffers: gmcResult.totalOffers || 0,
         error: gmcResult.error || "",
       };
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error("Error scraping GMC offers:", error?.message || error);
       results.gmc.error = error?.message || "Failed to scrape GMC offers";
     }
@@ -241,8 +240,7 @@ export async function GET(_request: NextRequest) {
         totalOffers: chryslerResult.totalOffers || 0,
         error: chryslerResult.error || "",
       };
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error("Error scraping Chrysler offers:", error?.message || error);
       results.chrysler.error = error?.message || "Failed to scrape Chrysler offers";
     }
@@ -276,8 +274,7 @@ export async function GET(_request: NextRequest) {
         totalOffers: ramResult.totalOffers || 0,
         error: ramResult.error || "",
       };
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error("Error scraping RAM offers:", error?.message || error);
       results.ram.error = error?.message || "Failed to scrape RAM offers";
     }

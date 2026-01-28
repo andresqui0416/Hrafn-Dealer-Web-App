@@ -102,18 +102,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (type !== "NLQ" && type !== "FAQ") {
-      return NextResponse.json(
-        { error: "Type must be either 'NLQ' or 'FAQ'" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Type must be either 'NLQ' or 'FAQ'" }, { status: 400 });
     }
 
     // Pinecone must succeed BEFORE DB write
     if (!fineTuningPineconeEnabled()) {
-      return NextResponse.json(
-        { error: "Pinecone is not configured" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Pinecone is not configured" }, { status: 500 });
     }
 
     const id = randomUUID();
@@ -131,10 +125,7 @@ export async function POST(request: NextRequest) {
       vectorSync = await upsertFineTuningSamplesToPinecone([normalized]);
     } catch (e) {
       console.error("Pinecone upsert failed for fine-tuning sample:", e);
-      return NextResponse.json(
-        { error: "Pinecone upsert failed" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Pinecone upsert failed" }, { status: 500 });
     }
 
     const sample = await prisma.fineTuningSample.create({
@@ -172,22 +163,14 @@ export async function DELETE(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}));
     const idsRaw = (body as any)?.ids;
-    const ids = Array.isArray(idsRaw)
-      ? idsRaw.map((x) => String(x)).filter(Boolean)
-      : [];
+    const ids = Array.isArray(idsRaw) ? idsRaw.map((x) => String(x)).filter(Boolean) : [];
 
     if (ids.length === 0) {
-      return NextResponse.json(
-        { error: "ids must be a non-empty array" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "ids must be a non-empty array" }, { status: 400 });
     }
 
     if (ids.length > 1000) {
-      return NextResponse.json(
-        { error: "Too many ids (max 1000 per request)" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Too many ids (max 1000 per request)" }, { status: 400 });
     }
 
     // Fetch types so we can delete from the correct Pinecone namespaces
@@ -205,10 +188,7 @@ export async function DELETE(request: NextRequest) {
 
     // Pinecone must succeed BEFORE DB delete
     if (!fineTuningPineconeEnabled()) {
-      return NextResponse.json(
-        { error: "Pinecone is not configured" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Pinecone is not configured" }, { status: 500 });
     }
 
     let vectorSync: any;
@@ -218,10 +198,7 @@ export async function DELETE(request: NextRequest) {
       );
     } catch (e) {
       console.error("Pinecone bulk delete failed for fine-tuning samples:", e);
-      return NextResponse.json(
-        { error: "Pinecone delete failed" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Pinecone delete failed" }, { status: 500 });
     }
 
     const deleted = await prisma.fineTuningSample.deleteMany({

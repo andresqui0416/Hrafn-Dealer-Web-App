@@ -46,11 +46,9 @@ async function main() {
   const PINECONE_INDEX = requireEnv("PINECONE_INDEX");
 
   // Separate namespace from schema columns to avoid wiping other schema vectors.
-  const PINECONE_NAMESPACE =
-    process.env.PINECONE_NAMESPACE_SCHEMA_TABLES || "schema_tables";
+  const PINECONE_NAMESPACE = process.env.PINECONE_NAMESPACE_SCHEMA_TABLES || "schema_tables";
 
-  const OPENAI_EMBEDDING_MODEL =
-    process.env.OPENAI_EMBEDDING_MODEL || "text-embedding-3-small";
+  const OPENAI_EMBEDDING_MODEL = process.env.OPENAI_EMBEDDING_MODEL || "text-embedding-3-small";
   const OPENAI_EMBEDDING_DIMENSIONS = process.env.OPENAI_EMBEDDING_DIMENSIONS
     ? Number(process.env.OPENAI_EMBEDDING_DIMENSIONS)
     : undefined;
@@ -165,4 +163,3 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-

@@ -15,13 +15,23 @@ export function validateSelectOnly(sql: string): void {
 
   // Check for dangerous SQL keywords, but only as actual keywords (not inside identifiers/strings)
   // Remove quoted strings and identifiers first to avoid false positives
-  const dangerous = ["DROP", "DELETE", "INSERT", "UPDATE", "ALTER", "CREATE", "TRUNCATE", "EXEC", "EXECUTE"];
-  
+  const dangerous = [
+    "DROP",
+    "DELETE",
+    "INSERT",
+    "UPDATE",
+    "ALTER",
+    "CREATE",
+    "TRUNCATE",
+    "EXEC",
+    "EXECUTE",
+  ];
+
   // Remove quoted strings (single and double quotes)
   let sqlWithoutQuotes = upper;
   sqlWithoutQuotes = sqlWithoutQuotes.replace(/"[^"]*"/g, ""); // Remove double-quoted identifiers
   sqlWithoutQuotes = sqlWithoutQuotes.replace(/'[^']*'/g, ""); // Remove single-quoted strings
-  
+
   // Check for dangerous keywords as standalone words (with word boundaries)
   for (const k of dangerous) {
     // Use word boundary regex to match only as a keyword, not as part of another word
@@ -72,4 +82,3 @@ export function validateIdentifiersAgainstSchema(sql: string, schemaBlock: strin
     }
   }
 }
-

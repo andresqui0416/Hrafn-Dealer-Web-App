@@ -16,10 +16,7 @@ function isAdminRoleAllowed(role: string): boolean {
 }
 
 // PUT update fine-tuning sample
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Get admin info from middleware-set headers
     const adminRole = request.headers.get("x-admin-role")!;
@@ -43,10 +40,7 @@ export async function PUT(
     }
 
     if (type !== "NLQ" && type !== "FAQ") {
-      return NextResponse.json(
-        { error: "Type must be either 'NLQ' or 'FAQ'" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Type must be either 'NLQ' or 'FAQ'" }, { status: 400 });
     }
 
     // Check if sample exists
@@ -55,18 +49,12 @@ export async function PUT(
     });
 
     if (!existingSample) {
-      return NextResponse.json(
-        { error: "Fine-tuning sample not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Fine-tuning sample not found" }, { status: 404 });
     }
 
     // Pinecone must succeed BEFORE DB update
     if (!fineTuningPineconeEnabled()) {
-      return NextResponse.json(
-        { error: "Pinecone is not configured" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Pinecone is not configured" }, { status: 500 });
     }
 
     let vectorSync: any;
@@ -82,10 +70,7 @@ export async function PUT(
       ]);
     } catch (e) {
       console.error("Pinecone upsert failed for fine-tuning sample:", e);
-      return NextResponse.json(
-        { error: "Pinecone upsert failed" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Pinecone upsert failed" }, { status: 500 });
     }
 
     const sample = await prisma.fineTuningSample.update({
@@ -107,10 +92,7 @@ export async function PUT(
 }
 
 // DELETE fine-tuning sample
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Get admin info from middleware-set headers
     const adminRole = request.headers.get("x-admin-role")!;
@@ -129,18 +111,12 @@ export async function DELETE(
     });
 
     if (!existingSample) {
-      return NextResponse.json(
-        { error: "Fine-tuning sample not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Fine-tuning sample not found" }, { status: 404 });
     }
 
     // Pinecone must succeed BEFORE DB delete
     if (!fineTuningPineconeEnabled()) {
-      return NextResponse.json(
-        { error: "Pinecone is not configured" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Pinecone is not configured" }, { status: 500 });
     }
 
     let vectorSync: any;
@@ -150,10 +126,7 @@ export async function DELETE(
       ]);
     } catch (e) {
       console.error("Pinecone delete failed for fine-tuning sample:", e);
-      return NextResponse.json(
-        { error: "Pinecone delete failed" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Pinecone delete failed" }, { status: 500 });
     }
 
     await prisma.fineTuningSample.delete({

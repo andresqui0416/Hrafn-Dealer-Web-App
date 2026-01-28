@@ -139,14 +139,16 @@ export async function retrieveSchemaColumnDocsForTables(
 
   const namespace = schemaPineconeNamespace();
   const index = getPineconeIndex().namespace(namespace);
-  
-  console.log(`[Schema RAG] Querying Pinecone namespace: "${namespace}" for ${tables.length} tables: ${tables.join(", ")}`);
-  
+
+  console.log(
+    `[Schema RAG] Querying Pinecone namespace: "${namespace}" for ${tables.length} tables: ${tables.join(", ")}`,
+  );
+
   // Build a query that includes table names to improve matching
   // This helps the semantic search find columns from the specific tables
-  const tableNamesText = tables.map(t => `table "${t}"`).join(", ");
+  const tableNamesText = tables.map((t) => `table "${t}"`).join(", ");
   const enhancedQuery = `${question} columns for ${tableNamesText}`;
-  
+
   const vector = await embedText(enhancedQuery);
 
   let res;
@@ -163,19 +165,23 @@ export async function retrieveSchemaColumnDocsForTables(
     });
   } catch (err) {
     console.error(`[Schema RAG] Pinecone query failed:`, err);
-    throw new Error(`Failed to query Pinecone for column docs: ${err instanceof Error ? err.message : String(err)}`);
+    throw new Error(
+      `Failed to query Pinecone for column docs: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
   const matches = res.matches || [];
   console.log(`[Schema RAG] Query returned ${matches.length} total matches`);
-  
+
   // If we got 0 matches, it might mean the namespace is empty
   if (matches.length === 0) {
-    console.warn(`[Schema RAG] WARNING: No matches found in namespace "${namespace}". ` +
-      `This might mean column docs haven't been uploaded. ` +
-      `Run: npm run upsert:schema-columns`);
+    console.warn(
+      `[Schema RAG] WARNING: No matches found in namespace "${namespace}". ` +
+        `This might mean column docs haven't been uploaded. ` +
+        `Run: npm run upsert:schema-columns`,
+    );
   }
-  
+
   const allColumnDocs = matches
     .filter((m) => m.id && m.metadata && typeof m.score === "number")
     .map((m) => ({
@@ -184,7 +190,7 @@ export async function retrieveSchemaColumnDocsForTables(
       metadata: m.metadata as any,
       score: m.score || 0,
     }));
-  
+
   if (allColumnDocs.length === 0) {
     // If we still don't have enough results, try a fallback: query with just table names
     const fallbackQuery = `columns fields attributes for ${tableNamesText}`;
@@ -198,7 +204,7 @@ export async function retrieveSchemaColumnDocsForTables(
         mapped_table: { $in: tables },
       } as any,
     });
-    
+
     const fallbackMatches = fallbackRes.matches || [];
     const fallbackDocs = fallbackMatches
       .filter((m) => m.id && m.metadata && typeof m.score === "number")
@@ -208,14 +214,14 @@ export async function retrieveSchemaColumnDocsForTables(
         metadata: m.metadata as any,
         score: m.score || 0,
       }));
-    
+
     allColumnDocs.push(...fallbackDocs);
   }
-  
+
   if (allColumnDocs.length === 0) {
     return [];
   }
-  
+
   // Group by table
   const groupedByTable: Record<string, SchemaColumnDoc[]> = {};
   for (const doc of allColumnDocs) {
@@ -227,24 +233,24 @@ export async function retrieveSchemaColumnDocsForTables(
       groupedByTable[table].push(doc);
     }
   }
-  
+
   // Ensure we have columns for each requested table (even if below threshold, take top ones)
   for (const table of tables) {
     if (!groupedByTable[table] || groupedByTable[table].length === 0) {
       // Get top columns for this table from allColumnDocs (even if below threshold)
       const tableColumns = allColumnDocs
-        .filter(d => d.metadata?.mapped_table === table)
+        .filter((d) => d.metadata?.mapped_table === table)
         .sort((a, b) => b.score - a.score)
         .slice(0, 10); // Take top 10 for tables with no high-scoring columns
-      
+
       if (tableColumns.length > 0) {
         groupedByTable[table] = tableColumns;
       }
     }
   }
-  
+
   // Flatten (Pinecone already returns sorted by score, so no need to sort again)
   const result = Object.values(groupedByTable).flat();
-  
+
   return result;
 }

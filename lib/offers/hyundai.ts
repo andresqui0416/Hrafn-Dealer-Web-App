@@ -180,7 +180,8 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
           // Process lowApr (financing) offer
           if (cardOrder.lowApr) {
             const lowApr = cardOrder.lowApr;
-            const aprRate = lowApr.apr !== undefined && lowApr.apr !== null ? lowApr.apr / 100 : null;
+            const aprRate =
+              lowApr.apr !== undefined && lowApr.apr !== null ? lowApr.apr / 100 : null;
 
             offers.push({
               brand: "Hyundai",

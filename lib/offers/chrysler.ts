@@ -111,8 +111,12 @@ const fetChOfferData = async (modelInfo: any) => {
         if (offerInfo.type === "UserPlus") {
           const leaseGroup = offerInfo.groupData?.find((gd: any) => gd.type === "LEASE");
           if (leaseGroup) {
-            leaseMonthlyPayment = leaseGroup.monthlyPmnt ? parseFloat(leaseGroup.monthlyPmnt) : null;
-            leaseDueAtSigning = leaseGroup.dueatSigning ? parseFloat(leaseGroup.dueatSigning) : null;
+            leaseMonthlyPayment = leaseGroup.monthlyPmnt
+              ? parseFloat(leaseGroup.monthlyPmnt)
+              : null;
+            leaseDueAtSigning = leaseGroup.dueatSigning
+              ? parseFloat(leaseGroup.dueatSigning)
+              : null;
             milesPerYear = leaseGroup.mileage || null;
             leaseTermMonths = leaseGroup.numberofPmnts ? parseInt(leaseGroup.numberofPmnts) : null;
           }
@@ -194,7 +198,8 @@ export async function scrapeOffersFromChrysler() {
                 trim: offer.trim,
                 offerType: offer.offerType,
                 offerAmount: offer.offerAmount,
-                aprRate: offer.aprRate !== null && offer.aprRate !== undefined ? offer.aprRate : null,
+                aprRate:
+                  offer.aprRate !== null && offer.aprRate !== undefined ? offer.aprRate : null,
                 aprTermMonths:
                   offer.aprTermMonths !== null && offer.aprTermMonths !== undefined
                     ? offer.aprTermMonths
@@ -204,7 +209,9 @@ export async function scrapeOffersFromChrysler() {
                     ? offer.leaseTermMonths
                     : null,
                 cashValue:
-                  offer.cashValue !== null && offer.cashValue !== undefined ? offer.cashValue : null,
+                  offer.cashValue !== null && offer.cashValue !== undefined
+                    ? offer.cashValue
+                    : null,
                 tradeDiscount: offer.tradeDiscount,
                 leaseDueAtSigning:
                   offer.leaseDueAtSigning !== null && offer.leaseDueAtSigning !== undefined

@@ -3,7 +3,9 @@ import type { NLQExample } from "@/lib/ai/rag/examples_store";
 
 function formatExamples(examples: NLQExample[]) {
   if (!examples.length) return "";
-  const lines: string[] = ["Generate based on similar examples and follow the style of the examples:"];
+  const lines: string[] = [
+    "Generate based on similar examples and follow the style of the examples:",
+  ];
   examples.forEach((ex, i) => {
     lines.push(`Example ${i + 1} NL: ${ex.question}`);
     lines.push(`Example ${i + 1} SQL: ${ex.sql}`);
@@ -43,11 +45,7 @@ export async function generateSQLFromNaturalLanguageRAG(args: {
     schemaBlock,
     ``,
     ...(args.errorHint
-      ? [
-          `Previous attempt failed with this error. Fix the SQL accordingly:`,
-          args.errorHint,
-          ``,
-        ]
+      ? [`Previous attempt failed with this error. Fix the SQL accordingly:`, args.errorHint, ``]
       : []),
     ...(examples.length ? [formatExamples(examples), ``] : []),
   ].join("\n");
@@ -92,4 +90,3 @@ export async function generateSQLFromNaturalLanguageRAG(args: {
 
   return sql;
 }
-

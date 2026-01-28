@@ -46,13 +46,13 @@ export async function GET(request: NextRequest) {
         { model: { contains: searchQuery, mode: "insensitive" as const } },
         { trim: { contains: searchQuery, mode: "insensitive" as const } },
       ];
-      
+
       // If search query is a number, also search by year
       const yearNum = parseInt(searchQuery, 10);
       if (!isNaN(yearNum)) {
         searchConditions.push({ year: yearNum });
       }
-      
+
       where.OR = searchConditions;
     }
 

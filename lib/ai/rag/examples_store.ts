@@ -40,4 +40,3 @@ export async function retrieveNLQExamples(
 
   return ordered.slice(0, topK).map((s) => ({ question: s.question, sql: s.answer }));
 }
-

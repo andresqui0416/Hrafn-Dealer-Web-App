@@ -7,9 +7,7 @@
       "table": "Dealer",
       "mapped_table": "Dealer",
       "domain": "general",
-      "synonyms": [
-        "dealer"
-      ]
+      "synonyms": ["dealer"]
     }
   },
   {
@@ -20,9 +18,7 @@
       "table": "DealerDepartment",
       "mapped_table": "DealerDepartment",
       "domain": "general",
-      "synonyms": [
-        "dealer department"
-      ]
+      "synonyms": ["dealer department"]
     }
   },
   {
@@ -33,9 +29,7 @@
       "table": "User",
       "mapped_table": "User",
       "domain": "auth",
-      "synonyms": [
-        "user"
-      ]
+      "synonyms": ["user"]
     }
   },
   {
@@ -46,9 +40,7 @@
       "table": "Admin",
       "mapped_table": "Admin",
       "domain": "admin",
-      "synonyms": [
-        "admin"
-      ]
+      "synonyms": ["admin"]
     }
   },
   {
@@ -59,9 +51,7 @@
       "table": "Session",
       "mapped_table": "Session",
       "domain": "auth",
-      "synonyms": [
-        "session"
-      ]
+      "synonyms": ["session"]
     }
   },
   {
@@ -72,9 +62,7 @@
       "table": "AdminSession",
       "mapped_table": "AdminSession",
       "domain": "admin",
-      "synonyms": [
-        "admin session"
-      ]
+      "synonyms": ["admin session"]
     }
   },
   {
@@ -85,10 +73,7 @@
       "table": "InventoryListing",
       "mapped_table": "Inventory",
       "domain": "inventory",
-      "synonyms": [
-        "inventory listing",
-        "inventory"
-      ]
+      "synonyms": ["inventory listing", "inventory"]
     }
   },
   {
@@ -99,9 +84,7 @@
       "table": "Offers",
       "mapped_table": "Offers",
       "domain": "offers",
-      "synonyms": [
-        "offers"
-      ]
+      "synonyms": ["offers"]
     }
   },
   {
@@ -112,9 +95,7 @@
       "table": "UserDealerRole",
       "mapped_table": "UserDealerRole",
       "domain": "auth",
-      "synonyms": [
-        "user dealer role"
-      ]
+      "synonyms": ["user dealer role"]
     }
   },
   {
@@ -125,9 +106,7 @@
       "table": "ServiceKind",
       "mapped_table": "ServiceKind",
       "domain": "general",
-      "synonyms": [
-        "service kind"
-      ]
+      "synonyms": ["service kind"]
     }
   },
   {
@@ -138,9 +117,7 @@
       "table": "DealerService",
       "mapped_table": "DealerService",
       "domain": "general",
-      "synonyms": [
-        "dealer service"
-      ]
+      "synonyms": ["dealer service"]
     }
   },
   {
@@ -151,9 +128,7 @@
       "table": "Chat",
       "mapped_table": "Chat",
       "domain": "chat",
-      "synonyms": [
-        "chat"
-      ]
+      "synonyms": ["chat"]
     }
   },
   {
@@ -164,9 +139,7 @@
       "table": "Message",
       "mapped_table": "Message",
       "domain": "chat",
-      "synonyms": [
-        "message"
-      ]
+      "synonyms": ["message"]
     }
   },
   {
@@ -177,9 +150,7 @@
       "table": "SaleData",
       "mapped_table": "SaleData",
       "domain": "sales",
-      "synonyms": [
-        "sale data"
-      ]
+      "synonyms": ["sale data"]
     }
   },
   {
@@ -190,9 +161,7 @@
       "table": "SaleCommission",
       "mapped_table": "SaleCommission",
       "domain": "sales",
-      "synonyms": [
-        "sale commission"
-      ]
+      "synonyms": ["sale commission"]
     }
   },
   {
@@ -203,9 +172,7 @@
       "table": "SaleDeal",
       "mapped_table": "SaleDeal",
       "domain": "sales",
-      "synonyms": [
-        "sale deal"
-      ]
+      "synonyms": ["sale deal"]
     }
   },
   {
@@ -216,9 +183,7 @@
       "table": "SaleDealAuxiliary",
       "mapped_table": "SaleDealAuxiliary",
       "domain": "sales",
-      "synonyms": [
-        "sale deal auxiliary"
-      ]
+      "synonyms": ["sale deal auxiliary"]
     }
   },
   {
@@ -229,9 +194,7 @@
       "table": "SaleDealEvent",
       "mapped_table": "SaleDealEvent",
       "domain": "sales",
-      "synonyms": [
-        "sale deal event"
-      ]
+      "synonyms": ["sale deal event"]
     }
   },
   {
@@ -242,9 +205,7 @@
       "table": "SaleFee",
       "mapped_table": "SaleFee",
       "domain": "sales",
-      "synonyms": [
-        "sale fee"
-      ]
+      "synonyms": ["sale fee"]
     }
   },
   {
@@ -255,9 +216,7 @@
       "table": "SaleIncentive",
       "mapped_table": "SaleIncentive",
       "domain": "sales",
-      "synonyms": [
-        "sale incentive"
-      ]
+      "synonyms": ["sale incentive"]
     }
   },
   {
@@ -268,9 +227,7 @@
       "table": "SaleInsurance",
       "mapped_table": "SaleInsurance",
       "domain": "sales",
-      "synonyms": [
-        "sale insurance"
-      ]
+      "synonyms": ["sale insurance"]
     }
   },
   {
@@ -281,9 +238,7 @@
       "table": "SaleSalesPerson",
       "mapped_table": "SaleSalesPerson",
       "domain": "sales",
-      "synonyms": [
-        "sale sales person"
-      ]
+      "synonyms": ["sale sales person"]
     }
   },
   {
@@ -294,9 +249,7 @@
       "table": "SaleTax",
       "mapped_table": "SaleTax",
       "domain": "sales",
-      "synonyms": [
-        "sale tax"
-      ]
+      "synonyms": ["sale tax"]
     }
   },
   {
@@ -307,9 +260,7 @@
       "table": "SaleTotal",
       "mapped_table": "SaleTotal",
       "domain": "sales",
-      "synonyms": [
-        "sale total"
-      ]
+      "synonyms": ["sale total"]
     }
   },
   {
@@ -320,9 +271,7 @@
       "table": "SaleTrade",
       "mapped_table": "SaleTrade",
       "domain": "sales",
-      "synonyms": [
-        "sale trade"
-      ]
+      "synonyms": ["sale trade"]
     }
   },
   {
@@ -333,9 +282,7 @@
       "table": "SaleVehicle",
       "mapped_table": "SaleVehicle",
       "domain": "sales",
-      "synonyms": [
-        "sale vehicle"
-      ]
+      "synonyms": ["sale vehicle"]
     }
   },
   {
@@ -346,9 +293,7 @@
       "table": "CrmApiAccessToken",
       "mapped_table": "CrmApiAccessToken",
       "domain": "general",
-      "synonyms": [
-        "crm api access token"
-      ]
+      "synonyms": ["crm api access token"]
     }
   },
   {
@@ -359,9 +304,7 @@
       "table": "FineTuningSample",
       "mapped_table": "FineTuningSample",
       "domain": "fine_tuning",
-      "synonyms": [
-        "fine tuning sample"
-      ]
+      "synonyms": ["fine tuning sample"]
     }
   }
 ]
