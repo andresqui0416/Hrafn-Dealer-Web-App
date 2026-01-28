@@ -595,14 +595,19 @@ export async function scrapeOffersFromBuick() {
           // Extract APR from main text
           const aprRate = extractAPR(mainText);
 
-          // Determine offer type: if APR found, it's financing, otherwise cash/credit
-          const offerType = aprRate !== null ? "financing" : "cash";
-
           // Extract other details from main text
           const leaseMonthlyPayment = extractMonthlyPayment(mainText);
           const leaseTermMonths = extractTermMonths(mainText);
           const leaseDueAtSigning = extractDueAtSigning(mainText);
           const aprTermMonths = extractTermMonths(mainText); // For financing offers
+
+          // Determine offer type: check for lease first, then financing, otherwise cash
+          let offerType: "cash" | "financing" | "lease" = "cash";
+          if (leaseMonthlyPayment !== null || mainText.toLowerCase().includes("lease")) {
+            offerType = "lease";
+          } else if (aprRate !== null) {
+            offerType = "financing";
+          }
 
           // Extract cashValue from main text (regardless of offer type)
           let cashValue: number | null = null;
