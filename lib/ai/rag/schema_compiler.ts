@@ -89,7 +89,9 @@ export function selectColumnsForTables(
   const result: Record<string, string[]> = {};
   for (const t of mappedTables) {
     const list = (byTable[t] || []).sort((a, b) => (b.score || 0) - (a.score || 0));
-    const pkfk = list.filter((d) => d.metadata?.is_pk || d.metadata?.is_fk).map((d) => d.metadata.mapped_column);
+    const pkfk = list
+      .filter((d) => d.metadata?.is_pk || d.metadata?.is_fk)
+      .map((d) => d.metadata.mapped_column);
     const top = list.map((d) => d.metadata.mapped_column);
     const cols = uniq([...pkfk, ...top]).slice(0, maxColumnsPerTable);
     result[t] = cols;
@@ -123,7 +125,11 @@ function buildGraph(edges: JoinEdge[]) {
   return adj;
 }
 
-function shortestPathEdges(adj: Record<string, Array<{ to: string; edge: JoinEdge }>>, start: string, goal: string) {
+function shortestPathEdges(
+  adj: Record<string, Array<{ to: string; edge: JoinEdge }>>,
+  start: string,
+  goal: string,
+) {
   const queue: string[] = [start];
   const prev: Record<string, { node: string; edge: JoinEdge } | null> = { [start]: null };
 
@@ -154,7 +160,9 @@ function shortestPathEdges(adj: Record<string, Array<{ to: string; edge: JoinEdg
 export function selectJoinEdgesForTables(mappedTables: string[]) {
   const allEdges = loadJoinGraph();
   const set = new Set(mappedTables);
-  const relevant = allEdges.filter((e) => set.has(e.from_mapped_table) && set.has(e.to_mapped_table));
+  const relevant = allEdges.filter(
+    (e) => set.has(e.from_mapped_table) && set.has(e.to_mapped_table),
+  );
   if (mappedTables.length <= 1) return [];
 
   const adj = buildGraph(relevant);
@@ -180,7 +188,7 @@ export function selectJoinEdgesForTables(mappedTables: string[]) {
 
 function loadEnums(): EnumInfo[] {
   if (enumCache) return enumCache;
-  
+
   try {
     const enumPath = path.join(process.cwd(), "data", "schema_enums.json");
     if (fs.existsSync(enumPath)) {
@@ -192,7 +200,7 @@ function loadEnums(): EnumInfo[] {
   } catch (err) {
     console.warn("[Schema Compiler] Failed to load enum data:", err);
   }
-  
+
   enumCache = [];
   return enumCache;
 }
@@ -200,10 +208,10 @@ function loadEnums(): EnumInfo[] {
 export function selectEnumsForTables(mappedTables: string[]): EnumInfo[] {
   const allEnums = loadEnums();
   if (allEnums.length === 0) return [];
-  
+
   const tableSet = new Set(mappedTables);
   const relevantEnums: EnumInfo[] = [];
-  
+
   for (const enumInfo of allEnums) {
     const usedInSelectedTables = enumInfo.usedInTables.filter((u) => tableSet.has(u.mappedTable));
     if (usedInSelectedTables.length > 0) {
@@ -213,7 +221,7 @@ export function selectEnumsForTables(mappedTables: string[]): EnumInfo[] {
       });
     }
   }
-  
+
   return relevantEnums;
 }
 
@@ -268,13 +276,6 @@ export function compileSchemaBlock(
     ``,
     `Joins:`,
     ...(joinLines.length ? joinLines : [`- (no joins needed)`]),
-    ...(enumLines.length > 0
-      ? [
-          ``,
-          `Enums (valid values for enum columns):`,
-          ...enumLines,
-        ]
-      : []),
+    ...(enumLines.length > 0 ? [``, `Enums (valid values for enum columns):`, ...enumLines] : []),
   ].join("\n");
 }
-

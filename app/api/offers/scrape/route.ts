@@ -60,8 +60,10 @@ export async function POST(request: NextRequest) {
       const aprRate = offer.aprRate ?? offer.apr;
       const cashValue = offer.cashValue ?? offer.cashBack;
       const leaseDueAtSigning = offer.leaseDueAtSigning ?? offer.dueAtSigning;
-      const aprTermMonths = offer.aprTermMonths ?? (offer.offerType === "financing" ? offer.termMonths : null);
-      const leaseTermMonths = offer.leaseTermMonths ?? (offer.offerType === "lease" ? offer.termMonths : null);
+      const aprTermMonths =
+        offer.aprTermMonths ?? (offer.offerType === "financing" ? offer.termMonths : null);
+      const leaseTermMonths =
+        offer.leaseTermMonths ?? (offer.offerType === "lease" ? offer.termMonths : null);
 
       const hasValidData =
         (offer.offerType === "lease" && leaseMonthlyPayment) ||
@@ -101,9 +103,7 @@ export async function POST(request: NextRequest) {
             ? parseInt(String(leaseTermMonths), 10)
             : null,
         cashValue:
-          cashValue !== null && cashValue !== undefined
-            ? parseFloat(String(cashValue))
-            : null,
+          cashValue !== null && cashValue !== undefined ? parseFloat(String(cashValue)) : null,
         tradeDiscount:
           offer.tradeDiscount !== null && offer.tradeDiscount !== undefined
             ? parseFloat(String(offer.tradeDiscount))

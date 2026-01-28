@@ -2,11 +2,7 @@
   "enums": [
     {
       "name": "Role",
-      "values": [
-        "admin",
-        "manager",
-        "viewer"
-      ],
+      "values": ["admin", "manager", "viewer"],
       "usedInTables": [
         {
           "table": "UserDealerRole",
@@ -18,11 +14,7 @@
     },
     {
       "name": "AdminRole",
-      "values": [
-        "super_admin",
-        "admin",
-        "moderator"
-      ],
+      "values": ["super_admin", "admin", "moderator"],
       "usedInTables": [
         {
           "table": "Admin",
@@ -34,12 +26,7 @@
     },
     {
       "name": "ServiceStatus",
-      "values": [
-        "pending",
-        "reviewing",
-        "rejected",
-        "allowed"
-      ],
+      "values": ["pending", "reviewing", "rejected", "allowed"],
       "usedInTables": [
         {
           "table": "DealerService",
@@ -51,11 +38,7 @@
     },
     {
       "name": "ChatStatus",
-      "values": [
-        "opened",
-        "accepted",
-        "closed"
-      ],
+      "values": ["opened", "accepted", "closed"],
       "usedInTables": [
         {
           "table": "Chat",
@@ -67,12 +50,7 @@
     },
     {
       "name": "DmsType",
-      "values": [
-        "Parts",
-        "Service",
-        "Accounting",
-        "Finance"
-      ],
+      "values": ["Parts", "Service", "Accounting", "Finance"],
       "usedInTables": [
         {
           "table": "DealerDepartment",
@@ -84,12 +62,7 @@
     },
     {
       "name": "InventoryStatus",
-      "values": [
-        "pending",
-        "available",
-        "unavailable",
-        "sold"
-      ],
+      "values": ["pending", "available", "unavailable", "sold"],
       "usedInTables": [
         {
           "table": "InventoryListing",
@@ -101,10 +74,7 @@
     },
     {
       "name": "FineTuningSampleType",
-      "values": [
-        "NLQ",
-        "FAQ"
-      ],
+      "values": ["NLQ", "FAQ"],
       "usedInTables": [
         {
           "table": "FineTuningSample",

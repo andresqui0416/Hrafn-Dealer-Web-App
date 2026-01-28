@@ -30,7 +30,9 @@ async function main() {
 
   if (!text) {
     // eslint-disable-next-line no-console
-    console.error('Usage: npm run test:embed -- "some text"\nOr: echo "some text" | npm run test:embed');
+    console.error(
+      'Usage: npm run test:embed -- "some text"\nOr: echo "some text" | npm run test:embed',
+    );
     process.exit(1);
   }
 
@@ -48,4 +50,3 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-

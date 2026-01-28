@@ -98,7 +98,8 @@ export async function generateSQLFromNaturalLanguage(
     // Enforce LIMIT 10: Add or replace LIMIT clause to ensure max 10 rows
     // Skip only for aggregation queries WITHOUT GROUP BY (guaranteed single row)
     const hasGroupBy = /\bGROUP\s+BY\b/i.test(cleanedSQL);
-    const isSingleRowAggregation = /\b(COUNT|SUM|AVG|MIN|MAX)\s*\(/i.test(cleanedSQL) && !hasGroupBy;
+    const isSingleRowAggregation =
+      /\b(COUNT|SUM|AVG|MIN|MAX)\s*\(/i.test(cleanedSQL) && !hasGroupBy;
     if (!isSingleRowAggregation) {
       // Check for trailing semicolon
       const hasSemicolon = cleanedSQL.trim().endsWith(";");

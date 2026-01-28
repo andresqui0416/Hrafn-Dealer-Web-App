@@ -63,9 +63,7 @@ function parseCSV(csvText: string): Array<{ type: string; question: string; answ
   const answerIndex = header.findIndex((h) => h === "answer" || h === "response");
 
   if (typeIndex === -1 || questionIndex === -1 || answerIndex === -1) {
-    throw new Error(
-      "CSV must contain columns: type, question, answer (case-insensitive)",
-    );
+    throw new Error("CSV must contain columns: type, question, answer (case-insensitive)");
   }
 
   // Parse data rows
@@ -105,9 +103,7 @@ function parseJSON(jsonText: string): Array<{ type: string; question: string; an
       const answer = item.answer || item.response || item.Answer;
 
       if (!type || !question || !answer) {
-        throw new Error(
-          "Each object must have 'type', 'question', and 'answer' fields",
-        );
+        throw new Error("Each object must have 'type', 'question', and 'answer' fields");
       }
 
       return { type: String(type), question: String(question), answer: String(answer) };
@@ -143,10 +139,7 @@ export async function POST(request: NextRequest) {
 
     // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json(
-        { error: "File size must be less than 10MB" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "File size must be less than 10MB" }, { status: 400 });
     }
 
     // Read file content
@@ -168,10 +161,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (samples.length === 0) {
-      return NextResponse.json(
-        { error: "No valid samples found in file" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "No valid samples found in file" }, { status: 400 });
     }
 
     // Validate and normalize samples
@@ -230,10 +220,7 @@ export async function POST(request: NextRequest) {
 
     // Pinecone must succeed BEFORE DB import
     if (!fineTuningPineconeEnabled()) {
-      return NextResponse.json(
-        { error: "Pinecone is not configured" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Pinecone is not configured" }, { status: 500 });
     }
 
     const now = new Date();
@@ -250,14 +237,17 @@ export async function POST(request: NextRequest) {
       vectorSync = await upsertFineTuningSamplesToPinecone(toCreate);
     } catch (e) {
       console.error("Pinecone upsert failed for imported fine-tuning samples:", e);
-      return NextResponse.json(
-        { error: "Pinecone upsert failed" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Pinecone upsert failed" }, { status: 500 });
     }
 
     // Create rows one-by-one (ids already chosen to match Pinecone vector ids)
-    const created: Array<{ id: string; type: "NLQ" | "FAQ"; question: string; answer: string; createdAt: Date }> = [];
+    const created: Array<{
+      id: string;
+      type: "NLQ" | "FAQ";
+      question: string;
+      answer: string;
+      createdAt: Date;
+    }> = [];
     const chunkSize = 200;
     try {
       for (let i = 0; i < toCreate.length; i += chunkSize) {
@@ -299,8 +289,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Bulk import fine-tuning samples error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Internal server error";
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   } finally {
     await prisma.$disconnect();

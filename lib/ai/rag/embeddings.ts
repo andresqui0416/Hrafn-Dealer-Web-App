@@ -22,4 +22,3 @@ export async function embedText(text: string): Promise<number[]> {
   if (!emb) throw new Error("No embedding returned");
   return emb;
 }
-

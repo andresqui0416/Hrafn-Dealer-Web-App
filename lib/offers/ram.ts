@@ -121,8 +121,12 @@ const fetchOfferData = async (modelInfo: any) => {
         if (offerType === "lease") {
           const leaseGroup = offerInfo.groupData?.find((gd: any) => gd.type === "LEASE");
           if (leaseGroup) {
-            leaseMonthlyPayment = leaseGroup.monthlyPmnt ? parseFloat(leaseGroup.monthlyPmnt) : null;
-            leaseDueAtSigning = leaseGroup.dueatSigning ? parseFloat(leaseGroup.dueatSigning) : null;
+            leaseMonthlyPayment = leaseGroup.monthlyPmnt
+              ? parseFloat(leaseGroup.monthlyPmnt)
+              : null;
+            leaseDueAtSigning = leaseGroup.dueatSigning
+              ? parseFloat(leaseGroup.dueatSigning)
+              : null;
             milesPerYear = leaseGroup.mileage || null;
             leaseTermMonths = leaseGroup.numberofPmnts ? parseInt(leaseGroup.numberofPmnts) : null;
           }

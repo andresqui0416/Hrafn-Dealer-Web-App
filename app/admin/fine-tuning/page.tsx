@@ -73,6 +73,8 @@ export default function FineTuningPage() {
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
+  // We intentionally only re-run this effect when the activeTab changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setExpandedSampleId(null);
     setSelectedIds(new Set());
@@ -80,7 +82,11 @@ export default function FineTuningPage() {
     loadSamples({ nextPage: 1 });
   }, [activeTab]);
 
-  const loadSamples = async (opts?: { nextPage?: number; nextQuery?: string; nextPageSize?: number }) => {
+  const loadSamples = async (opts?: {
+    nextPage?: number;
+    nextQuery?: string;
+    nextPageSize?: number;
+  }) => {
     const p = opts?.nextPage ?? page;
     const q = opts?.nextQuery ?? searchQuery;
     const ps = opts?.nextPageSize ?? pageSize;
@@ -321,7 +327,7 @@ export default function FineTuningPage() {
     // Validate file type based on selected tab
     const fileName = file.name.toLowerCase();
     const expectedExtension = importTab === "CSV" ? ".csv" : ".json";
-    
+
     if (!fileName.endsWith(expectedExtension)) {
       setError(`Please select a ${importTab} file`);
       return;
@@ -355,7 +361,7 @@ export default function FineTuningPage() {
 
     try {
       let formData: FormData;
-      
+
       if (importMode === "file") {
         formData = new FormData();
         formData.append("file", importFile!);
@@ -387,9 +393,7 @@ export default function FineTuningPage() {
         return;
       }
 
-      setSuccess(
-        `Successfully imported ${data.imported} of ${data.total} samples`,
-      );
+      setSuccess(`Successfully imported ${data.imported} of ${data.total} samples`);
       setImportResult({
         imported: data.imported,
         total: data.total,
@@ -459,10 +463,10 @@ export default function FineTuningPage() {
             <FontAwesomeIcon icon={faRotateRight} className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-        <Button onClick={() => setShowCreateDialog(true)} className="cursor-pointer">
-          <FontAwesomeIcon icon={faPlus} className="h-4 w-4 mr-2" />
-          Add Sample
-        </Button>
+          <Button onClick={() => setShowCreateDialog(true)} className="cursor-pointer">
+            <FontAwesomeIcon icon={faPlus} className="h-4 w-4 mr-2" />
+            Add Sample
+          </Button>
         </div>
       </div>
 
@@ -484,9 +488,7 @@ export default function FineTuningPage() {
         <div className="flex items-center gap-2 justify-between sm:justify-end">
           {selectedCount > 0 && (
             <div className="flex items-center gap-2">
-              <div className="text-xs text-muted-foreground">
-                Selected {selectedCount}
-              </div>
+              <div className="text-xs text-muted-foreground">Selected {selectedCount}</div>
               <Button
                 variant="outline"
                 size="sm"
@@ -562,7 +564,9 @@ export default function FineTuningPage() {
                 setExpandedSampleId(null);
                 loadSamples({ nextPage });
               }}
-              className={cn(loading || page >= totalPages ? "cursor-not-allowed" : "cursor-pointer")}
+              className={cn(
+                loading || page >= totalPages ? "cursor-not-allowed" : "cursor-pointer",
+              )}
             >
               <FontAwesomeIcon icon={faChevronRight} className="h-4 w-4" />
             </Button>
@@ -633,10 +637,14 @@ export default function FineTuningPage() {
         </div>
       ) : filteredSamples.length === 0 ? (
         <div className="rounded-md border border-white/10 p-10 text-center">
-          <FontAwesomeIcon icon={faQuestionCircle} size="3x" className="text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              No {activeTab} samples yet. Create a new sample to get started.
-            </p>
+          <FontAwesomeIcon
+            icon={faQuestionCircle}
+            size="3x"
+            className="text-muted-foreground mb-4"
+          />
+          <p className="text-muted-foreground">
+            No {activeTab} samples yet. Create a new sample to get started.
+          </p>
         </div>
       ) : (
         <div className="rounded-md border border-white/10 divide-y divide-white/10 overflow-hidden">
@@ -647,10 +655,7 @@ export default function FineTuningPage() {
             return (
               <div
                 key={sample.id}
-                className={cn(
-                  "transition-colors",
-                  expanded ? "bg-white/5" : "hover:bg-white/5",
-                )}
+                className={cn("transition-colors", expanded ? "bg-white/5" : "hover:bg-white/5")}
               >
                 <div
                   role="button"
@@ -934,8 +939,8 @@ export default function FineTuningPage() {
           <DialogHeader className="px-0">
             <DialogTitle>Import Fine-Tuning Samples</DialogTitle>
             <DialogDescription>
-              Upload a {importTab} file to bulk import fine-tuning samples. Note: NLQ samples
-              should have SQL commands as answers, while FAQ samples should have natural language
+              Upload a {importTab} file to bulk import fine-tuning samples. Note: NLQ samples should
+              have SQL commands as answers, while FAQ samples should have natural language
               responses.
             </DialogDescription>
           </DialogHeader>

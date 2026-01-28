@@ -85,8 +85,10 @@ export async function scrapeOffersFromAudi() {
         offerType,
         offerAmount,
         aprRate: offer.aprRate && offer.aprRate > 0 ? offer.aprRate : null,
-        aprTermMonths: offer.offerType === "financing" && offer.term && offer.term > 0 ? offer.term : null,
-        leaseTermMonths: offer.offerType === "lease" && offer.term && offer.term > 0 ? offer.term : null,
+        aprTermMonths:
+          offer.offerType === "financing" && offer.term && offer.term > 0 ? offer.term : null,
+        leaseTermMonths:
+          offer.offerType === "lease" && offer.term && offer.term > 0 ? offer.term : null,
         cashValue: offer.creditBonus && offer.creditBonus > 0 ? offer.creditBonus : null,
         leaseDueAtSigning:
           offer.totalDueAtSign && offer.totalDueAtSign > 0 ? offer.totalDueAtSign : null,
