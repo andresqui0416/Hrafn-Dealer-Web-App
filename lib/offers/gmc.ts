@@ -351,29 +351,30 @@ export async function scrapeOffersFromGMC() {
           const htmlText = extractTextFromHTML(html);
 
           // Extract APR from HTML text
-          const apr = extractAPR(htmlText);
+          const aprRate = extractAPR(htmlText);
 
           // Determine offer type: if APR found, it's financing, otherwise cash/credit
-          const offerType = apr !== null ? "financing" : "cash";
+          const offerType = aprRate !== null ? "financing" : "cash";
 
           // Extract other details from HTML text
-          const monthlyPayment = extractMonthlyPayment(htmlText);
-          const termMonths = extractTermMonths(htmlText);
-          const dueAtSigning = extractDueAtSigning(htmlText);
+          const leaseMonthlyPayment = extractMonthlyPayment(htmlText);
+          const leaseTermMonths = extractTermMonths(htmlText);
+          const aprTermMonths = extractTermMonths(htmlText); // For financing offers
+          const leaseDueAtSigning = extractDueAtSigning(htmlText);
 
-          // Extract cashBack from HTML text (regardless of offer type)
-          let cashBack: number | null = null;
+          // Extract cashValue from HTML text (regardless of offer type)
+          let cashValue: number | null = null;
           // Look for "PURCHASE ALLOWANCE" pattern first (this is cashback)
           const purchaseAllowanceMatch = htmlText.match(/\$([\d,]+)\s+PURCHASE\s+ALLOWANCE\.?/i);
           if (purchaseAllowanceMatch && purchaseAllowanceMatch[1]) {
-            cashBack = parseNumber(purchaseAllowanceMatch[1]);
+            cashValue = parseNumber(purchaseAllowanceMatch[1]);
           } else {
             // Look for other patterns like "$X,XXX cash back", "$X,XXX off", "$X,XXX discount", or "$X,XXX bonus cash"
             const cashBackMatch = htmlText.match(
               /\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i,
             );
             if (cashBackMatch && cashBackMatch[1]) {
-              cashBack = parseNumber(cashBackMatch[1]);
+              cashValue = parseNumber(cashBackMatch[1]);
             }
           }
           // Note: "Average Finance Savings" is NOT cashback, it's a separate savings calculation
@@ -407,8 +408,8 @@ export async function scrapeOffersFromGMC() {
           // Only create offer if we have meaningful data
           // Accept offers if we have any of: APR, cashback, trade discount, or meaningful text content
           const hasValidData =
-            apr !== null ||
-            cashBack !== null ||
+            aprRate !== null ||
+            cashValue !== null ||
             tradeDiscount !== null ||
             htmlText.trim().length > 30; // At least 30 characters of text content
 
@@ -425,12 +426,13 @@ export async function scrapeOffersFromGMC() {
             trim,
             offerType,
             offerAmount: null,
-            apr,
-            termMonths,
-            cashBack,
+            aprRate,
+            aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+            leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+            cashValue,
             tradeDiscount,
-            dueAtSigning,
-            monthlyPayment,
+            leaseDueAtSigning,
+            leaseMonthlyPayment,
             milesPerYear: null,
             expirationDate,
             terms,
@@ -470,16 +472,17 @@ export async function scrapeOffersFromGMC() {
       const titleText = offerText.title?.text || "";
 
       // Extract monthly payment
-      const monthlyPayment = extractMonthlyPayment(bodyText);
+      const leaseMonthlyPayment = extractMonthlyPayment(bodyText);
 
       // Extract term months
-      const termMonths = extractTermMonths(bodyText);
+      const leaseTermMonths = extractTermMonths(bodyText);
+      const aprTermMonths = extractTermMonths(bodyText); // For financing offers
 
       // Extract due at signing
-      const dueAtSigning = extractDueAtSigning(bodyText);
+      const leaseDueAtSigning = extractDueAtSigning(bodyText);
 
       // Extract APR (usually in body or footer text)
-      const apr = extractAPR(bodyText) || extractAPR(footerText);
+      const aprRate = extractAPR(bodyText) || extractAPR(footerText);
 
       // Extract expiration date
       const expirationDate = parseExpirationDate(result.endEffDate);
@@ -494,20 +497,20 @@ export async function scrapeOffersFromGMC() {
       // offerAmount should only be set if explicitly extracted from the offer content
       let offerAmount: number | null = null;
 
-      // Extract cashBack from body text (regardless of offer type)
-      let cashBack: number | null = null;
+      // Extract cashValue from body text (regardless of offer type)
+      let cashValue: number | null = null;
       // Look for "PURCHASE ALLOWANCE" pattern first (this is cashback)
       // Pattern handles: "$2,000 PURCHASE ALLOWANCE" or "$2,000 PURCHASE ALLOWANCE."
       const purchaseAllowanceMatch = bodyText.match(/\$([\d,]+)\s+PURCHASE\s+ALLOWANCE\.?/i);
       if (purchaseAllowanceMatch && purchaseAllowanceMatch[1]) {
-        cashBack = parseNumber(purchaseAllowanceMatch[1]);
+        cashValue = parseNumber(purchaseAllowanceMatch[1]);
       } else {
         // Look for other patterns like "$X,XXX cash back", "$X,XXX off", "$X,XXX discount", or "$X,XXX bonus cash"
         const cashBackMatch = bodyText.match(
           /\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i,
         );
         if (cashBackMatch && cashBackMatch[1]) {
-          cashBack = parseNumber(cashBackMatch[1]);
+          cashValue = parseNumber(cashBackMatch[1]);
         }
       }
       // Note: "Average Finance Savings" is NOT cashback, it's a separate savings calculation
@@ -517,10 +520,10 @@ export async function scrapeOffersFromGMC() {
 
       // Only create offer if we have meaningful data
       const hasValidData =
-        (offerType === "lease" && monthlyPayment) ||
-        (offerType === "financing" && apr !== null) ||
+        (offerType === "lease" && leaseMonthlyPayment) ||
+        (offerType === "financing" && aprRate !== null) ||
         (offerType === "cash" &&
-          (offerAmount !== null || cashBack !== null || tradeDiscount !== null));
+          (offerAmount !== null || cashValue !== null || tradeDiscount !== null));
 
       if (!hasValidData) {
         continue;
@@ -535,12 +538,13 @@ export async function scrapeOffersFromGMC() {
         trim,
         offerType,
         offerAmount,
-        apr,
-        termMonths,
-        cashBack,
+        aprRate,
+        aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+        leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+        cashValue,
         tradeDiscount,
-        dueAtSigning,
-        monthlyPayment,
+        leaseDueAtSigning,
+        leaseMonthlyPayment,
         milesPerYear: null, // Could extract from terms if needed
         expirationDate,
         terms,
@@ -578,12 +582,13 @@ export async function scrapeOffersFromGMC() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
                   tradeDiscount: offer.tradeDiscount,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,

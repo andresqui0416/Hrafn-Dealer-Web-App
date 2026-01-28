@@ -70,10 +70,10 @@ export async function scrapeOffersFromMazda() {
           for (const leaseOffer of vehicleSpecialOffer.leaseOffers) {
             const trimCode = leaseOffer.offerTrimCode || leaseOffer.vehicleTrimCode || "";
             const expirationDate = parseMazdaDate(leaseOffer.expirationDate);
-            const monthlyPayment = parseNumber(leaseOffer.monthlyPayment);
-            const dueAtSigning = parseNumber(leaseOffer.dueAtSigning);
-            const termMonths = parseNumber(leaseOffer.leaseTerm);
-            const cashBack = parseNumber(leaseOffer.leaseCashBack);
+            const leaseMonthlyPayment = parseNumber(leaseOffer.monthlyPayment);
+            const leaseDueAtSigning = parseNumber(leaseOffer.dueAtSigning);
+            const leaseTermMonths = parseNumber(leaseOffer.leaseTerm);
+            const cashValue = parseNumber(leaseOffer.leaseCashBack);
 
             offers.push({
               header: leaseOffer.header || null,
@@ -85,11 +85,12 @@ export async function scrapeOffersFromMazda() {
               trim: trimCode || null,
               offerType: "lease",
               offerAmount: null,
-              apr: null,
-              termMonths,
-              cashBack: cashBack,
-              dueAtSigning,
-              monthlyPayment,
+              aprRate: null,
+              aprTermMonths: null,
+              leaseTermMonths,
+              cashValue: cashValue,
+              leaseDueAtSigning,
+              leaseMonthlyPayment,
               milesPerYear: null, // Could extract from description if needed
               expirationDate,
               terms: leaseOffer.description || leaseOffer.header || null,
@@ -104,12 +105,12 @@ export async function scrapeOffersFromMazda() {
           for (const purchaseOffer of vehicleSpecialOffer.purchaseOffers) {
             const trimCode = purchaseOffer.offerTrimCode || purchaseOffer.vehicleTrimCode || "";
             const expirationDate = parseMazdaDate(purchaseOffer.expirationDate);
-            const apr = parseNumber(purchaseOffer.apr);
-            const termMonths = parseNumber(purchaseOffer.paymentTerm);
-            const cashBack = parseNumber(purchaseOffer.cashBack);
+            const aprRate = parseNumber(purchaseOffer.apr);
+            const aprTermMonths = parseNumber(purchaseOffer.paymentTerm);
+            const cashValue = parseNumber(purchaseOffer.cashBack);
 
-            // Determine offer type: if there's cashBack, it's cash, otherwise financing
-            const offerType = cashBack && cashBack > 0 ? "cash" : "financing";
+            // Determine offer type: if there's cashValue, it's cash, otherwise financing
+            const offerType = cashValue && cashValue > 0 ? "cash" : "financing";
 
             offers.push({
               header: purchaseOffer.header || null,
@@ -121,11 +122,12 @@ export async function scrapeOffersFromMazda() {
               trim: trimCode || null,
               offerType,
               offerAmount: null,
-              apr: apr ? apr / 100 : null, // Convert percentage to decimal (5.9 -> 0.059)
-              termMonths,
-              cashBack,
-              dueAtSigning: null,
-              monthlyPayment: null,
+              aprRate: aprRate ? aprRate / 100 : null, // Convert percentage to decimal (5.9 -> 0.059)
+              aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+              leaseTermMonths: null,
+              cashValue,
+              leaseDueAtSigning: null,
+              leaseMonthlyPayment: null,
               milesPerYear: null,
               expirationDate,
               terms: purchaseOffer.description || purchaseOffer.header || null,
@@ -204,11 +206,12 @@ export async function scrapeOffersFromMazda() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear || null,
                   terms: offer.terms,
                   finePrint: offer.finePrint,

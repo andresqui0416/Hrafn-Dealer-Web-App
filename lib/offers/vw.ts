@@ -152,44 +152,45 @@ export async function scrapeOffersFromVW() {
       }
 
       // Extract offer details based on type
-      let apr: number | null = null;
-      let termMonths: number | null = null;
-      let monthlyPayment: number | null = null;
-      let cashBack: number | null = null;
+      let aprRate: number | null = null;
+      let aprTermMonths: number | null = null;
+      let leaseTermMonths: number | null = null;
+      let leaseMonthlyPayment: number | null = null;
+      let cashValue: number | null = null;
 
       if (offerType === "financing") {
         // For financing offers, use dealRate and dealTerm
         if (offer.dealRate !== null && offer.dealRate !== undefined) {
-          apr = parseNumber(offer.dealRate) ? parseNumber(offer.dealRate)! / 100 : null;
+          aprRate = parseNumber(offer.dealRate) ? parseNumber(offer.dealRate)! / 100 : null;
         }
         if (offer.dealTerm !== null && offer.dealTerm !== undefined) {
-          termMonths = parseInt(String(offer.dealTerm), 10);
-          if (isNaN(termMonths)) termMonths = null;
+          aprTermMonths = parseInt(String(offer.dealTerm), 10);
+          if (isNaN(aprTermMonths)) aprTermMonths = null;
         }
         // Also check for cash back in title/legal text
-        cashBack = extractCashBack(offer.dealTitle || offer.dealLegal || "");
+        cashValue = extractCashBack(offer.dealTitle || offer.dealLegal || "");
       } else if (offerType === "lease") {
         // For lease offers, use dealPricePerMonth
-        monthlyPayment =
+        leaseMonthlyPayment =
           offer.dealPricePerMonth !== null && offer.dealPricePerMonth !== undefined
             ? parseNumber(offer.dealPricePerMonth)
             : null;
         // Extract term from dealTerm, or from dealSubtitle/dealLegal if dealTerm is null
         if (offer.dealTerm !== null && offer.dealTerm !== undefined) {
-          termMonths = parseInt(String(offer.dealTerm), 10);
-          if (isNaN(termMonths)) termMonths = null;
+          leaseTermMonths = parseInt(String(offer.dealTerm), 10);
+          if (isNaN(leaseTermMonths)) leaseTermMonths = null;
         }
         // If dealTerm is null, extract from dealSubtitle or dealLegal (e.g., "36-mos", "36 mos", "36 months")
-        if (termMonths === null) {
+        if (leaseTermMonths === null) {
           const termMatch = (offer.dealSubtitle || offer.dealLegal || "").match(/(\d+)[-\s]*mos?/i);
           if (termMatch && termMatch[1]) {
-            termMonths = parseInt(termMatch[1], 10);
-            if (isNaN(termMonths)) termMonths = null;
+            leaseTermMonths = parseInt(termMatch[1], 10);
+            if (isNaN(leaseTermMonths)) leaseTermMonths = null;
           }
         }
       } else if (offerType === "cash") {
         // For cash offers, extract cash back from title or legal text
-        cashBack = extractCashBack(offer.dealTitle || offer.dealLegal || "");
+        cashValue = extractCashBack(offer.dealTitle || offer.dealLegal || "");
       }
 
       // Parse expiration date
@@ -212,9 +213,9 @@ export async function scrapeOffersFromVW() {
 
       // Only create offer if we have meaningful data
       const hasValidData =
-        (offerType === "lease" && monthlyPayment !== null) ||
-        (offerType === "financing" && apr !== null) ||
-        (offerType === "cash" && (cashBack !== null || terms !== null));
+        (offerType === "lease" && leaseMonthlyPayment !== null) ||
+        (offerType === "financing" && aprRate !== null) ||
+        (offerType === "cash" && (cashValue !== null || terms !== null));
 
       if (!hasValidData) {
         console.warn(`Skipping ${offerType} offer for ${modelName} ${year} - insufficient data`);
@@ -230,12 +231,13 @@ export async function scrapeOffersFromVW() {
         trim: trim,
         offerType: offerType,
         offerAmount: null,
-        apr: apr,
-        termMonths: termMonths,
-        cashBack: cashBack,
+        aprRate: aprRate,
+        aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+        leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+        cashValue: cashValue,
         tradeDiscount: null,
-        dueAtSigning: null, // Could extract from dealLegal if needed
-        monthlyPayment: monthlyPayment,
+        leaseDueAtSigning: null, // Could extract from dealLegal if needed
+        leaseMonthlyPayment: leaseMonthlyPayment,
         milesPerYear: null,
         expirationDate: expirationDate,
         terms: terms,
@@ -273,12 +275,13 @@ export async function scrapeOffersFromVW() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
                   tradeDiscount: offer.tradeDiscount,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,

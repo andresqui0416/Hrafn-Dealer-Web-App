@@ -50,22 +50,23 @@ const fetchOfferData = async (zipCode: string = "95556") => {
     }
 
     // Extract lease information
-    let monthlyPayment: number | null = null;
-    let dueAtSigning: number | null = null;
-    let termMonths: number | null = null;
+    let leaseMonthlyPayment: number | null = null;
+    let leaseDueAtSigning: number | null = null;
+    let leaseTermMonths: number | null = null;
     let milesPerYear: number | null = null;
 
     if (offer.LeasePaymentInfo) {
-      monthlyPayment = offer.LeasePaymentInfo.BaseMonthlyPayment || null;
-      dueAtSigning = offer.LeasePaymentInfo.TotalDueAtSigning || null;
-      termMonths = offer.LeasePaymentInfo.TermMonths || null;
+      leaseMonthlyPayment = offer.LeasePaymentInfo.BaseMonthlyPayment || null;
+      leaseDueAtSigning = offer.LeasePaymentInfo.TotalDueAtSigning || null;
+      leaseTermMonths = offer.LeasePaymentInfo.TermMonths || null;
       if (offer.LeasePaymentInfo.AnnualMiles) {
         milesPerYear = parseInt(offer.LeasePaymentInfo.AnnualMiles, 10) || null;
       }
     }
 
     // Extract finance information (APR and term)
-    let apr: number | null = null;
+    let aprRate: number | null = null;
+    let aprTermMonths: number | null = null;
     if (
       offer.PaymentTerms &&
       offer.PaymentTerms.FinanceTerms &&
@@ -74,20 +75,20 @@ const fetchOfferData = async (zipCode: string = "95556") => {
       // Use the first finance term's APR, or find the best one
       const financeTerm = offer.PaymentTerms.FinanceTerms[0];
       if (financeTerm && financeTerm.APR) {
-        apr = financeTerm.APR / 100; // Convert percentage to decimal
+        aprRate = financeTerm.APR / 100; // Convert percentage to decimal
         // Use termMax if available, otherwise termMin
-        if (!termMonths && financeTerm.TermMax) {
-          termMonths = financeTerm.TermMax;
-        } else if (!termMonths && financeTerm.TermMin) {
-          termMonths = financeTerm.TermMin;
+        if (financeTerm.TermMax) {
+          aprTermMonths = financeTerm.TermMax;
+        } else if (financeTerm.TermMin) {
+          aprTermMonths = financeTerm.TermMin;
         }
       }
     }
 
     // Extract cash back / offer amount
-    let cashBack: number | null = null;
+    let cashValue: number | null = null;
     if (offer.OfferAmount) {
-      cashBack = offer.OfferAmount;
+      cashValue = offer.OfferAmount;
     }
 
     // Extract expiration date
@@ -107,12 +108,13 @@ const fetchOfferData = async (zipCode: string = "95556") => {
       trim: trim,
       offerType: offerType,
       offerAmount: null,
-      apr: apr,
-      termMonths: termMonths,
-      cashBack: cashBack,
+      aprRate: aprRate,
+      aprTermMonths: aprTermMonths,
+      leaseTermMonths: leaseTermMonths,
+      cashValue: cashValue,
       tradeDiscount: null,
-      dueAtSigning: dueAtSigning,
-      monthlyPayment: monthlyPayment,
+      leaseDueAtSigning: leaseDueAtSigning,
+      leaseMonthlyPayment: leaseMonthlyPayment,
       milesPerYear: milesPerYear,
       terms: offer.SpecialShortDescription || null,
       finePrint: offer.SpecialDescription || offer.ShortDisclaimer || null,
@@ -158,21 +160,25 @@ export async function scrapeOffersFromHonda(zipCode: string = "95556") {
               trim: offer.trim,
               offerType: offer.offerType,
               offerAmount: offer.offerAmount,
-              apr: offer.apr !== null && offer.apr !== undefined ? offer.apr : null,
-              termMonths:
-                offer.termMonths !== null && offer.termMonths !== undefined
-                  ? offer.termMonths
+              aprRate: offer.aprRate !== null && offer.aprRate !== undefined ? offer.aprRate : null,
+              aprTermMonths:
+                offer.aprTermMonths !== null && offer.aprTermMonths !== undefined
+                  ? offer.aprTermMonths
                   : null,
-              cashBack:
-                offer.cashBack !== null && offer.cashBack !== undefined ? offer.cashBack : null,
+              leaseTermMonths:
+                offer.leaseTermMonths !== null && offer.leaseTermMonths !== undefined
+                  ? offer.leaseTermMonths
+                  : null,
+              cashValue:
+                offer.cashValue !== null && offer.cashValue !== undefined ? offer.cashValue : null,
               tradeDiscount: offer.tradeDiscount,
-              dueAtSigning:
-                offer.dueAtSigning !== null && offer.dueAtSigning !== undefined
-                  ? offer.dueAtSigning
+              leaseDueAtSigning:
+                offer.leaseDueAtSigning !== null && offer.leaseDueAtSigning !== undefined
+                  ? offer.leaseDueAtSigning
                   : null,
-              monthlyPayment:
-                offer.monthlyPayment !== null && offer.monthlyPayment !== undefined
-                  ? offer.monthlyPayment
+              leaseMonthlyPayment:
+                offer.leaseMonthlyPayment !== null && offer.leaseMonthlyPayment !== undefined
+                  ? offer.leaseMonthlyPayment
                   : null,
               milesPerYear:
                 offer.milesPerYear !== null && offer.milesPerYear !== undefined

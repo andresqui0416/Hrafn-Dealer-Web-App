@@ -188,8 +188,8 @@ export async function scrapeOffersFromMBUSA() {
           const trim = null; // Trim info not directly available in this structure
 
           // Extract financial details
-          const monthlyPayment = offerSummary.payValue || null;
-          const apr = offerSummary.rateValue || null; // APR is a percentage (e.g., 1.99)
+          const leaseMonthlyPayment = offerSummary.payValue || null;
+          const aprRate = offerSummary.rateValue || null; // APR is a percentage (e.g., 1.99)
           const payDescription = offerSummary.payDescription || "";
           const rateDescription = offerSummary.rateDescription || "";
 
@@ -213,8 +213,8 @@ export async function scrapeOffersFromMBUSA() {
           // Only create offer if we have at least model and year
           if (model && year) {
             // Create finance offer if APR and rate description are present
-            if (apr !== null && rateDescription) {
-              const financeTermMonths = extractTermMonths(rateDescription);
+            if (aprRate !== null && rateDescription) {
+              const aprTermMonths = extractTermMonths(rateDescription);
               offers.push({
                 brand: "Mercedes-Benz",
                 year,
@@ -224,11 +224,12 @@ export async function scrapeOffersFromMBUSA() {
                 trim,
                 offerType: "financing",
                 offerAmount: null,
-                apr: apr / 100, // Convert percentage to decimal (1.99 -> 0.0199)
-                termMonths: financeTermMonths,
-                cashBack: null,
-                dueAtSigning: null,
-                monthlyPayment: null,
+                aprRate: aprRate / 100, // Convert percentage to decimal (1.99 -> 0.0199)
+                aprTermMonths,
+                leaseTermMonths: null,
+                cashValue: null,
+                leaseDueAtSigning: null,
+                leaseMonthlyPayment: null,
                 milesPerYear: null,
                 expirationDate,
                 terms: packageName || rateDescription || null,
@@ -238,9 +239,9 @@ export async function scrapeOffersFromMBUSA() {
             }
 
             // Create lease offer if monthly payment and pay description are present
-            if (monthlyPayment !== null && payDescription) {
+            if (leaseMonthlyPayment !== null && payDescription) {
               const leaseTermMonths = extractTermMonths(payDescription);
-              const dueAtSigning = extractDueAtSigning(payDescription);
+              const leaseDueAtSigning = extractDueAtSigning(payDescription);
               offers.push({
                 brand: "Mercedes-Benz",
                 year,
@@ -250,11 +251,12 @@ export async function scrapeOffersFromMBUSA() {
                 trim,
                 offerType: "lease",
                 offerAmount: null,
-                apr: null,
-                termMonths: leaseTermMonths,
-                cashBack: null,
-                dueAtSigning,
-                monthlyPayment,
+                aprRate: null,
+                aprTermMonths: null,
+                leaseTermMonths,
+                cashValue: null,
+                leaseDueAtSigning,
+                leaseMonthlyPayment,
                 milesPerYear: null,
                 expirationDate,
                 terms: packageName || payDescription || null,
@@ -296,11 +298,12 @@ export async function scrapeOffersFromMBUSA() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,

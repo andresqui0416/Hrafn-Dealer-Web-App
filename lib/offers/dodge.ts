@@ -77,36 +77,37 @@ const fetchOfferData = async (modelInfo: any) => {
           console.error("Offer info not found:", offer.id);
           return null;
         }
-        let apr: number | null = null;
-        let termMonths: number | null = null;
+        let aprRate: number | null = null;
+        let aprTermMonths: number | null = null;
         if (offerType === "financing") {
           const aprProgram = offerInfo.programValues?.find(
             (pv: any) => pv.displayType === "apr" && typeof pv.apr === "number",
           );
           if (aprProgram) {
-            apr = aprProgram.apr / 100;
-            termMonths = aprProgram.term;
+            aprRate = aprProgram.apr / 100;
+            aprTermMonths = aprProgram.term;
           }
         }
-        let cashBack: number | null = null;
+        let cashValue: number | null = null;
         if (offerType === "cash") {
           const cashPrograms = offerInfo.programValues?.filter(
             (pv: any) => pv.displayType === "cash" && pv.value,
           );
           if (cashPrograms && cashPrograms.length > 0) {
-            cashBack = cashPrograms.reduce((sum: number, pv: any) => sum + (pv.value || 0), 0);
+            cashValue = cashPrograms.reduce((sum: number, pv: any) => sum + (pv.value || 0), 0);
           }
         }
-        let monthlyPayment: number | null = null;
-        let dueAtSigning: number | null = null;
+        let leaseMonthlyPayment: number | null = null;
+        let leaseDueAtSigning: number | null = null;
         let milesPerYear: number | null = null;
+        let leaseTermMonths: number | null = null;
         if (offerType === "lease") {
           const leaseGroup = offerInfo.groupData?.find((gd: any) => gd.type === "LEASE");
           if (leaseGroup) {
-            monthlyPayment = leaseGroup.monthlyPmnt ? parseFloat(leaseGroup.monthlyPmnt) : null;
-            dueAtSigning = leaseGroup.dueatSigning ? parseFloat(leaseGroup.dueatSigning) : null;
+            leaseMonthlyPayment = leaseGroup.monthlyPmnt ? parseFloat(leaseGroup.monthlyPmnt) : null;
+            leaseDueAtSigning = leaseGroup.dueatSigning ? parseFloat(leaseGroup.dueatSigning) : null;
             milesPerYear = leaseGroup.mileage || null;
-            termMonths = leaseGroup.numberofPmnts ? parseInt(leaseGroup.numberofPmnts) : null;
+            leaseTermMonths = leaseGroup.numberofPmnts ? parseInt(leaseGroup.numberofPmnts) : null;
           }
         }
         const expirationDate = offerInfo.end ? new Date(offerInfo.end).toISOString() : null;
@@ -123,11 +124,12 @@ const fetchOfferData = async (modelInfo: any) => {
           trim: trim,
           offerType: offerType,
           offerAmount: null,
-          apr: apr,
-          termMonths: termMonths,
-          cashBack: cashBack,
-          dueAtSigning: dueAtSigning,
-          monthlyPayment: monthlyPayment,
+          aprRate: aprRate,
+          aprTermMonths: aprTermMonths,
+          leaseTermMonths: leaseTermMonths,
+          cashValue: cashValue,
+          leaseDueAtSigning: leaseDueAtSigning,
+          leaseMonthlyPayment: leaseMonthlyPayment,
           milesPerYear: milesPerYear,
           terms: offerInfo.offerDescription || null,
           finePrint: offerInfo.offerDisclaimer
@@ -179,11 +181,12 @@ export async function scrapeOffersFromDodge() {
                 trim: offer.trim || null,
                 offerType: offer.offerType,
                 offerAmount: offer.offerAmount,
-                apr: offer.apr,
-                termMonths: offer.termMonths,
-                cashBack: offer.cashBack,
-                dueAtSigning: offer.dueAtSigning,
-                monthlyPayment: offer.monthlyPayment,
+                aprRate: offer.aprRate,
+                aprTermMonths: offer.aprTermMonths,
+                leaseTermMonths: offer.leaseTermMonths,
+                cashValue: offer.cashValue,
+                leaseDueAtSigning: offer.leaseDueAtSigning,
+                leaseMonthlyPayment: offer.leaseMonthlyPayment,
                 milesPerYear: offer.milesPerYear,
                 terms: offer.terms,
                 finePrint: offer.finePrint,

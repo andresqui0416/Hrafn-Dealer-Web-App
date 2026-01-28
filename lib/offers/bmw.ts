@@ -93,15 +93,15 @@ export async function scrapeOffersFromBMW() {
           if (modelData.lease_offer && typeof modelData.lease_offer === "object") {
             const leaseOffer = modelData.lease_offer;
 
-            const monthlyPayment = leaseOffer.monthly_payment
+            const leaseMonthlyPayment = leaseOffer.monthly_payment
               ? parseNumber(leaseOffer.monthly_payment)
               : null;
 
-            const termMonths = leaseOffer.lease_term
+            const leaseTermMonths = leaseOffer.lease_term
               ? parseInt(String(leaseOffer.lease_term), 10)
               : null;
 
-            const dueAtSigning = leaseOffer.due_at_signing_except_ny
+            const leaseDueAtSigning = leaseOffer.due_at_signing_except_ny
               ? parseNumber(leaseOffer.due_at_signing_except_ny)
               : null;
 
@@ -126,7 +126,7 @@ export async function scrapeOffersFromBMW() {
               leaseOffer.additional_disclaimer || leaseOffer.offer_disclaimer || null;
 
             // Only create offer if we have meaningful data
-            if (monthlyPayment !== null) {
+            if (leaseMonthlyPayment !== null) {
               offers.push({
                 brand: "BMW",
                 year: year ? parseInt(String(year), 10) : null,
@@ -136,12 +136,13 @@ export async function scrapeOffersFromBMW() {
                 trim: trim,
                 offerType: "lease",
                 offerAmount: null,
-                apr: null,
-                termMonths: termMonths,
-                cashBack: null,
+                aprRate: null,
+                aprTermMonths: null,
+                leaseTermMonths: leaseTermMonths,
+                cashValue: null,
                 tradeDiscount: null,
-                dueAtSigning: dueAtSigning,
-                monthlyPayment: monthlyPayment,
+                leaseDueAtSigning: leaseDueAtSigning,
+                leaseMonthlyPayment: leaseMonthlyPayment,
                 milesPerYear: milesPerYear,
                 expirationDate: expirationDate,
                 terms: terms,
@@ -160,9 +161,9 @@ export async function scrapeOffersFromBMW() {
               : financeOffer.apr_1
                 ? parseNumber(financeOffer.apr_1)
                 : null;
-            const apr = aprValue !== null ? aprValue / 100 : null;
+            const aprRate = aprValue !== null ? aprValue / 100 : null;
 
-            const termMonths = financeOffer.months_2
+            const aprTermMonths = financeOffer.months_2
               ? parseInt(String(financeOffer.months_2), 10)
               : financeOffer.months_1
                 ? parseInt(String(financeOffer.months_1), 10)
@@ -194,7 +195,7 @@ export async function scrapeOffersFromBMW() {
               null;
 
             // Only create offer if we have meaningful data
-            if (apr !== null) {
+            if (aprRate !== null) {
               offers.push({
                 brand: "BMW",
                 year: year ? parseInt(String(year), 10) : null,
@@ -204,12 +205,13 @@ export async function scrapeOffersFromBMW() {
                 trim: trim,
                 offerType: "financing",
                 offerAmount: null,
-                apr: apr,
-                termMonths: termMonths,
-                cashBack: null,
+                aprRate: aprRate,
+                aprTermMonths: aprTermMonths,
+                leaseTermMonths: null,
+                cashValue: null,
                 tradeDiscount: null,
-                dueAtSigning: null,
-                monthlyPayment: null,
+                leaseDueAtSigning: null,
+                leaseMonthlyPayment: null,
                 milesPerYear: null,
                 expirationDate: expirationDate,
                 terms: terms,
@@ -248,14 +250,15 @@ export async function scrapeOffersFromBMW() {
                     model: offer.model,
                     modelCode: offer.modelCode,
                     trim: offer.trim,
-                    offerType: offer.offerType,
-                    offerAmount: offer.offerAmount,
-                    apr: offer.apr,
-                    termMonths: offer.termMonths,
-                    cashBack: offer.cashBack,
-                    tradeDiscount: offer.tradeDiscount,
-                    dueAtSigning: offer.dueAtSigning,
-                    monthlyPayment: offer.monthlyPayment,
+                  offerType: offer.offerType,
+                  offerAmount: offer.offerAmount,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
+                  tradeDiscount: offer.tradeDiscount,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                     milesPerYear: offer.milesPerYear,
                     terms: offer.terms,
                     finePrint: offer.finePrint,
