@@ -160,19 +160,19 @@ const fetchOfferData = async () => {
     const monthlyPaymentMatch = offerHtml.match(
       /<b[^>]*>Monthly Payment:<\/b>[\s\S]*?<div[^>]*class="[^"]*payment-numbers[^"]*"[^>]*>([^<]+)<\/div>/i,
     );
-    const monthlyPayment = monthlyPaymentMatch ? extractNumber(monthlyPaymentMatch[1]) : null;
+    const leaseMonthlyPayment = monthlyPaymentMatch ? extractNumber(monthlyPaymentMatch[1]) : null;
 
     // Extract term in months - handle newlines and whitespace
     const termMatch = offerHtml.match(
       /<b[^>]*>Term in months:<\/b>[\s\S]*?<div[^>]*class="[^"]*payment-numbers[^"]*"[^>]*>([^<]+)<\/div>/i,
     );
-    const termMonths = termMatch ? parseInt(termMatch[1].trim(), 10) : null;
+    const leaseTermMonths = termMatch ? parseInt(termMatch[1].trim(), 10) : null;
 
     // Extract due at signing - handle multiple classes
     const dueAtSigningMatch = offerHtml.match(
       /<div[^>]*class="[^"]*downPayment[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
     );
-    const dueAtSigning = dueAtSigningMatch
+    const leaseDueAtSigning = dueAtSigningMatch
       ? extractDueAtSigning(extractTextFromHTML(dueAtSigningMatch[1]))
       : null;
 
@@ -252,11 +252,12 @@ const fetchOfferData = async () => {
       trim: null,
       offerType: "lease",
       offerAmount: null,
-      apr: null,
-      termMonths: termMonths,
-      cashBack: null,
-      dueAtSigning: dueAtSigning,
-      monthlyPayment: monthlyPayment,
+      aprRate: null,
+      aprTermMonths: null,
+      leaseTermMonths: leaseTermMonths,
+      cashValue: null,
+      leaseDueAtSigning: leaseDueAtSigning,
+      leaseMonthlyPayment: leaseMonthlyPayment,
       milesPerYear: milesPerYear,
       terms: shortDisclaimer,
       finePrint: finePrint,
@@ -303,11 +304,12 @@ export async function scrapeOffersFromPorsche() {
               trim: offer.trim,
               offerType: offer.offerType,
               offerAmount: offer.offerAmount,
-              apr: offer.apr,
-              termMonths: offer.termMonths,
-              cashBack: offer.cashBack,
-              dueAtSigning: offer.dueAtSigning,
-              monthlyPayment: offer.monthlyPayment,
+              aprRate: offer.aprRate,
+              aprTermMonths: offer.aprTermMonths,
+              leaseTermMonths: offer.leaseTermMonths,
+              cashValue: offer.cashValue,
+              leaseDueAtSigning: offer.leaseDueAtSigning,
+              leaseMonthlyPayment: offer.leaseMonthlyPayment,
               milesPerYear: offer.milesPerYear,
               terms: offer.terms,
               finePrint: offer.finePrint,

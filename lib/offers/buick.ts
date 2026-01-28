@@ -593,36 +593,37 @@ export async function scrapeOffersFromBuick() {
           }
 
           // Extract APR from main text
-          const apr = extractAPR(mainText);
+          const aprRate = extractAPR(mainText);
 
           // Determine offer type: if APR found, it's financing, otherwise cash/credit
-          const offerType = apr !== null ? "financing" : "cash";
+          const offerType = aprRate !== null ? "financing" : "cash";
 
           // Extract other details from main text
-          const monthlyPayment = extractMonthlyPayment(mainText);
-          const termMonths = extractTermMonths(mainText);
-          const dueAtSigning = extractDueAtSigning(mainText);
+          const leaseMonthlyPayment = extractMonthlyPayment(mainText);
+          const leaseTermMonths = extractTermMonths(mainText);
+          const leaseDueAtSigning = extractDueAtSigning(mainText);
+          const aprTermMonths = extractTermMonths(mainText); // For financing offers
 
-          // Extract cashBack from main text (regardless of offer type)
-          let cashBack: number | null = null;
+          // Extract cashValue from main text (regardless of offer type)
+          let cashValue: number | null = null;
           // Look for "Purchase Allowance" pattern first (this is cashback)
           const purchaseAllowanceMatch = mainText.match(/\$([\d,]+)\s+Purchase\s+Allowance/i);
           if (purchaseAllowanceMatch && purchaseAllowanceMatch[1]) {
-            cashBack = parseNumber(purchaseAllowanceMatch[1]);
+            cashValue = parseNumber(purchaseAllowanceMatch[1]);
           } else {
             // Also try uppercase pattern
             const purchaseAllowanceMatchUpper = mainText.match(
               /\$([\d,]+)\s+PURCHASE\s+ALLOWANCE/i,
             );
             if (purchaseAllowanceMatchUpper && purchaseAllowanceMatchUpper[1]) {
-              cashBack = parseNumber(purchaseAllowanceMatchUpper[1]);
+              cashValue = parseNumber(purchaseAllowanceMatchUpper[1]);
             } else {
               // Look for other patterns like "$X,XXX cash back", "$X,XXX off", "$X,XXX discount", or "$X,XXX bonus cash"
               const cashBackMatch = mainText.match(
                 /\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i,
               );
               if (cashBackMatch && cashBackMatch[1]) {
-                cashBack = parseNumber(cashBackMatch[1]);
+                cashValue = parseNumber(cashBackMatch[1]);
               }
             }
           }
@@ -662,8 +663,8 @@ export async function scrapeOffersFromBuick() {
           // Only create offer if we have meaningful data
           // Accept offers if we have any of: APR, cashback, trade discount, or meaningful text content
           const hasValidData =
-            apr !== null ||
-            cashBack !== null ||
+            aprRate !== null ||
+            cashValue !== null ||
             tradeDiscount !== null ||
             mainText.trim().length > 30; // At least 30 characters of text content
 
@@ -672,7 +673,7 @@ export async function scrapeOffersFromBuick() {
               `Skipping featured ${offerType} offer for ${model} ${year} - insufficient data`,
             );
             console.warn(
-              `  mainText length: ${mainText.trim().length}, apr: ${apr}, cashBack: ${cashBack}, tradeDiscount: ${tradeDiscount}`,
+              `  mainText length: ${mainText.trim().length}, aprRate: ${aprRate}, cashValue: ${cashValue}, tradeDiscount: ${tradeDiscount}`,
             );
             console.warn(`  mainText preview: ${mainText.substring(0, 200)}`);
             continue;
@@ -687,12 +688,13 @@ export async function scrapeOffersFromBuick() {
             trim,
             offerType,
             offerAmount: null,
-            apr,
-            termMonths,
-            cashBack,
+            aprRate,
+            aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+            leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+            cashValue,
             tradeDiscount,
-            dueAtSigning,
-            monthlyPayment,
+            leaseDueAtSigning,
+            leaseMonthlyPayment,
             milesPerYear: null,
             expirationDate,
             terms,
@@ -732,16 +734,17 @@ export async function scrapeOffersFromBuick() {
       const titleText = offerText.title?.text || "";
 
       // Extract monthly payment
-      const monthlyPayment = extractMonthlyPayment(bodyText);
+      const leaseMonthlyPayment = extractMonthlyPayment(bodyText);
 
       // Extract term months
-      const termMonths = extractTermMonths(bodyText);
+      const leaseTermMonths = extractTermMonths(bodyText);
+      const aprTermMonths = extractTermMonths(bodyText); // For financing offers
 
       // Extract due at signing
-      const dueAtSigning = extractDueAtSigning(bodyText);
+      const leaseDueAtSigning = extractDueAtSigning(bodyText);
 
       // Extract APR (usually in body or footer text)
-      const apr = extractAPR(bodyText) || extractAPR(footerText);
+      const aprRate = extractAPR(bodyText) || extractAPR(footerText);
 
       // Extract expiration date
       const expirationDate = parseExpirationDate(result.endEffDate);
@@ -768,25 +771,25 @@ export async function scrapeOffersFromBuick() {
       // offerAmount should only be set if explicitly extracted from the offer content
       let offerAmount: number | null = null;
 
-      // Extract cashBack from body text (regardless of offer type)
-      let cashBack: number | null = null;
+      // Extract cashValue from body text (regardless of offer type)
+      let cashValue: number | null = null;
       // Look for "Purchase Allowance" pattern first (this is cashback)
       // Pattern handles: "$250 Purchase Allowance" or "$250 PURCHASE ALLOWANCE" (case insensitive)
       const purchaseAllowanceMatch = bodyText.match(/\$([\d,]+)\s+Purchase\s+Allowance\.?/i);
       if (purchaseAllowanceMatch && purchaseAllowanceMatch[1]) {
-        cashBack = parseNumber(purchaseAllowanceMatch[1]);
+        cashValue = parseNumber(purchaseAllowanceMatch[1]);
       } else {
         // Also try uppercase pattern
         const purchaseAllowanceMatchUpper = bodyText.match(/\$([\d,]+)\s+PURCHASE\s+ALLOWANCE\.?/i);
         if (purchaseAllowanceMatchUpper && purchaseAllowanceMatchUpper[1]) {
-          cashBack = parseNumber(purchaseAllowanceMatchUpper[1]);
+          cashValue = parseNumber(purchaseAllowanceMatchUpper[1]);
         } else {
           // Look for other patterns like "$X,XXX cash back", "$X,XXX off", "$X,XXX discount", or "$X,XXX bonus cash"
           const cashBackMatch = bodyText.match(
             /\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i,
           );
           if (cashBackMatch && cashBackMatch[1]) {
-            cashBack = parseNumber(cashBackMatch[1]);
+            cashValue = parseNumber(cashBackMatch[1]);
           }
         }
       }
@@ -797,10 +800,10 @@ export async function scrapeOffersFromBuick() {
 
       // Only create offer if we have meaningful data
       const hasValidData =
-        (offerType === "lease" && monthlyPayment) ||
-        (offerType === "financing" && apr !== null) ||
+        (offerType === "lease" && leaseMonthlyPayment) ||
+        (offerType === "financing" && aprRate !== null) ||
         (offerType === "cash" &&
-          (offerAmount !== null || cashBack !== null || tradeDiscount !== null));
+          (offerAmount !== null || cashValue !== null || tradeDiscount !== null));
 
       if (!hasValidData) {
         console.warn(`Skipping ${offerType} offer for ${model} ${year} - insufficient data`);
@@ -816,12 +819,13 @@ export async function scrapeOffersFromBuick() {
         trim,
         offerType,
         offerAmount,
-        apr,
-        termMonths,
-        cashBack,
+        aprRate,
+        aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+        leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+        cashValue,
         tradeDiscount,
-        dueAtSigning,
-        monthlyPayment,
+        leaseDueAtSigning,
+        leaseMonthlyPayment,
         milesPerYear: null, // Could extract from terms if needed
         expirationDate,
         terms,
@@ -859,12 +863,13 @@ export async function scrapeOffersFromBuick() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
                   tradeDiscount: offer.tradeDiscount,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,

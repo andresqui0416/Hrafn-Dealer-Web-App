@@ -350,11 +350,12 @@ export async function scrapeOffersFromLucid() {
             }
           }
 
-          let monthlyPayment: number | null = null;
-          let apr: number | null = null;
-          let termMonths: number | null = null;
-          let dueAtSigning: number | null = null;
-          let cashBack: number | null = null;
+          let leaseMonthlyPayment: number | null = null;
+          let aprRate: number | null = null;
+          let aprTermMonths: number | null = null;
+          let leaseTermMonths: number | null = null;
+          let leaseDueAtSigning: number | null = null;
+          let cashValue: number | null = null;
           let offerAmount: number | null = null;
           let terms: string | null = null;
 
@@ -435,13 +436,13 @@ export async function scrapeOffersFromLucid() {
             const eyebrowLower = eyebrow.toLowerCase();
             if (eyebrowLower === "from" && offerType === "lease") {
               // Monthly payment for lease
-              monthlyPayment = parseNumber(headline);
-              termMonths = extractTermMonths(description) || termMonths;
-              dueAtSigning = extractDueAtSigning(description) || dueAtSigning;
+              leaseMonthlyPayment = parseNumber(headline);
+              leaseTermMonths = extractTermMonths(description) || leaseTermMonths;
+              leaseDueAtSigning = extractDueAtSigning(description) || leaseDueAtSigning;
             } else if (eyebrowLower === "apr" && offerType === "financing") {
               // APR for finance
-              apr = parseNumber(headline);
-              termMonths = extractTermMonths(description) || termMonths;
+              aprRate = parseNumber(headline);
+              aprTermMonths = extractTermMonths(description) || aprTermMonths;
             } else if ((eyebrowLower === "from" || eyebrowLower === "") && offerType === "cash") {
               // Cash price - handle both "from" and empty eyebrow (might be the main price)
               const price = parseNumber(headline);
@@ -460,8 +461,8 @@ export async function scrapeOffersFromLucid() {
                   const creditMatch = description.match(pattern);
                   if (creditMatch && creditMatch[1]) {
                     const creditAmount = parseNumber(creditMatch[1]);
-                    if (creditAmount && !cashBack) {
-                      cashBack = creditAmount;
+                    if (creditAmount && !cashValue) {
+                      cashValue = creditAmount;
                       break; // Use first match
                     }
                   }
@@ -475,8 +476,8 @@ export async function scrapeOffersFromLucid() {
                 // For financing offers, "Plus" indicates cashback (e.g., "Plus $7,500 Air Credits")
                 // For lease offers, "Including" indicates total discounts (e.g., "Including $16,500 in total discounts")
                 // Always set cashback if we have an amount, but prefer "Plus" for financing if both exist
-                if (eyebrowLower === "plus" || !cashBack) {
-                  cashBack = amount;
+                if (eyebrowLower === "plus" || !cashValue) {
+                  cashValue = amount;
                 }
               }
             } else if (offerType === "cash" && headline) {
@@ -497,8 +498,8 @@ export async function scrapeOffersFromLucid() {
                   const creditMatch = description.match(pattern);
                   if (creditMatch && creditMatch[1]) {
                     const creditAmount = parseNumber(creditMatch[1]);
-                    if (creditAmount && !cashBack) {
-                      cashBack = creditAmount;
+                    if (creditAmount && !cashValue) {
+                      cashValue = creditAmount;
                       break;
                     }
                   }
@@ -524,28 +525,28 @@ export async function scrapeOffersFromLucid() {
           if (offerType === "cash" || offerType === "financing") {
             const logData: any = {
               offerAmount,
-              cashBack,
+              cashValue,
               specContainersCount: specContainers.length,
               hasOfferAmount: !!offerAmount,
-              hasCashBack: !!cashBack,
+              hasCashValue: !!cashValue,
             };
             if (offerType === "financing") {
-              logData.apr = apr;
+              logData.aprRate = aprRate;
             }
           }
 
           const hasValidData =
-            (offerType === "lease" && monthlyPayment) ||
-            (offerType === "financing" && apr) ||
-            (offerType === "cash" && (offerAmount || cashBack));
+            (offerType === "lease" && leaseMonthlyPayment) ||
+            (offerType === "financing" && aprRate) ||
+            (offerType === "cash" && (offerAmount || cashValue));
 
           if (!hasValidData) {
             console.warn(`Skipping ${offerType} offer for ${model} ${year} - insufficient data:`, {
               offerType,
-              monthlyPayment,
-              apr,
+              leaseMonthlyPayment,
+              aprRate,
               offerAmount,
-              cashBack,
+              cashValue,
               specContainersCount: specContainers.length,
             });
           }
@@ -563,11 +564,12 @@ export async function scrapeOffersFromLucid() {
               trim: null,
               offerType,
               offerAmount: null, // Don't set from monthlyPayment - keep them separate
-              apr: apr ? apr / 100 : null, // Convert percentage to decimal
-              termMonths,
-              cashBack,
-              dueAtSigning,
-              monthlyPayment,
+              aprRate: aprRate ? aprRate / 100 : null, // Convert percentage to decimal
+              aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+              leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+              cashValue,
+              leaseDueAtSigning,
+              leaseMonthlyPayment,
               milesPerYear: null,
               expirationDate,
               terms: terms || null,
@@ -611,11 +613,12 @@ export async function scrapeOffersFromLucid() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,

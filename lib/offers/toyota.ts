@@ -384,11 +384,12 @@ export async function scrapeOffersFromToyota() {
       }
 
       // Extract offer details based on type
-      let apr: number | null = null;
-      let termMonths: number | null = null;
-      let monthlyPayment: number | null = null;
-      let dueAtSigning: number | null = null;
-      let cashBack: number | null = null;
+      let aprRate: number | null = null;
+      let aprTermMonths: number | null = null;
+      let leaseTermMonths: number | null = null;
+      let leaseMonthlyPayment: number | null = null;
+      let leaseDueAtSigning: number | null = null;
+      let cashValue: number | null = null;
       let milesPerYear: number | null = null;
 
       if (offerType === "financing" && offer.apr) {
@@ -397,35 +398,35 @@ export async function scrapeOffersFromToyota() {
         if (aprData && aprData.rate) {
           const rate = parseNumber(aprData.rate);
           if (rate !== null) {
-            apr = rate / 100;
+            aprRate = rate / 100;
           }
         }
         if (aprData && aprData.duration) {
-          termMonths = parseInt(String(aprData.duration), 10);
+          aprTermMonths = parseInt(String(aprData.duration), 10);
         }
       } else if (offerType === "lease" && offer.lease) {
         // Lease offers: lease.monthlyPayment, lease.dueAtSigning, lease.duration
         const leaseData = offer.lease as any;
         if (leaseData?.monthlyPayment) {
-          monthlyPayment = parseNumber(leaseData.monthlyPayment);
+          leaseMonthlyPayment = parseNumber(leaseData.monthlyPayment);
         }
         if (leaseData?.dueAtSigning) {
-          dueAtSigning = parseNumber(leaseData.dueAtSigning);
+          leaseDueAtSigning = parseNumber(leaseData.dueAtSigning);
         }
         if (leaseData?.duration) {
-          termMonths = parseInt(String(leaseData.duration), 10);
+          leaseTermMonths = parseInt(String(leaseData.duration), 10);
         }
       } else if (offerType === "cash") {
         // Cash offers: can be in cash.cashAmount or multiVehicle.cashAmount
         if (offer.cash) {
           const cashData = offer.cash as any;
           if (cashData?.cashAmount) {
-            cashBack = parseNumber(cashData.cashAmount);
+            cashValue = parseNumber(cashData.cashAmount);
           }
         } else if (offer.multiVehicle) {
           const multiVehicleData = offer.multiVehicle as any;
           if (multiVehicleData?.cashAmount) {
-            cashBack = parseNumber(multiVehicleData.cashAmount);
+            cashValue = parseNumber(multiVehicleData.cashAmount);
           }
         }
       }
@@ -454,9 +455,9 @@ export async function scrapeOffersFromToyota() {
 
       // Only create offer if we have meaningful data
       const hasValidData =
-        (offerType === "lease" && monthlyPayment !== null) ||
-        (offerType === "financing" && apr !== null) ||
-        (offerType === "cash" && (cashBack !== null || terms !== null));
+        (offerType === "lease" && leaseMonthlyPayment !== null) ||
+        (offerType === "financing" && aprRate !== null) ||
+        (offerType === "cash" && (cashValue !== null || terms !== null));
 
       if (!hasValidData) {
         console.warn(`Skipping ${offerType} offer for ${modelName} ${year} - insufficient data`);
@@ -472,12 +473,13 @@ export async function scrapeOffersFromToyota() {
         trim: trim,
         offerType: offerType,
         offerAmount: null,
-        apr: apr,
-        termMonths: termMonths,
-        cashBack: cashBack,
+        aprRate: aprRate,
+        aprTermMonths: aprTermMonths,
+        leaseTermMonths: leaseTermMonths,
+        cashValue: cashValue,
         tradeDiscount: null,
-        dueAtSigning: dueAtSigning,
-        monthlyPayment: monthlyPayment,
+        leaseDueAtSigning: leaseDueAtSigning,
+        leaseMonthlyPayment: leaseMonthlyPayment,
         milesPerYear: milesPerYear,
         expirationDate: expirationDate,
         terms: terms,
@@ -515,12 +517,13 @@ export async function scrapeOffersFromToyota() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
                   tradeDiscount: offer.tradeDiscount,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,

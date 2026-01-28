@@ -704,11 +704,11 @@ class LincolnScraper:
                     'model': model_info.get('name'),
                     'trim': trim,
                     'offerType': 'lease',
-                    'monthlyPayment': monthly_payment,
-                    'dueAtSigning': due_at_signing,
-                    'termMonths': term_months,
+                    'leaseMonthlyPayment': monthly_payment,
+                    'leaseDueAtSigning': due_at_signing,
+                    'leaseTermMonths': term_months,
                     'milesPerYear': miles_per_year,
-                    'cashBack': cash_back,
+                    'cashValue': cash_back,
                     'expirationDate': expiration_date.isoformat() if expiration_date else None,
                     'terms': disclaimer_text,
                     'finePrint': disclaimer_text
@@ -751,10 +751,10 @@ class LincolnScraper:
                     'model': model_info.get('name'),
                     'trim': trim,
                     'offerType': 'financing',
-                    'apr': apr,
-                    'termMonths': term_months,
-                    'monthlyPayment': None,  # Not extracted for financing offers
-                    'cashBack': cash_back,
+                    'aprRate': apr,
+                    'aprTermMonths': term_months,
+                    'leaseMonthlyPayment': None,  # Not extracted for financing offers
+                    'cashValue': cash_back,
                     'expirationDate': expiration_date.isoformat() if expiration_date else None,
                     'terms': disclaimer_text,
                     'finePrint': disclaimer_text
@@ -808,9 +808,9 @@ class LincolnScraper:
                     'model': model_info.get('name'),
                     'trim': trim,
                     'offerType': 'lease',
-                    'monthlyPayment': monthly_payment,
-                    'dueAtSigning': due_at_signing,
-                    'termMonths': term_months,
+                    'leaseMonthlyPayment': monthly_payment,
+                    'leaseDueAtSigning': due_at_signing,
+                    'leaseTermMonths': term_months,
                     'milesPerYear': miles_per_year,
                     'expirationDate': expiration_date.isoformat() if expiration_date else None,
                     'terms': terms,
@@ -854,10 +854,10 @@ class LincolnScraper:
                     'model': model_info.get('name'),
                     'trim': trim,
                     'offerType': 'financing',
-                    'apr': apr,
-                    'termMonths': term_months,
-                    'monthlyPayment': monthly_payment,
-                    'cashBack': cash_back,  # Down payment is cash back
+                    'aprRate': apr,
+                    'aprTermMonths': term_months,
+                    'leaseMonthlyPayment': monthly_payment,
+                    'cashValue': cash_back,  # Down payment is cash back
                     'expirationDate': expiration_date.isoformat() if expiration_date else None,
                     'terms': terms,
                     'finePrint': None
@@ -899,7 +899,7 @@ class LincolnScraper:
                 'model': model_info.get('name'),
                 'trim': trim,
                 'offerType': 'cash',
-                'cashBack': cash_back,
+                'cashValue': cash_back,
                 'expirationDate': expiration_date.isoformat() if expiration_date else None,
                 'terms': terms,
                 'finePrint': None
@@ -1033,12 +1033,12 @@ def main():
         for i, offer in enumerate(offers[:3], 1):
             print(f"\n{i}. {offer.get('brand')} {offer.get('year')} {offer.get('make')} {offer.get('model')}")
             print(f"   Type: {offer.get('offerType')}")
-            if offer.get('monthlyPayment'):
-                print(f"   Monthly Payment: ${offer.get('monthlyPayment')}")
-            if offer.get('apr'):
-                print(f"   APR: {offer.get('apr') * 100}%")
-            if offer.get('cashBack'):
-                print(f"   Cash Back: ${offer.get('cashBack')}")
+            if offer.get('leaseMonthlyPayment'):
+                print(f"   Monthly Payment: ${offer.get('leaseMonthlyPayment')}")
+            if offer.get('aprRate'):
+                print(f"   APR: {offer.get('aprRate') * 100}%")
+            if offer.get('cashValue'):
+                print(f"   Cash Value: ${offer.get('cashValue')}")
     
     # Send to API unless --no-send flag is set
     if not args.no_send:

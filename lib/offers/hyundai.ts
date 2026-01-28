@@ -56,11 +56,12 @@ interface HyundaiOffer {
   trim: string | null;
   offerType: "lease" | "financing" | "cash";
   offerAmount: number | null;
-  apr: number | null;
-  termMonths: number | null;
-  cashBack: number | null;
-  dueAtSigning: number | null;
-  monthlyPayment: number | null;
+  aprRate: number | null;
+  aprTermMonths: number | null;
+  leaseTermMonths: number | null;
+  cashValue: number | null;
+  leaseDueAtSigning: number | null;
+  leaseMonthlyPayment: number | null;
   milesPerYear: number | null;
   terms: string | null;
   finePrint: string | null;
@@ -134,11 +135,12 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               trim: lease1.trimName || null,
               offerType: "lease",
               offerAmount: null,
-              apr: null,
-              termMonths: lease1.term || null,
-              cashBack: null,
-              dueAtSigning,
-              monthlyPayment: lease1.offerMonthlyPayment || null,
+              aprRate: null,
+              aprTermMonths: null,
+              leaseTermMonths: lease1.term || null,
+              cashValue: null,
+              leaseDueAtSigning,
+              leaseMonthlyPayment: lease1.offerMonthlyPayment || null,
               milesPerYear: null,
               terms: lease1.shortDescription || null,
               finePrint: lease1.disclaimer || null,
@@ -161,11 +163,12 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               trim: lease2.trimName || null,
               offerType: "lease",
               offerAmount: null,
-              apr: null,
-              termMonths: lease2.term || null,
-              cashBack: null,
-              dueAtSigning,
-              monthlyPayment: lease2.offerMonthlyPayment || null,
+              aprRate: null,
+              aprTermMonths: null,
+              leaseTermMonths: lease2.term || null,
+              cashValue: null,
+              leaseDueAtSigning,
+              leaseMonthlyPayment: lease2.offerMonthlyPayment || null,
               milesPerYear: null,
               terms: lease2.shortDescription || null,
               finePrint: lease2.disclaimer || null,
@@ -177,7 +180,7 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
           // Process lowApr (financing) offer
           if (cardOrder.lowApr) {
             const lowApr = cardOrder.lowApr;
-            const apr = lowApr.apr !== undefined && lowApr.apr !== null ? lowApr.apr / 100 : null;
+            const aprRate = lowApr.apr !== undefined && lowApr.apr !== null ? lowApr.apr / 100 : null;
 
             offers.push({
               brand: "Hyundai",
@@ -188,11 +191,12 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               trim: lowApr.trimName || null,
               offerType: "financing",
               offerAmount: null,
-              apr,
-              termMonths: lowApr.term || null,
-              cashBack: lowApr.hmfBonusCash || null,
-              dueAtSigning: null,
-              monthlyPayment: null,
+              aprRate,
+              aprTermMonths: lowApr.term || null,
+              leaseTermMonths: null,
+              cashValue: lowApr.hmfBonusCash || null,
+              leaseDueAtSigning: null,
+              leaseMonthlyPayment: null,
               milesPerYear: null,
               terms: lowApr.shortDescription || null,
               finePrint: lowApr.disclaimer || null,
@@ -214,11 +218,12 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               trim: savings.trimName || null,
               offerType: "cash",
               offerAmount: null,
-              apr: null,
-              termMonths: null,
-              cashBack: savings.price || null,
-              dueAtSigning: null,
-              monthlyPayment: null,
+              aprRate: null,
+              aprTermMonths: null,
+              leaseTermMonths: null,
+              cashValue: savings.price || null,
+              leaseDueAtSigning: null,
+              leaseMonthlyPayment: null,
               milesPerYear: null,
               terms: savings.shortDescription || null,
               finePrint: savings.disclaimer || null,
@@ -259,11 +264,12 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,

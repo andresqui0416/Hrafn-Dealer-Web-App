@@ -156,16 +156,17 @@ export async function scrapeOffersFromCadillac() {
       const titleText = offerText.title?.text || "";
 
       // Extract monthly payment
-      const monthlyPayment = extractMonthlyPayment(bodyText);
+      const leaseMonthlyPayment = extractMonthlyPayment(bodyText);
 
       // Extract term months
-      const termMonths = extractTermMonths(bodyText);
+      const leaseTermMonths = extractTermMonths(bodyText);
+      const aprTermMonths = extractTermMonths(bodyText); // For financing offers
 
       // Extract due at signing
-      const dueAtSigning = extractDueAtSigning(bodyText);
+      const leaseDueAtSigning = extractDueAtSigning(bodyText);
 
       // Extract APR (usually in body or footer text)
-      const apr = extractAPR(bodyText) || extractAPR(footerText);
+      const aprRate = extractAPR(bodyText) || extractAPR(footerText);
 
       // Extract expiration date
       const expirationDate = parseExpirationDate(result.endEffDate);
@@ -180,30 +181,30 @@ export async function scrapeOffersFromCadillac() {
       // offerAmount should only be set if explicitly extracted from the offer content
       let offerAmount: number | null = null;
 
-      // Extract cashBack for cash offers from body text
-      let cashBack: number | null = null;
+      // Extract cashValue for cash offers from body text
+      let cashValue: number | null = null;
       if (offerType === "cash") {
         // Look for patterns like "$X,XXX Purchase Allowance", "$X,XXX Competitive Cash Allowance", "$X,XXX Costco Executive Member Incentive"
         const cashBackMatch = bodyText.match(
           /\$([\d,]+)\s+(?:Purchase\s+Allowance|Competitive\s+Cash\s+Allowance|Costco\s+Executive\s+Member\s+Incentive|off|discount)/i,
         );
         if (cashBackMatch && cashBackMatch[1]) {
-          cashBack = parseNumber(cashBackMatch[1]);
+          cashValue = parseNumber(cashBackMatch[1]);
         }
         // Also check for standalone dollar amounts in cash offers
-        if (!cashBack) {
+        if (!cashValue) {
           const standaloneMatch = bodyText.match(/\$([\d,]+)/);
           if (standaloneMatch && standaloneMatch[1]) {
-            cashBack = parseNumber(standaloneMatch[1]);
+            cashValue = parseNumber(standaloneMatch[1]);
           }
         }
       }
 
       // Only create offer if we have meaningful data
       const hasValidData =
-        (offerType === "lease" && monthlyPayment) ||
-        (offerType === "financing" && apr !== null) ||
-        (offerType === "cash" && (offerAmount !== null || cashBack !== null));
+        (offerType === "lease" && leaseMonthlyPayment) ||
+        (offerType === "financing" && aprRate !== null) ||
+        (offerType === "cash" && (offerAmount !== null || cashValue !== null));
 
       if (!hasValidData) {
         console.warn(`Skipping ${offerType} offer for ${model} ${year} - insufficient data`);
@@ -219,11 +220,12 @@ export async function scrapeOffersFromCadillac() {
         trim,
         offerType,
         offerAmount,
-        apr,
-        termMonths,
-        cashBack,
-        dueAtSigning,
-        monthlyPayment,
+        aprRate,
+        aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+        leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+        cashValue,
+        leaseDueAtSigning,
+        leaseMonthlyPayment,
         milesPerYear: null, // Could extract from terms if needed
         expirationDate,
         terms,
@@ -261,11 +263,12 @@ export async function scrapeOffersFromCadillac() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,

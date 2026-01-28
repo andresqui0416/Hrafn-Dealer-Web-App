@@ -130,11 +130,12 @@ interface KiaOffer {
   trim: string | null;
   offerType: "lease" | "financing" | "cash";
   offerAmount: number | null;
-  apr: number | null;
-  termMonths: number | null;
-  cashBack: number | null;
-  dueAtSigning: number | null;
-  monthlyPayment: number | null;
+  aprRate: number | null;
+  aprTermMonths: number | null;
+  leaseTermMonths: number | null;
+  cashValue: number | null;
+  leaseDueAtSigning: number | null;
+  leaseMonthlyPayment: number | null;
   milesPerYear: number | null;
   terms: string | null;
   finePrint: string | null;
@@ -377,38 +378,39 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
       }
 
       // Extract offer-specific data
-      let monthlyPayment: number | null = null;
-      let apr: number | null = null;
-      let cashBack: number | null = null;
+      let leaseMonthlyPayment: number | null = null;
+      let aprRate: number | null = null;
+      let cashValue: number | null = null;
       let offerAmount: number | null = null;
-      let termMonths: number | null = null;
-      let dueAtSigning: number | null = null;
+      let leaseTermMonths: number | null = null;
+      let aprTermMonths: number | null = null;
+      let leaseDueAtSigning: number | null = null;
       let bonusCash: number | null = null;
 
       if (offerType === "lease") {
-        monthlyPayment = extractMonthlyPayment(finalTitle);
-        termMonths = extractTermMonths(finalHeading);
-        dueAtSigning = extractDueAtSigning(finalDescription);
+        leaseMonthlyPayment = extractMonthlyPayment(finalTitle);
+        leaseTermMonths = extractTermMonths(finalHeading);
+        leaseDueAtSigning = extractDueAtSigning(finalDescription);
         bonusCash = extractBonusCash(finalHeading);
-        cashBack = bonusCash;
-        // Don't set offerAmount from monthlyPayment - keep them separate
+        cashValue = bonusCash;
+        // Don't set offerAmount from leaseMonthlyPayment - keep them separate
         offerAmount = null;
       } else if (offerType === "financing") {
-        apr = extractApr(finalTitle);
-        termMonths = extractTermMonths(finalHeading);
+        aprRate = extractApr(finalTitle);
+        aprTermMonths = extractTermMonths(finalHeading);
         bonusCash = extractBonusCash(finalHeading);
-        cashBack = bonusCash;
+        cashValue = bonusCash;
         offerAmount = null;
       } else if (offerType === "cash") {
-        cashBack = extractCashAmount(finalTitle);
-        // Don't set offerAmount from cashBack - keep them separate
+        cashValue = extractCashAmount(finalTitle);
+        // Don't set offerAmount from cashValue - keep them separate
         offerAmount = null;
         // Also check includedCashOffers for total amount
         if (offer.includedCashOffers && Array.isArray(offer.includedCashOffers)) {
           // Try to extract total from included offers
           const totalMatch = finalTitle.match(/(?:up\s+to\s+)?\$([\d,]+)/i);
           if (totalMatch) {
-            cashBack = parseNumber(totalMatch[1]);
+            cashValue = parseNumber(totalMatch[1]);
           }
         }
       }
@@ -429,11 +431,12 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
         trim: finalTrimName,
         offerType,
         offerAmount,
-        apr,
-        termMonths,
-        cashBack,
-        dueAtSigning,
-        monthlyPayment,
+        aprRate,
+        aprTermMonths,
+        leaseTermMonths,
+        cashValue,
+        leaseDueAtSigning,
+        leaseMonthlyPayment,
         milesPerYear: null,
         terms,
         finePrint,
@@ -471,11 +474,12 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,
