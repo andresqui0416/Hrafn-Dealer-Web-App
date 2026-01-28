@@ -353,14 +353,19 @@ export async function scrapeOffersFromGMC() {
           // Extract APR from HTML text
           const aprRate = extractAPR(htmlText);
 
-          // Determine offer type: if APR found, it's financing, otherwise cash/credit
-          const offerType = aprRate !== null ? "financing" : "cash";
-
           // Extract other details from HTML text
           const leaseMonthlyPayment = extractMonthlyPayment(htmlText);
           const leaseTermMonths = extractTermMonths(htmlText);
           const aprTermMonths = extractTermMonths(htmlText); // For financing offers
           const leaseDueAtSigning = extractDueAtSigning(htmlText);
+
+          // Determine offer type: check for lease first, then financing, otherwise cash
+          let offerType: "cash" | "financing" | "lease" = "cash";
+          if (leaseMonthlyPayment !== null || htmlText.toLowerCase().includes("lease")) {
+            offerType = "lease";
+          } else if (aprRate !== null) {
+            offerType = "financing";
+          }
 
           // Extract cashValue from HTML text (regardless of offer type)
           let cashValue: number | null = null;
