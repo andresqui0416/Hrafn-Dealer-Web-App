@@ -23,9 +23,9 @@ export async function scrapeOffersFromBMW() {
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     try {
-      const response = await fetch(
-        "https://www.bmwusa.com/offers-api/current-offers/v2?bySeries=true",
-        {
+      const bmwApiUrl =
+        "https://www.bmwusa.com/offers-api/current-offers/v2?bySeries=true";
+      const response = await fetch(bmwApiUrl, {
           method: "GET",
           signal: controller.signal,
           headers: {
@@ -148,6 +148,7 @@ export async function scrapeOffersFromBMW() {
                 terms: terms,
                 finePrint: finePrint,
                 scrapedAt: scrapedAt,
+                sourceUrl: bmwApiUrl,
               });
             }
           }
@@ -217,6 +218,7 @@ export async function scrapeOffersFromBMW() {
                 terms: terms,
                 finePrint: finePrint,
                 scrapedAt: scrapedAt,
+                sourceUrl: bmwApiUrl,
               });
             }
           }
@@ -264,7 +266,8 @@ export async function scrapeOffersFromBMW() {
                     finePrint: offer.finePrint,
                     expirationDate: offer.expirationDate,
                     scrapedAt: offer.scrapedAt,
-                  })),
+                    sourceUrl: offer.sourceUrl ?? null,
+                })),
                   skipDuplicates: true, // Skip duplicates if any
                 });
               },

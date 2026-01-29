@@ -221,6 +221,7 @@ export async function scrapeOffersFromRAM() {
                 finePrint: offer.finePrint,
                 expirationDate: offer.expirationDate,
                 scrapedAt: new Date(),
+                sourceUrl: offer.sourceUrl ?? null,
               })),
               skipDuplicates: true,
             });

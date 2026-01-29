@@ -133,13 +133,12 @@ function parseNumber(str: string | null | undefined): number | null {
 
 export async function scrapeOffersFromMBUSA() {
   try {
-    const response = await fetch(
-      "https://www.mbusa.com/en/special-offers/jcr:content.filter-offer-json.html",
-      {
-        method: "GET",
-        redirect: "follow",
-      },
-    );
+    const mbusaApiUrl =
+      "https://www.mbusa.com/en/special-offers/jcr:content.filter-offer-json.html";
+    const response = await fetch(mbusaApiUrl, {
+      method: "GET",
+      redirect: "follow",
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -235,6 +234,7 @@ export async function scrapeOffersFromMBUSA() {
                 terms: packageName || rateDescription || null,
                 finePrint: leaseRateDisclaimerText || null,
                 scrapedAt,
+                sourceUrl: mbusaApiUrl,
               });
             }
 
@@ -262,6 +262,7 @@ export async function scrapeOffersFromMBUSA() {
                 terms: packageName || payDescription || null,
                 finePrint: leasePaymentDisclaimerText || null,
                 scrapedAt,
+                sourceUrl: mbusaApiUrl,
               });
             }
           }
@@ -309,6 +310,7 @@ export async function scrapeOffersFromMBUSA() {
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

@@ -2,6 +2,44 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Parse number from string, removing commas, dollar signs, and other formatting
+function parseNumber(str: string | null | undefined): number | null {
+  if (!str) return null;
+  try {
+    const strValue = typeof str === "string" ? str : String(str);
+    const cleaned = strValue.replace(/[,$%]/g, "").trim();
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+  } catch {
+    return null;
+  }
+}
+
+// Extract dollar amount near a keyword (e.g. "$500 military" or "loyalty bonus $500") for schema bonus/discount fields
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    const afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    const beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 const fetchModelInfos = async () => {
   const response = await fetch(
     "https://www.chrysler.com/xfragments/chrysler-vsp-isilo-master/incentives.dataprops.ISiloVehicleSelector.isilovehicleselector.par.V1765779863779.json",
@@ -38,6 +76,7 @@ const fetchModelInfos = async () => {
 
 const fetChOfferData = async (modelInfo: any) => {
   const url = `https://www.chrysler.com/hostd/api/incentives/offers/targetMedium/iSilo-Inline/zip/95556/vehicle/${modelInfo.modelYearCode}`;
+  const sourceUrl = `https://www.chrysler.com/incentives.pacifica.html#/model/${modelInfo.modelYearCode}`;
   const requestOptions = {
     method: "GET",
     redirect: "follow" as RequestRedirect,
@@ -132,6 +171,21 @@ const fetChOfferData = async (modelInfo: any) => {
         // Extract expiration date
         const expirationDate = offerInfo.end ? new Date(offerInfo.end).toISOString() : null;
 
+        // Combine terms + finePrint for bonus/discount extraction (API has no structured fields)
+        const termsText = offerInfo.offerDescription || "";
+        const finePrintText = offerInfo.offerDisclaimer
+          ? offerInfo.offerDisclaimer
+              .replace(/&lt;br\/&gt;/gi, "\n")
+              .replace(/<br\s*\/?>/gi, "\n")
+          : "";
+        const combinedText = [termsText, finePrintText].filter(Boolean).join("\n");
+
+        const loyaltyBonus = extractAmountNearKeyword(combinedText, /loyalty\s*(?:bonus|cash|rebate)?/i);
+        const conquestBonus = extractAmountNearKeyword(combinedText, /conquest\s*(?:bonus|cash|rebate)?/i);
+        const militaryDiscount = extractAmountNearKeyword(combinedText, /military\s*(?:discount|bonus|rebate)?/i);
+        const collegeGrad = extractAmountNearKeyword(combinedText, /college\s*(?:grad|graduate|rebate|bonus)?/i);
+        const firstResponder = extractAmountNearKeyword(combinedText, /first\s*responder\s*(?:discount|bonus|rebate)?/i);
+
         return {
           brand: "Chrysler",
           year: modelInfo.year,
@@ -156,6 +210,12 @@ const fetChOfferData = async (modelInfo: any) => {
                 .replace(/<br\s*\/?>/gi, "\n")
             : null,
           expirationDate: expirationDate,
+          sourceUrl,
+          loyaltyBonus: loyaltyBonus ?? null,
+          conquestBonus: conquestBonus ?? null,
+          militaryDiscount: militaryDiscount ?? null,
+          collegeGrad: collegeGrad ?? null,
+          firstResponder: firstResponder ?? null,
         };
       })
       .filter((offer: any) => offer !== null);
@@ -229,6 +289,12 @@ export async function scrapeOffersFromChrysler() {
                 finePrint: offer.finePrint,
                 expirationDate: offer.expirationDate ? new Date(offer.expirationDate) : null,
                 scrapedAt: new Date(),
+                sourceUrl: offer.sourceUrl ?? null,
+                loyaltyBonus: offer.loyaltyBonus ?? null,
+                conquestBonus: offer.conquestBonus ?? null,
+                militaryDiscount: offer.militaryDiscount ?? null,
+                collegeGrad: offer.collegeGrad ?? null,
+                firstResponder: offer.firstResponder ?? null,
               })),
               skipDuplicates: true,
             });

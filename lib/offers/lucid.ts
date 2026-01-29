@@ -89,7 +89,8 @@ function extractDueAtSigning(text: string | null | undefined): number | null {
 
 export async function scrapeOffersFromLucid() {
   try {
-    const response = await fetch("https://lucidmotors.com/offers", {
+    const lucidOffersUrl = "https://lucidmotors.com/offers";
+    const response = await fetch(lucidOffersUrl, {
       method: "GET",
       redirect: "follow",
       headers: {
@@ -575,6 +576,7 @@ export async function scrapeOffersFromLucid() {
               terms: terms || null,
               finePrint: null, // Fine print is in separate disclaimers on the page
               scrapedAt,
+              sourceUrl: lucidOffersUrl,
             });
           }
         }
@@ -624,6 +626,7 @@ export async function scrapeOffersFromLucid() {
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

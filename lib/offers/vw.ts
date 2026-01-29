@@ -86,7 +86,8 @@ export async function scrapeOffersFromVW() {
       },
     });
 
-    const response = await fetch("https://api.vw.com/graphql", {
+    const vwApiUrl = "https://api.vw.com/graphql";
+    const response = await fetch(vwApiUrl, {
       method: "POST",
       headers,
       body,
@@ -243,6 +244,7 @@ export async function scrapeOffersFromVW() {
         terms: terms,
         finePrint: finePrint,
         scrapedAt: scrapedAt,
+        sourceUrl: vwApiUrl,
       });
     }
 
@@ -287,6 +289,7 @@ export async function scrapeOffersFromVW() {
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

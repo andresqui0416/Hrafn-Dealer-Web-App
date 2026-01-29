@@ -483,7 +483,7 @@ class LandRoverScraper:
                     # or monthly payment.
                     offer_info_div = offers_div.find('div', class_='offerInfoLease')
                     if offer_info_div:
-                        offer = self._extract_main_offer(offer_info_div, model, year, trim)
+                        offer = self._extract_main_offer(offer_info_div, model, year, trim, url)
                         if offer:
                             offers.append(offer)
                     
@@ -505,7 +505,7 @@ class LandRoverScraper:
         
         return offers
 
-    def _extract_main_offer(self, offer_div, model: Dict, year: Optional[int], trim: Optional[str]) -> Optional[Dict[str, Any]]:
+    def _extract_main_offer(self, offer_div, model: Dict, year: Optional[int], trim: Optional[str], source_url: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """Extract primary offer data (lease or financing) from main offer div"""
         try:
             # Determine offer type from title if available
@@ -602,6 +602,7 @@ class LandRoverScraper:
                     'milesPerYear': miles_per_year,
                     'expirationDate': expiration_date.isoformat() if expiration_date else None,
                     'finePrint': fine_print,
+                    'source_url': source_url,
                 }
                 return offer
             
