@@ -262,6 +262,7 @@ const fetchOfferData = async () => {
       terms: shortDisclaimer,
       finePrint: finePrint,
       expirationDate: expirationDate,
+      sourceUrl: url,
     });
   }
 
@@ -315,7 +316,8 @@ export async function scrapeOffersFromPorsche() {
               finePrint: offer.finePrint,
               expirationDate: offer.expirationDate ? new Date(offer.expirationDate) : null,
               scrapedAt: new Date(),
-            })),
+              sourceUrl: offer.sourceUrl ?? null,
+              })),
             skipDuplicates: true,
           });
         });

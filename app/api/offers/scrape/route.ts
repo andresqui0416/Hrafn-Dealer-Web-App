@@ -80,6 +80,8 @@ export async function POST(request: NextRequest) {
 
       // Store as-is (Python script should have normalized all types)
       // Support both old and new field names for backward compatibility during migration
+      const sourceUrl =
+        offer.sourceUrl ?? offer.source_url ?? null;
       validOffers.push({
         brand: String(offer.brand),
         year:
@@ -124,6 +126,7 @@ export async function POST(request: NextRequest) {
         terms: offer.terms ? String(offer.terms) : null,
         finePrint: offer.finePrint ? String(offer.finePrint) : null,
         scrapedAt: scrapedAtDate,
+        sourceUrl: sourceUrl ? String(sourceUrl) : null,
       });
     }
 
@@ -161,6 +164,7 @@ export async function POST(request: NextRequest) {
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: scrapedAtDate,
+                  sourceUrl: offer.sourceUrl ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

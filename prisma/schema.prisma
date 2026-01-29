@@ -190,6 +190,7 @@ model Offers {
   militaryDiscount   Decimal?  @db.Decimal(12, 2) @map("military_discount")
   collegeGrad        Decimal?  @db.Decimal(12, 2) @map("college_grad")
   firstResponder     Decimal?  @db.Decimal(12, 2) @map("first_responder")
+  sourceUrl          String?   @db.Text @map("source_url")
 
   @@index([brand, year, model], map: "idx_offers_brand_year_model")
   @@index([offerType], map: "idx_offers_offer_type")

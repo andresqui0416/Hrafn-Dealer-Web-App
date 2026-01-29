@@ -67,6 +67,7 @@ interface HyundaiOffer {
   finePrint: string | null;
   expirationDate: Date | null;
   scrapedAt: Date;
+  sourceUrl?: string | null;
 }
 
 export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
@@ -146,6 +147,7 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               finePrint: lease1.disclaimer || null,
               expirationDate: parseDate(lease1.endDate),
               scrapedAt,
+              sourceUrl: url,
             });
           }
 
@@ -174,6 +176,7 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               finePrint: lease2.disclaimer || null,
               expirationDate: parseDate(lease2.endDate),
               scrapedAt,
+              sourceUrl: url,
             });
           }
 
@@ -203,6 +206,7 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               finePrint: lowApr.disclaimer || null,
               expirationDate: parseDate(lowApr.endDate),
               scrapedAt,
+              sourceUrl: url,
             });
           }
 
@@ -230,6 +234,7 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               finePrint: savings.disclaimer || null,
               expirationDate: parseDate(savings.endDate),
               scrapedAt,
+              sourceUrl: url,
             });
           }
         }
@@ -276,6 +281,7 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

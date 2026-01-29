@@ -273,6 +273,31 @@ function extractExpirationDateFromHTML(html: string | null | undefined): Date | 
   }
 }
 
+// Extract dollar amount near a keyword for schema bonus/discount fields (API has no structured fields)
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    let afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    let beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // Strip HTML and decode entities to plain text
 function stripHtmlToText(html: string | null | undefined): string | null {
   if (!html) return null;
@@ -788,10 +813,10 @@ export async function scrapeOffersFromChevrolet() {
       redirect: "follow" as RequestRedirect,
     };
 
-    const response = await fetch(
-      "https://cws.gm.com/cof-cws/v2/currentoffers/US/en/95556?make=chevrolet&quantumHostname=www.chevrolet.com",
-      requestOptions,
-    );
+    const chevroletSourceUrl = "https://www.chevrolet.com/current-offers";
+    const chevroletApiUrl =
+      "https://cws.gm.com/cof-cws/v2/currentoffers/US/en/95556?make=chevrolet&quantumHostname=www.chevrolet.com";
+    const response = await fetch(chevroletApiUrl, requestOptions);
 
     if (!response.ok) {
       const text = await response.text();
@@ -997,6 +1022,29 @@ export async function scrapeOffersFromChevrolet() {
             continue;
           }
 
+          // Optional: extract bonus/discount from text when present (API has no structured fields)
+          const combinedFeaturedText = `${mainText} ${extractedFinePrint || ""}`;
+          const loyaltyBonus = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /loyalty|current\s+lessees?\s+of\s+.*\s+GM\s+vehicles|eligible\s+current\s+lessees/i,
+          );
+          const conquestBonus = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /conquest|non-GM\s+vehicles|current\s+lessees?\s+of\s+.*\s+non-GM/i,
+          );
+          const militaryDiscount = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /military/i,
+          );
+          const collegeGrad = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /college\s+grad|college\s+graduate/i,
+          );
+          const firstResponder = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /first\s+responder/i,
+          );
+
           offers.push({
             brand,
             year,
@@ -1018,6 +1066,12 @@ export async function scrapeOffersFromChevrolet() {
             terms,
             finePrint,
             scrapedAt,
+            sourceUrl: chevroletSourceUrl,
+            loyaltyBonus: loyaltyBonus ?? null,
+            conquestBonus: conquestBonus ?? null,
+            militaryDiscount: militaryDiscount ?? null,
+            collegeGrad: collegeGrad ?? null,
+            firstResponder: firstResponder ?? null,
           });
 
           continue; // Move to next result
@@ -1169,6 +1223,29 @@ export async function scrapeOffersFromChevrolet() {
       // Extract trade discount from body text (separate from cashBack)
       const tradeDiscount = extractTradeDiscount(bodyText) || extractTradeDiscount(footerText);
 
+      // Optional: extract bonus/discount from body+footer when present (API has no structured fields)
+      const combinedTextForBonus = `${bodyText} ${footerText}`;
+      const loyaltyBonus = extractAmountNearKeyword(
+        combinedTextForBonus,
+        /loyalty|current\s+lessees?\s+of\s+.*\s+GM\s+vehicles|eligible\s+current\s+lessees/i,
+      );
+      const conquestBonus = extractAmountNearKeyword(
+        combinedTextForBonus,
+        /conquest|non-GM\s+vehicles|current\s+lessees?\s+of\s+.*\s+non-GM/i,
+      );
+      const militaryDiscount = extractAmountNearKeyword(
+        combinedTextForBonus,
+        /military/i,
+      );
+      const collegeGrad = extractAmountNearKeyword(
+        combinedTextForBonus,
+        /college\s+grad|college\s+graduate/i,
+      );
+      const firstResponder = extractAmountNearKeyword(
+        combinedTextForBonus,
+        /first\s+responder/i,
+      );
+
       // Only create offer if we have meaningful data
       const hasValidData =
         (offerType === "lease" && leaseMonthlyPayment) ||
@@ -1202,6 +1279,12 @@ export async function scrapeOffersFromChevrolet() {
         terms,
         finePrint,
         scrapedAt,
+        sourceUrl: chevroletSourceUrl,
+        loyaltyBonus: loyaltyBonus ?? null,
+        conquestBonus: conquestBonus ?? null,
+        militaryDiscount: militaryDiscount ?? null,
+        collegeGrad: collegeGrad ?? null,
+        firstResponder: firstResponder ?? null,
       });
     }
 
@@ -1246,6 +1329,12 @@ export async function scrapeOffersFromChevrolet() {
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

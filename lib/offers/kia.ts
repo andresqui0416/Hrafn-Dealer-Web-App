@@ -442,6 +442,7 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
         finePrint,
         expirationDate: parseDate(offer.endDate),
         scrapedAt,
+        sourceUrl: url,
       });
     }
 
@@ -485,6 +486,7 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

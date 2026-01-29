@@ -1,6 +1,96 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
+// Parse number from string, removing commas, dollar signs, and other formatting
+function parseNumber(str: string | null | undefined): number | null {
+  if (!str) return null;
+  try {
+    const strValue = typeof str === "string" ? str : String(str);
+    const cleaned = strValue.replace(/[,$%]/g, "").trim();
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+  } catch {
+    return null;
+  }
+}
+
+// Extract dollar amount near a keyword (e.g. "$500 military" or "loyalty bonus $500") for schema bonus/discount fields
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    const afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    const beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Map program number to bonus category using data.programs (name / incentiveType)
+function getBonusCategory(program: { name?: string; incentiveType?: string } | null): string | null {
+  if (!program) return null;
+  const name = (program.name || "").toLowerCase();
+  const incentiveType = (program.incentiveType || "").toLowerCase();
+  const combined = `${name} ${incentiveType}`;
+  if (combined.includes("loyalty")) return "loyalty";
+  if (combined.includes("conquest")) return "conquest";
+  if (combined.includes("military")) return "military";
+  if (combined.includes("college") || combined.includes("graduate")) return "college";
+  if (combined.includes("first responder")) return "firstResponder";
+  return null;
+}
+
+// Extract bonus/discount amounts from offer's programValues using data.programs (structured API data)
+function getStructuredBonuses(
+  offerInfo: { programValues?: Array<{ programCode?: string; value?: number }> },
+  programs: Array<{ programNumber?: string; name?: string; incentiveType?: string }> | undefined,
+): {
+  loyaltyBonus: number | null;
+  conquestBonus: number | null;
+  militaryDiscount: number | null;
+  collegeGrad: number | null;
+  firstResponder: number | null;
+} {
+  const result = {
+    loyaltyBonus: null as number | null,
+    conquestBonus: null as number | null,
+    militaryDiscount: null as number | null,
+    collegeGrad: null as number | null,
+    firstResponder: null as number | null,
+  };
+  if (!programs || !Array.isArray(offerInfo.programValues)) return result;
+  const programByNumber = new Map(
+    programs.map((p) => [p.programNumber, p]),
+  );
+  for (const pv of offerInfo.programValues) {
+    const value = pv.value != null ? Number(pv.value) : null;
+    if (value == null || value <= 0) continue;
+    const program = programByNumber.get(pv.programCode) ?? null;
+    const category = getBonusCategory(program);
+    if (category === "loyalty" && result.loyaltyBonus == null) result.loyaltyBonus = value;
+    else if (category === "conquest" && result.conquestBonus == null) result.conquestBonus = value;
+    else if (category === "military" && result.militaryDiscount == null)
+      result.militaryDiscount = value;
+    else if (category === "college" && result.collegeGrad == null) result.collegeGrad = value;
+    else if (category === "firstResponder" && result.firstResponder == null)
+      result.firstResponder = value;
+  }
+  return result;
+}
+
 const fetchModelInfos = async () => {
   const response = await fetch(
     "https://www.jeep.com/xfragments/iSilo-VSP-Container/isilo-container.dataprops.ISiloVehicleSelector.isilovehicleselector_393942471.par.V1766135743256.json",
@@ -36,7 +126,8 @@ const fetchModelInfos = async () => {
 };
 
 const fetchOfferData = async (modelInfo: any) => {
-  const url = `https://www.jeep.com/hostd/api/incentives/offers/targetMedium/Preferred-Offers/zip/95556/vehicle/${modelInfo.modelYearCode}`;
+  const url = `https://www.jeep.com/hostd/api/incentives/offers/targetMedium/iSilo-Inline/zip/95556/vehicle/${modelInfo.modelYearCode}`;
+  const sourceUrl = `https://www.jeep.com/incentives.compass.html#/model/${modelInfo.modelYearCode}`;
   const requestOptions = {
     method: "GET",
     redirect: "follow" as RequestRedirect,
@@ -59,79 +150,130 @@ const fetchOfferData = async (modelInfo: any) => {
     return [];
   }
 
+  // Preprocess data.offers into offersList: each item has id, offerType, and all extracted fields
+  const offersList = data.offers.map((offerInfo: any) => {
+    const offerType =
+      offerInfo.type === "UserPlus" ? "lease" : offerInfo.type === "APR" ? "financing" : "cash";
+
+    let aprRate: number | null = null;
+    let aprTermMonths: number | null = null;
+    if (offerInfo.type === "APR") {
+      const aprProgram = offerInfo.programValues?.find(
+        (pv: any) => pv.displayType === "apr" && typeof pv.apr === "number",
+      );
+      if (aprProgram) {
+        aprRate = aprProgram.apr / 100;
+        aprTermMonths = aprProgram.term;
+      }
+    }
+
+    let cashValue: number | null = null;
+    if (offerInfo.type === "CASH") {
+      const cashPrograms = offerInfo.programValues?.filter(
+        (pv: any) => pv.displayType === "cash" && pv.value,
+      );
+      if (cashPrograms && cashPrograms.length > 0) {
+        cashValue = cashPrograms.reduce((sum: number, pv: any) => sum + (pv.value || 0), 0);
+      }
+      if (cashValue == null) {
+        const cashGroup = offerInfo.groupData?.find((gd: any) => gd.type === "Cash");
+        if (cashGroup?.value && typeof cashGroup.value === "string") {
+          cashValue = parseNumber(cashGroup.value);
+        }
+      }
+    }
+
+    let leaseMonthlyPayment: number | null = null;
+    let leaseDueAtSigning: number | null = null;
+    let milesPerYear: number | null = null;
+    let leaseTermMonths: number | null = null;
+    if (offerInfo.type === "UserPlus") {
+      const leaseGroup = offerInfo.groupData?.find((gd: any) => gd.type === "LEASE");
+      if (leaseGroup) {
+        leaseMonthlyPayment = leaseGroup.monthlyPmnt
+          ? parseFloat(leaseGroup.monthlyPmnt)
+          : null;
+        leaseDueAtSigning = leaseGroup.dueatSigning
+          ? parseFloat(leaseGroup.dueatSigning)
+          : null;
+        milesPerYear = leaseGroup.mileage || null;
+        leaseTermMonths = leaseGroup.numberofPmnts ? parseInt(leaseGroup.numberofPmnts) : null;
+      }
+    }
+
+    const expirationDate = offerInfo.end ? new Date(offerInfo.end).toISOString() : null;
+
+    const structured = getStructuredBonuses(offerInfo, data.programs);
+    const termsText = offerInfo.offerDescription || "";
+    const finePrintText = offerInfo.offerDisclaimer
+      ? offerInfo.offerDisclaimer
+          .replace(/&lt;br\/&gt;/gi, "\n")
+          .replace(/<br\s*\/?>/gi, "\n")
+      : "";
+    const combinedText = [termsText, finePrintText].filter(Boolean).join("\n");
+
+    const loyaltyBonus =
+      structured.loyaltyBonus ??
+      extractAmountNearKeyword(combinedText, /loyalty\s*(?:bonus|cash|rebate)?/i);
+    const conquestBonus =
+      structured.conquestBonus ??
+      extractAmountNearKeyword(combinedText, /conquest\s*(?:bonus|cash|rebate)?/i);
+    const militaryDiscount =
+      structured.militaryDiscount ??
+      extractAmountNearKeyword(combinedText, /military\s*(?:discount|bonus|rebate)?/i);
+    const collegeGrad =
+      structured.collegeGrad ??
+      extractAmountNearKeyword(combinedText, /college\s*(?:grad|graduate|rebate|bonus)?/i);
+    const firstResponder =
+      structured.firstResponder ??
+      extractAmountNearKeyword(combinedText, /first\s*responder\s*(?:discount|bonus|rebate)?/i);
+
+    return {
+      id: offerInfo.id,
+      offerType,
+      offerAmount: null,
+      aprRate,
+      aprTermMonths,
+      leaseTermMonths,
+      cashValue,
+      tradeDiscount: null,
+      leaseDueAtSigning,
+      leaseMonthlyPayment,
+      milesPerYear,
+      terms: offerInfo.offerDescription || null,
+      finePrint: offerInfo.offerDisclaimer
+        ? offerInfo.offerDisclaimer
+            .replace(/&lt;br\/&gt;/gi, "\n")
+            .replace(/<br\s*\/?>/gi, "\n")
+        : null,
+      expirationDate,
+      loyaltyBonus: loyaltyBonus ?? null,
+      conquestBonus: conquestBonus ?? null,
+      militaryDiscount: militaryDiscount ?? null,
+      collegeGrad: collegeGrad ?? null,
+      firstResponder: firstResponder ?? null,
+    };
+  });
+
   const offers = data.targetMediumMapping.flatMap((item: any) => {
     if (!item.offerOrder || !Array.isArray(item.offerOrder)) {
       return [];
     }
     return item.offerOrder
       .map((offer: any) => {
-        const offerInfo = data.offers.find((info: any) => info.id === offer.id);
-        if (!offerInfo) {
+        const preprocessed = offersList.find((o: { id: string }) => o.id === offer.id);
+        if (!preprocessed) {
           console.error("Offer info not found:", offer.id);
           return null;
         }
 
-        // Extract trim from representativeCcode
         const trim = offer.representativeCcode?.description || null;
-
-        // Determine offer type
-        const offerType =
-          offerInfo.type === "UserPlus" ? "lease" : offerInfo.type === "APR" ? "financing" : "cash";
-
-        // Extract APR and term for financing offers
-        let aprRate: number | null = null;
-        let aprTermMonths: number | null = null;
-        if (offerInfo.type === "APR") {
-          const aprProgram = offerInfo.programValues?.find(
-            (pv: any) => pv.displayType === "apr" && typeof pv.apr === "number",
-          );
-          if (aprProgram) {
-            aprRate = aprProgram.apr / 100;
-            aprTermMonths = aprProgram.term;
-          } else {
-            console.log(offerInfo.programValues);
-          }
-        }
-
-        // Extract cash back for cash offers
-        let cashValue: number | null = null;
-        if (offerInfo.type === "CASH") {
-          const cashPrograms = offerInfo.programValues?.filter(
-            (pv: any) => pv.displayType === "cash" && pv.value,
-          );
-          if (cashPrograms && cashPrograms.length > 0) {
-            cashValue = cashPrograms.reduce((sum: number, pv: any) => sum + (pv.value || 0), 0);
-          }
-        }
-
-        // Extract lease details for UserPlus offers
-        let leaseMonthlyPayment: number | null = null;
-        let leaseDueAtSigning: number | null = null;
-        let milesPerYear: number | null = null;
-        let leaseTermMonths: number | null = null;
-        if (offerInfo.type === "UserPlus") {
-          const leaseGroup = offerInfo.groupData?.find((gd: any) => gd.type === "LEASE");
-          if (leaseGroup) {
-            leaseMonthlyPayment = leaseGroup.monthlyPmnt
-              ? parseFloat(leaseGroup.monthlyPmnt)
-              : null;
-            leaseDueAtSigning = leaseGroup.dueatSigning
-              ? parseFloat(leaseGroup.dueatSigning)
-              : null;
-            milesPerYear = leaseGroup.mileage || null;
-            leaseTermMonths = leaseGroup.numberofPmnts ? parseInt(leaseGroup.numberofPmnts) : null;
-          }
-          // Also check offer.term and offer.mileage as fallback
-          if (!leaseTermMonths && offer.term) {
-            leaseTermMonths = parseInt(offer.term);
-          }
-          if (!milesPerYear && offer.mileage) {
-            milesPerYear = offer.mileage;
-          }
-        }
-
-        // Extract expiration date
-        const expirationDate = offerInfo.end ? new Date(offerInfo.end).toISOString() : null;
+        // Lease fallbacks from offer order (term, mileage)
+        const leaseTermMonths =
+          preprocessed.leaseTermMonths ??
+          (offer.term ? parseInt(offer.term) : null);
+        const milesPerYear =
+          preprocessed.milesPerYear ?? (offer.mileage ?? null);
 
         return {
           brand: "Jeep",
@@ -139,24 +281,11 @@ const fetchOfferData = async (modelInfo: any) => {
           make: "Jeep",
           model: modelInfo.vehicle,
           modelCode: modelInfo.modelYearCode,
-          trim: trim,
-          offerType: offerType,
-          offerAmount: null,
-          aprRate: aprRate,
-          aprTermMonths: aprTermMonths,
-          leaseTermMonths: leaseTermMonths,
-          cashValue: cashValue,
-          tradeDiscount: null, // Not found in response structure
-          leaseDueAtSigning: leaseDueAtSigning,
-          leaseMonthlyPayment: leaseMonthlyPayment,
-          milesPerYear: milesPerYear,
-          terms: offerInfo.offerDescription || null,
-          finePrint: offerInfo.offerDisclaimer
-            ? offerInfo.offerDisclaimer
-                .replace(/&lt;br\/&gt;/gi, "\n")
-                .replace(/<br\s*\/?>/gi, "\n")
-            : null,
-          expirationDate: expirationDate,
+          trim,
+          sourceUrl,
+          leaseTermMonths,
+          milesPerYear,
+          ...preprocessed,
         };
       })
       .filter((offer: any) => offer !== null);
@@ -173,6 +302,7 @@ export async function scrapeOffersFromJeep() {
       return { success: false, error: "Failed to fetch model infos" };
     }
     console.log("Model infos fetched successfully:", modelInfos.length);
+    
     const offers = [];
     for (const modelInfo of modelInfos) {
       try {
@@ -185,6 +315,15 @@ export async function scrapeOffersFromJeep() {
         );
       }
     }
+
+    // Delete all existing Jeepo ffers first
+    await prisma.offers.deleteMany({
+      where: {
+        brand: "Jeep",
+      },
+    });
+    console.log("Deleted all existing Jeep offers");
+
     if (offers.length > 0) {
       const BATCH_SIZE = 10;
       for (let i = 0; i < offers.length; i += BATCH_SIZE) {
@@ -232,6 +371,12 @@ export async function scrapeOffersFromJeep() {
                 finePrint: offer.finePrint,
                 expirationDate: offer.expirationDate ? new Date(offer.expirationDate) : null,
                 scrapedAt: new Date(),
+                sourceUrl: offer.sourceUrl ?? null,
+                loyaltyBonus: offer.loyaltyBonus ?? null,
+                conquestBonus: offer.conquestBonus ?? null,
+                militaryDiscount: offer.militaryDiscount ?? null,
+                collegeGrad: offer.collegeGrad ?? null,
+                firstResponder: offer.firstResponder ?? null,
               })),
               skipDuplicates: true,
             });

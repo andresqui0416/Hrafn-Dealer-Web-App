@@ -539,13 +539,13 @@ class LincolnScraper:
             # Extract lease offers from featured-lease-offers-lines-container
             lease_container = soup.find('div', id='featured-lease-offers-lines-container')
             if lease_container:
-                lease_offers = self._extract_offers_from_container(lease_container, model_info, 'lease')
+                lease_offers = self._extract_offers_from_container(lease_container, model_info, 'lease', url)
                 offers.extend(lease_offers)
             
             # Extract financing offers from featured-retail-offer-lines-container
             retail_container = soup.find('div', id='featured-retail-offer-lines-container')
             if retail_container:
-                retail_offers = self._extract_offers_from_container(retail_container, model_info, 'financing')
+                retail_offers = self._extract_offers_from_container(retail_container, model_info, 'financing', url)
                 offers.extend(retail_offers)
             
             print(f"    Extracted {len(offers)} offers for {model_info['name']}")
@@ -557,7 +557,7 @@ class LincolnScraper:
         
         return offers
 
-    def _extract_offers_from_container(self, container, model_info: Dict, offer_type: str) -> List[Dict[str, Any]]:
+    def _extract_offers_from_container(self, container, model_info: Dict, offer_type: str, source_url: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Extract offers from a container (lease or retail)
         
@@ -565,6 +565,7 @@ class LincolnScraper:
             container: BeautifulSoup element containing offers
             model_info: Dictionary with model information
             offer_type: 'lease' or 'financing'
+            source_url: Page URL where offers were scraped
             
         Returns:
             List of offer dictionaries
@@ -651,9 +652,9 @@ class LincolnScraper:
                     
                     # Extract offer data based on type
                     if offer_type == 'lease':
-                        offer = self._extract_lease_offer_from_card(detail_html, detail_text, disclaimer_text, model_info, trim, expiration_date)
+                        offer = self._extract_lease_offer_from_card(detail_html, detail_text, disclaimer_text, model_info, trim, expiration_date, source_url)
                     else:  # financing
-                        offer = self._extract_finance_offer_from_card(detail_html, detail_text, disclaimer_text, model_info, trim, expiration_date)
+                        offer = self._extract_finance_offer_from_card(detail_html, detail_text, disclaimer_text, model_info, trim, expiration_date, source_url)
                     
                     if offer:
                         offers.append(offer)
@@ -674,7 +675,7 @@ class LincolnScraper:
         
         return offers
 
-    def _extract_lease_offer_from_card(self, detail_html: str, detail_text: str, disclaimer_text: Optional[str], model_info: Dict, trim: Optional[str], expiration_date: Optional[datetime]) -> Optional[Dict[str, Any]]:
+    def _extract_lease_offer_from_card(self, detail_html: str, detail_text: str, disclaimer_text: Optional[str], model_info: Dict, trim: Optional[str], expiration_date: Optional[datetime], source_url: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """Extract lease offer data from card detail HTML and text"""
         try:
             # Extract monthly payment (e.g., "$499/mo. for 36 mos.")
@@ -711,13 +712,14 @@ class LincolnScraper:
                     'cashValue': cash_back,
                     'expirationDate': expiration_date.isoformat() if expiration_date else None,
                     'terms': disclaimer_text,
-                    'finePrint': disclaimer_text
+                    'finePrint': disclaimer_text,
+                    'source_url': source_url,
                 }
         except Exception as e:
             print(f"      Error extracting lease offer: {e}")
         return None
 
-    def _extract_finance_offer_from_card(self, detail_html: str, detail_text: str, disclaimer_text: Optional[str], model_info: Dict, trim: Optional[str], expiration_date: Optional[datetime]) -> Optional[Dict[str, Any]]:
+    def _extract_finance_offer_from_card(self, detail_html: str, detail_text: str, disclaimer_text: Optional[str], model_info: Dict, trim: Optional[str], expiration_date: Optional[datetime], source_url: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """Extract finance offer data from card detail HTML and text"""
         try:
             # Extract APR (e.g., "2.9% APR for 60 mos." or "0% APR for 72 mos.")
@@ -757,7 +759,8 @@ class LincolnScraper:
                     'cashValue': cash_back,
                     'expirationDate': expiration_date.isoformat() if expiration_date else None,
                     'terms': disclaimer_text,
-                    'finePrint': disclaimer_text
+                    'finePrint': disclaimer_text,
+                    'source_url': source_url,
                 }
         except Exception as e:
             print(f"      Error extracting finance offer: {e}")

@@ -18,7 +18,8 @@ export async function scrapeOffersFromAudi() {
         "query UsCustomerOffers($zipCode: String, $offerMonth: String) {\n  usCustomerOffers(zipCode: $zipCode, offerMonth: $offerMonth) {\n    zipClusterID\n    offerModelDetail {\n      modelCode\n      modelYear\n      bodyType\n      trimline\n      productModelCode\n      modelCodeDescription\n      msrp\n      modelFamily\n      __typename\n    }\n    stackableOffers {\n      offerType\n      creditBonus\n      programShortDescription\n      offerDisclaimer\n      programName\n      __typename\n    }\n    offerDisclaimer\n    offerImageUrl\n    featuredOfferImageUrl\n    programName\n    offerType\n    programPriority\n    programFromDate\n    programToDate\n    programShortDescription\n    region\n    zipClusterID\n    aprRate\n    creditBonus\n    term\n    totalDueAtSign\n    customerDownPayment\n    monthlyPayment\n    __typename\n  }\n}",
     });
 
-    const response = await fetch("https://api.audiusa.com/graphql", {
+    const audiApiUrl = "https://api.audiusa.com/graphql";
+    const response = await fetch(audiApiUrl, {
       method: "POST",
       headers,
       body,
@@ -98,6 +99,7 @@ export async function scrapeOffersFromAudi() {
         terms: offer.programShortDescription || null,
         finePrint: offer.offerDisclaimer || null,
         scrapedAt,
+        sourceUrl: audiApiUrl,
       });
 
       // Also process stackable offers (additional offers that can be combined)
@@ -165,6 +167,7 @@ export async function scrapeOffersFromAudi() {
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

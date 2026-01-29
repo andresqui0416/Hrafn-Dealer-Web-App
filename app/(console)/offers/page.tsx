@@ -54,6 +54,7 @@ type Offer = {
   terms: string | null;
   finePrint: string | null;
   scrapedAt: string;
+  sourceUrl: string | null;
 };
 
 type PaginationInfo = {
@@ -546,7 +547,6 @@ export default function OffersPage() {
                   <p className="text-base font-medium mt-1">
                     {selectedOffer.year && `${selectedOffer.year} `}
                     {selectedOffer.brand} {selectedOffer.model || ""}
-                    {selectedOffer.trim && ` ${selectedOffer.trim}`}
                   </p>
                 </div>
 
@@ -730,12 +730,26 @@ export default function OffersPage() {
               )}
 
               {/* Metadata */}
-              <div className="border-t border-white/10 pt-4">
-                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <FontAwesomeIcon icon={faCalendarAlt} className="h-3 w-3" />
-                  Last Scraped
-                </label>
-                <p className="text-sm mt-1">{formatDate(selectedOffer.scrapedAt)}</p>
+              <div className="border-t border-white/10 pt-4 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <FontAwesomeIcon icon={faCalendarAlt} className="h-3 w-3" />
+                    Last Scraped
+                  </label>
+                  <p className="text-sm mt-1">{formatDate(selectedOffer.scrapedAt)}</p>
+                </div>
+                {selectedOffer.sourceUrl && (
+                  <div className="text-right">
+                    <a
+                      href={selectedOffer.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-muted-foreground block hover:underline"
+                    >
+                      Source Link
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           )}

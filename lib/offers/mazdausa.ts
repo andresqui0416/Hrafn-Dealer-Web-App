@@ -34,13 +34,12 @@ function parseNumber(str: string | null | undefined): number | null {
 
 export async function scrapeOffersFromMazda() {
   try {
-    const response = await fetch(
-      "https://www.mazdausa.com/api/incentives/v3/95556?blockid=824742",
-      {
-        method: "GET",
-        redirect: "follow",
-      },
-    );
+    const mazdaApiUrl =
+      "https://www.mazdausa.com/api/incentives/v3/95556?blockid=824742";
+    const response = await fetch(mazdaApiUrl, {
+      method: "GET",
+      redirect: "follow",
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -96,6 +95,7 @@ export async function scrapeOffersFromMazda() {
               terms: leaseOffer.description || leaseOffer.header || null,
               finePrint: leaseOffer.disclaimer || null,
               scrapedAt,
+              sourceUrl: mazdaApiUrl,
             });
           }
         }
@@ -217,6 +217,7 @@ export async function scrapeOffersFromMazda() {
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

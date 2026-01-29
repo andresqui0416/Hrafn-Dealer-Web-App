@@ -112,6 +112,31 @@ function extractTradeDiscount(text: string | null | undefined): number | null {
   }
 }
 
+// Extract dollar amount near a keyword for schema bonus/discount fields (API has no structured fields)
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    let afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    let beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // Simple helper to strip HTML and decode entities into plain text
 function stripHtmlToText(html: string | null | undefined): string | null {
   if (!html) return null;
@@ -152,44 +177,50 @@ function extractTextFromHTML(html: string | null | undefined): string {
       contentHtml = bodyMatch[1];
     }
 
-    // Extract only the relevant adv-col section that contains offer content
-    // Look for adv-col with q-cc-ag-black-bg class that contains offer text (not buttons)
-    const advColMatches = contentHtml.matchAll(
-      /<adv-col[^>]*class="[^"]*q-cc-ag-black-bg[^"]*"[^>]*>([\s\S]*?)<\/adv-col>/gi,
-    );
+    // Extract only the section that has the headline + offer text (h2.q-headline + div.medium-margin).
+    // In the HTML, q-cc-ag-black-bg is on the parent adv-grid; the content we want is in an adv-col
+    // that contains both "q-headline" (or "q-display2") and "medium-margin" (lines 104-122 in the example).
     let offerSectionHtml = "";
 
-    for (const match of advColMatches) {
-      const sectionContent = match[1];
-      // Check if this section contains offer content (has h1, p with text, not just buttons)
-      // Look for any offer-related content
-      if (
-        sectionContent.includes("<h1") &&
-        (sectionContent.includes("APR") ||
-          sectionContent.includes("Total Value") ||
-          sectionContent.includes("AVERAGE FINANCE SAVINGS") ||
-          sectionContent.includes("PURCHASE ALLOWANCE") ||
-          sectionContent.includes("Purchase Allowance") ||
-          sectionContent.includes("cash back") ||
-          sectionContent.includes("BONUS CASH") ||
-          sectionContent.includes("<p"))
-      ) {
-        offerSectionHtml = sectionContent;
-        break; // Use the first matching section
+    // First, scope to the offer block: outer adv-grid with q-cc-ag-black-bg
+    const gridMatch = contentHtml.match(
+      /<adv-grid[^>]*class="[^"]*q-cc-ag-black-bg[^"]*"[^>]*>([\s\S]*?)<\/adv-grid>/i,
+    );
+    const gridContent = gridMatch && gridMatch[1] ? gridMatch[1] : contentHtml;
+
+    // Find adv-col that contains both headline and medium-margin (the text block we want)
+    const advColRegex = /<adv-col[^>]*>([\s\S]*?)<\/adv-col>/gi;
+    let colMatch: RegExpExecArray | null;
+    while ((colMatch = advColRegex.exec(gridContent)) !== null) {
+      const sectionContent = colMatch[1];
+      const hasHeadline =
+        sectionContent.includes("q-headline") || sectionContent.includes("q-display2");
+      const hasOfferBlock = sectionContent.includes("medium-margin");
+      if (hasHeadline && hasOfferBlock) {
+        // If this adv-col has no nested adv-col, it's the target (headline + medium-margin only)
+        if (!sectionContent.includes("<adv-col")) {
+          offerSectionHtml = sectionContent;
+          break;
+        }
+        // Otherwise search inside for the inner adv-col with headline + medium-margin
+        const innerRegex = /<adv-col[^>]*>([\s\S]*?)<\/adv-col>/gi;
+        let innerMatch: RegExpExecArray | null;
+        while ((innerMatch = innerRegex.exec(sectionContent)) !== null) {
+          const innerContent = innerMatch[1];
+          if (
+            (innerContent.includes("q-headline") || innerContent.includes("q-display2")) &&
+            innerContent.includes("medium-margin")
+          ) {
+            offerSectionHtml = innerContent;
+            break;
+          }
+        }
+        if (offerSectionHtml) break;
       }
     }
 
-    // If no specific section found but we have adv-col with q-cc-ag-black-bg, use the first one
     if (!offerSectionHtml) {
-      const firstAdvColMatch = contentHtml.match(
-        /<adv-col[^>]*class="[^"]*q-cc-ag-black-bg[^"]*"[^>]*>([\s\S]*?)<\/adv-col>/i,
-      );
-      if (firstAdvColMatch && firstAdvColMatch[1]) {
-        offerSectionHtml = firstAdvColMatch[1];
-      } else {
-        // Fallback to entire content
-        offerSectionHtml = contentHtml;
-      }
+      offerSectionHtml = contentHtml;
     }
 
     // Remove elements that don't contain useful text content
@@ -305,10 +336,10 @@ export async function scrapeOffersFromGMC() {
       redirect: "follow" as RequestRedirect,
     };
 
-    const response = await fetch(
-      "https://cws.gm.com/cof-cws/v2/currentoffers/US/en/95556?make=gmc&quantumHostname=www.gmc.com",
-      requestOptions,
-    );
+    const gmcApiUrl =
+      "https://cws.gm.com/cof-cws/v2/currentoffers/US/en/95556?make=gmc&quantumHostname=www.gmc.com";
+    const GMC_SOURCE_URL = "https://www.gmc.com/current-offers";
+    const response = await fetch(gmcApiUrl, requestOptions);
 
     if (!response.ok) {
       const text = await response.text();
@@ -369,11 +400,23 @@ export async function scrapeOffersFromGMC() {
 
           // Extract cashValue from HTML text (regardless of offer type)
           let cashValue: number | null = null;
-          // Look for "PURCHASE ALLOWANCE" pattern first (this is cashback)
-          const purchaseAllowanceMatch = htmlText.match(/\$([\d,]+)\s+PURCHASE\s+ALLOWANCE\.?/i);
+          // Look for "PURCHASE ALLOWANCE" pattern first (this is cashback).
+          // HTML often has </span> or newlines between $amount and "PURCHASE ALLOWANCE", so allow
+          // flexible whitespace and optionally up to 120 chars of any content in between.
+          let purchaseAllowanceMatch = htmlText.match(
+            /\$([\d,]+)\s*PURCHASE\s*ALLOWANCE\.?/i,
+          );
           if (purchaseAllowanceMatch && purchaseAllowanceMatch[1]) {
             cashValue = parseNumber(purchaseAllowanceMatch[1]);
           } else {
+            purchaseAllowanceMatch = htmlText.match(
+              /\$([\d,]+)[\s\S]{0,120}?PURCHASE\s*ALLOWANCE\.?/i,
+            );
+            if (purchaseAllowanceMatch && purchaseAllowanceMatch[1]) {
+              cashValue = parseNumber(purchaseAllowanceMatch[1]);
+            }
+          }
+          if (cashValue === null) {
             // Look for other patterns like "$X,XXX cash back", "$X,XXX off", "$X,XXX discount", or "$X,XXX bonus cash"
             const cashBackMatch = htmlText.match(
               /\$([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i,
@@ -419,8 +462,33 @@ export async function scrapeOffersFromGMC() {
             htmlText.trim().length > 30; // At least 30 characters of text content
 
           if (!hasValidData) {
+            console.log(`Skipping featured ${result.featuredOfferUrl} - insufficient data\n`);
+            console.log(`  htmlText length: ${htmlText.trim().length}\n`);
+            console.log(`  htmlText: ${htmlText.trim()}\n`);
             continue;
           }
+
+          const combinedFeaturedText = htmlText;
+          const loyaltyBonus = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /loyalty|current\s+lessees?\s+of\s+.*\s+GM\s+vehicles|eligible\s+current\s+lessees/i,
+          );
+          const conquestBonus = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /conquest|non-GM\s+vehicles|current\s+lessees?\s+of\s+.*\s+non-GM/i,
+          );
+          const militaryDiscount = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /military/i,
+          );
+          const collegeGrad = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /college\s+grad|college\s+graduate/i,
+          );
+          const firstResponder = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /first\s+responder/i,
+          );
 
           offers.push({
             brand,
@@ -443,6 +511,12 @@ export async function scrapeOffersFromGMC() {
             terms,
             finePrint,
             scrapedAt,
+            sourceUrl: GMC_SOURCE_URL,
+            loyaltyBonus: loyaltyBonus ?? null,
+            conquestBonus: conquestBonus ?? null,
+            militaryDiscount: militaryDiscount ?? null,
+            collegeGrad: collegeGrad ?? null,
+            firstResponder: firstResponder ?? null,
           });
 
           continue; // Move to next result
@@ -523,6 +597,28 @@ export async function scrapeOffersFromGMC() {
       // Extract trade discount from body text (separate from cashBack)
       const tradeDiscount = extractTradeDiscount(bodyText) || extractTradeDiscount(footerText);
 
+      const combinedText = [bodyText, footerText].filter(Boolean).join(" ");
+      const loyaltyBonus = extractAmountNearKeyword(
+        combinedText,
+        /loyalty|current\s+lessees?\s+of\s+.*\s+GM\s+vehicles|eligible\s+current\s+lessees/i,
+      );
+      const conquestBonus = extractAmountNearKeyword(
+        combinedText,
+        /conquest|non-GM\s+vehicles|current\s+lessees?\s+of\s+.*\s+non-GM/i,
+      );
+      const militaryDiscount = extractAmountNearKeyword(
+        combinedText,
+        /military/i,
+      );
+      const collegeGrad = extractAmountNearKeyword(
+        combinedText,
+        /college\s+grad|college\s+graduate/i,
+      );
+      const firstResponder = extractAmountNearKeyword(
+        combinedText,
+        /first\s+responder/i,
+      );
+
       // Only create offer if we have meaningful data
       const hasValidData =
         (offerType === "lease" && leaseMonthlyPayment) ||
@@ -555,6 +651,12 @@ export async function scrapeOffersFromGMC() {
         terms,
         finePrint,
         scrapedAt,
+        sourceUrl: GMC_SOURCE_URL,
+        loyaltyBonus: loyaltyBonus ?? null,
+        conquestBonus: conquestBonus ?? null,
+        militaryDiscount: militaryDiscount ?? null,
+        collegeGrad: collegeGrad ?? null,
+        firstResponder: firstResponder ?? null,
       });
     }
 
@@ -599,6 +701,12 @@ export async function scrapeOffersFromGMC() {
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });
