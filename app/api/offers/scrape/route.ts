@@ -127,6 +127,16 @@ export async function POST(request: NextRequest) {
         finePrint: offer.finePrint ? String(offer.finePrint) : null,
         scrapedAt: scrapedAtDate,
         sourceUrl: sourceUrl ? String(sourceUrl) : null,
+        loyaltyBonus:
+          offer.loyaltyBonus != null ? parseFloat(String(offer.loyaltyBonus)) : null,
+        conquestBonus:
+          offer.conquestBonus != null ? parseFloat(String(offer.conquestBonus)) : null,
+        militaryDiscount:
+          offer.militaryDiscount != null ? parseFloat(String(offer.militaryDiscount)) : null,
+        collegeGrad:
+          offer.collegeGrad != null ? parseFloat(String(offer.collegeGrad)) : null,
+        firstResponder:
+          offer.firstResponder != null ? parseFloat(String(offer.firstResponder)) : null,
       });
     }
 
@@ -165,6 +175,11 @@ export async function POST(request: NextRequest) {
                   expirationDate: offer.expirationDate,
                   scrapedAt: scrapedAtDate,
                   sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

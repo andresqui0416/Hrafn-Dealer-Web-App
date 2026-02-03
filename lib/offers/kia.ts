@@ -121,6 +121,34 @@ function extractBonusCash(text: string | null | undefined): number | null {
   }
 }
 
+// Public-facing URL for Kia offers (stored in DB)
+const KIA_SOURCE_URL = "https://www.kia.com/us/en/offers/result?seriesId=all&year=2026&zipCode=95556&offers=3%2C2%2C1%2C4";
+
+// Extract dollar amount near a keyword (e.g. "$500 military" or "loyalty bonus $500") for schema bonus/discount fields
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    const afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    const beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 interface KiaOffer {
   brand: string;
   year: number | null;
@@ -134,6 +162,7 @@ interface KiaOffer {
   aprTermMonths: number | null;
   leaseTermMonths: number | null;
   cashValue: number | null;
+  tradeDiscount: number | null;
   leaseDueAtSigning: number | null;
   leaseMonthlyPayment: number | null;
   milesPerYear: number | null;
@@ -141,55 +170,73 @@ interface KiaOffer {
   finePrint: string | null;
   expirationDate: Date | null;
   scrapedAt: Date;
+  sourceUrl: string | null;
+  loyaltyBonus: number | null;
+  conquestBonus: number | null;
+  militaryDiscount: number | null;
+  collegeGrad: number | null;
+  firstResponder: number | null;
 }
 
 export async function scrapeOffersFromKia(zipCode: string = "95556") {
   try {
     const url = `https://www.kia.com/us/services/en/offers/${zipCode}`;
 
-    // Build the request body with all vehicle series and years
-    const vehicles = [
-      { seriesId: "B", year: 2025 },
-      { seriesId: "B", year: 2026 },
-      { seriesId: "SP2", year: 2025 },
-      { seriesId: "SP2", year: 2026 },
-      { seriesId: "4", year: 2025 },
-      { seriesId: "4", year: 2026 },
-      { seriesId: "7", year: 2025 },
-      { seriesId: "7", year: 2026 },
-      { seriesId: "J", year: 2025 },
-      { seriesId: "J", year: 2026 },
-      { seriesId: "M", year: 2025 },
-      { seriesId: "M", year: 2026 },
-      { seriesId: "G", year: 2025 },
-      { seriesId: "G", year: 2026 },
-      { seriesId: "S", year: 2025 },
-      { seriesId: "S", year: 2026 },
-      { seriesId: "F", year: 2025 },
-      { seriesId: "F", year: 2026 },
-      { seriesId: "U", year: 2025 },
-      { seriesId: "U", year: 2026 },
-      { seriesId: "V", year: 2025 },
-      { seriesId: "V", year: 2026 },
-      { seriesId: "R", year: 2025 },
-      { seriesId: "R", year: 2026 },
-      { seriesId: "Q", year: 2025 },
-      { seriesId: "Q", year: 2026 },
-      { seriesId: "N", year: 2025 },
-      { seriesId: "N", year: 2026 },
-      { seriesId: "T", year: 2025 },
-      { seriesId: "T", year: 2026 },
-      { seriesId: "P", year: 2025 },
-      { seriesId: "P", year: 2026 },
-      { seriesId: "2", year: 2025 },
-      { seriesId: "2", year: 2026 },
-      { seriesId: "51", year: 2025 },
-      { seriesId: "51", year: 2026 },
-    ];
+    // Fetch dropdown data (vehicles + categories) from Kia dropDowns API
+    const dropDownsRes = await fetch("https://www.kia.com/us/services/en/offers/dropDowns", {
+      method: "GET",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      },
+      redirect: "follow",
+    });
+
+    if (!dropDownsRes.ok) {
+      console.error("Kia dropDowns API error:", dropDownsRes.status);
+      throw new Error(`Kia dropDowns request failed: ${dropDownsRes.status}`);
+    }
+
+    let dropDowns: any;
+    try {
+      dropDowns = await dropDownsRes.json();
+    } catch {
+      throw new Error("Invalid JSON from Kia dropDowns API");
+    }
+
+    // categories: from allOffers.result, ordered by orderId (e.g. [3, 2, 1, 4] = Cash, Lease, Finance, Other)
+    const categories: number[] =
+      Array.isArray(dropDowns?.allOffers?.result) &&
+      dropDowns.allOffers.result.length > 0
+        ? [...dropDowns.allOffers.result]
+            .sort((a: { orderId?: number }, b: { orderId?: number }) => (a.orderId ?? 0) - (b.orderId ?? 0))
+            .map((r: { id: number }) => r.id)
+        : [3, 2, 1, 4];
+
+    // vehicles: from categories[].vehicles[].seriesId + years[].year (flatten)
+    const vehicles: { seriesId: string; year: number }[] =
+      Array.isArray(dropDowns?.categories) && dropDowns.categories.length > 0
+        ? dropDowns.categories.flatMap((cat: { vehicles?: Array<{ seriesId?: string; years?: Array<{ year?: number }> }> }) =>
+            (cat.vehicles || []).flatMap((v: { seriesId?: string; years?: Array<{ year?: number }> }) =>
+              (v.years || []).map((y: { year?: number }) => ({
+                seriesId: v.seriesId || "",
+                year: y.year ?? 0,
+              })),
+            ),
+          ).filter((v: { seriesId: string; year: number }) => v.seriesId && v.year > 0)
+        : [];
+
+    if (vehicles.length === 0) {
+      console.warn(
+        "Kia dropDowns returned no vehicles; response structure may have changed. Check dropDowns API.",
+      );
+    }
 
     const requestBody = {
       vehicles,
-      categories: [3, 2, 1, 4], // Cash, Lease, Finance, and other categories
+      categories,
     };
 
     const response = await fetch(url, {
@@ -422,6 +469,14 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
       if (finalDescriptionText) termsParts.push(finalDescriptionText);
       const terms = termsParts.join(" ").trim() || null;
 
+      // Bonus/discount: extract from terms + finePrint (API has no structured fields)
+      const combinedText = [terms || "", finePrint || ""].filter(Boolean).join("\n");
+      const loyaltyBonus = extractAmountNearKeyword(combinedText, /loyalty\s*(?:bonus|cash|rebate)?/i);
+      const conquestBonus = extractAmountNearKeyword(combinedText, /conquest\s*(?:bonus|cash|rebate)?/i);
+      const militaryDiscount = extractAmountNearKeyword(combinedText, /military\s*(?:discount|bonus|rebate)?/i);
+      const collegeGrad = extractAmountNearKeyword(combinedText, /college\s*(?:grad|graduate|rebate|bonus)?/i);
+      const firstResponder = extractAmountNearKeyword(combinedText, /first\s*responder\s*(?:discount|bonus|rebate)?/i);
+
       offers.push({
         brand: "Kia",
         year: modelYear,
@@ -435,6 +490,7 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
         aprTermMonths,
         leaseTermMonths,
         cashValue,
+        tradeDiscount: null,
         leaseDueAtSigning,
         leaseMonthlyPayment,
         milesPerYear: null,
@@ -442,7 +498,12 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
         finePrint,
         expirationDate: parseDate(offer.endDate),
         scrapedAt,
-        sourceUrl: url,
+        sourceUrl: KIA_SOURCE_URL,
+        loyaltyBonus: loyaltyBonus ?? null,
+        conquestBonus: conquestBonus ?? null,
+        militaryDiscount: militaryDiscount ?? null,
+        collegeGrad: collegeGrad ?? null,
+        firstResponder: firstResponder ?? null,
       });
     }
 
@@ -479,6 +540,7 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
                   aprTermMonths: offer.aprTermMonths,
                   leaseTermMonths: offer.leaseTermMonths,
                   cashValue: offer.cashValue,
+                  tradeDiscount: offer.tradeDiscount,
                   leaseDueAtSigning: offer.leaseDueAtSigning,
                   leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
@@ -487,6 +549,11 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
                   sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

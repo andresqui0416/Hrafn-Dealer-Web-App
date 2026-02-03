@@ -2,6 +2,8 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const LucidSourceUrl = "https://lucidmotors.com/offers";
+
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
   if (!str) return null;
@@ -81,6 +83,31 @@ function extractDueAtSigning(text: string | null | undefined): number | null {
     if (match) {
       return parseNumber(match[1]);
     }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Extract dollar amount near a keyword (e.g. "$500 military" or "loyalty bonus $500") for schema bonus/discount fields
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    const afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    const beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
     return null;
   } catch {
     return null;
@@ -302,7 +329,7 @@ export async function scrapeOffersFromLucid() {
             continue;
           }
 
-          let offerType = "cash";
+          let offerType: "cash" | "financing" | "lease" = "cash";
           if (offerTypeStr === "lease") {
             offerType = "lease";
           } else if (offerTypeStr === "finance") {
@@ -556,6 +583,14 @@ export async function scrapeOffersFromLucid() {
             // Extract expiration date from terms (common expiration is December 31, 2025)
             const expirationDate = extractExpirationDateFromText(terms || "");
 
+            // Bonus/discount: extract from terms (and finePrint if present)
+            const combinedText = [terms || "", null].filter(Boolean).join("\n");
+            const loyaltyBonus = extractAmountNearKeyword(combinedText, /loyalty\s*(?:bonus|cash|rebate)?/i);
+            const conquestBonus = extractAmountNearKeyword(combinedText, /conquest\s*(?:bonus|cash|rebate)?/i);
+            const militaryDiscount = extractAmountNearKeyword(combinedText, /military\s*(?:discount|bonus|rebate)?/i);
+            const collegeGrad = extractAmountNearKeyword(combinedText, /college\s*(?:grad|graduate|rebate|bonus)?/i);
+            const firstResponder = extractAmountNearKeyword(combinedText, /first\s*responder\s*(?:discount|bonus|rebate)?/i);
+
             offers.push({
               brand: "Lucid",
               year,
@@ -564,7 +599,8 @@ export async function scrapeOffersFromLucid() {
               modelCode: null,
               trim: null,
               offerType,
-              offerAmount: null, // Don't set from monthlyPayment - keep them separate
+              // Cash: From price (e.g. $70,900) = offerAmount; Plus $12,500 Air Credit = cashValue
+              offerAmount: offerAmount ?? null,
               aprRate: aprRate ? aprRate / 100 : null, // Convert percentage to decimal
               aprTermMonths: offerType === "financing" ? aprTermMonths : null,
               leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
@@ -576,7 +612,12 @@ export async function scrapeOffersFromLucid() {
               terms: terms || null,
               finePrint: null, // Fine print is in separate disclaimers on the page
               scrapedAt,
-              sourceUrl: lucidOffersUrl,
+              sourceUrl: LucidSourceUrl,
+              loyaltyBonus: loyaltyBonus ?? null,
+              conquestBonus: conquestBonus ?? null,
+              militaryDiscount: militaryDiscount ?? null,
+              collegeGrad: collegeGrad ?? null,
+              firstResponder: firstResponder ?? null,
             });
           }
         }
@@ -627,6 +668,11 @@ export async function scrapeOffersFromLucid() {
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
                   sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

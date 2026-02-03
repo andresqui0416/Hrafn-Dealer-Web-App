@@ -2,6 +2,9 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Public-facing URL for Mercedes-Benz offers (stored in DB)
+const MBUSA_SOURCE_URL = "https://www.mbusa.com/en/special-offers";
+
 // function parseMBUSADate(dateStr: string | null | undefined): Date | null {
 //   if (!dateStr) return null;
 //   try {
@@ -83,17 +86,20 @@ function extractExpirationDateFromText(text: string | null | undefined): Date | 
 function extractTermMonths(text: string | null | undefined): number | null {
   if (!text) return null;
   try {
-    // Look for patterns like "for 36 months" or "24 mos. to 36 mos."
-    const patterns = [
-      /for\s+(\d+)\s+months?/i,
-      /(\d+)\s+mos?\.?\s+to\s+(\d+)\s+mos?/i, // Take the second number (longer term)
+    // Look for lease/finance term in various formats used by Mercedes-Benz and similar sites
+    const patterns: Array<{ re: RegExp; group?: number }> = [
+      { re: /for\s+(\d+)\s+months?/i },
+      { re: /(\d+)\s+mos?\.?\s+to\s+(\d+)\s+mos?/i, group: 2 }, // "24 mos. to 36 mos." -> use second
+      { re: /(?:for\s+)?(\d+)[-\s]*(?:months?|mos?)/i }, // "36 months", "36-mos", "36 mo", "for 36 months"
+      { re: /(\d+)[-\s]*month(?:\s|$|s|,|\.)/i }, // "36-month" or "36 month"
+      { re: /lease\s+(?:term\s+)?(?:of\s+)?(\d+)\s+months?/i },
+      { re: /(\d+)\s+months?(?:\s+lease|\s+term)?/i }, // "36 months" or "36 months lease"
     ];
 
-    for (const pattern of patterns) {
-      const match = text.match(pattern);
+    for (const { re, group = 1 } of patterns) {
+      const match = text.match(re);
       if (match) {
-        // If pattern has two numbers (e.g., "24 mos. to 36 mos."), use the second one
-        const term = match[2] ? parseInt(match[2], 10) : parseInt(match[1], 10);
+        const term = parseInt(match[group], 10);
         if (!isNaN(term) && term > 0) return term;
       }
     }
@@ -117,6 +123,42 @@ function extractDueAtSigning(text: string | null | undefined): number | null {
   }
 }
 
+// Extract miles per year from lease disclaimer text.
+// Looks for explicit "X miles per year" or "X mi/year", or derives from total miles
+// (e.g. "over 30,000 miles" with 36-month lease -> 10,000 mi/year).
+function extractMilesPerYear(
+  text: string | null | undefined,
+  leaseTermMonths: number | null,
+): number | null {
+  if (!text) return null;
+  try {
+    // Strip HTML for matching
+    const plain = text.replace(/<[^>]+>/g, " ");
+    // Explicit miles per year: "10,000 miles per year", "12,000 mi/year", "12000 mi/yr"
+    const perYearMatch = plain.match(
+      /(\d{1,3}(?:,\d{3})*|\d+)\s*miles?\s+per\s+year|(\d{1,3}(?:,\d{3})*|\d+)\s*mi\s*\/\s*year|(\d{1,3}(?:,\d{3})*|\d+)\s*mi\s*\/\s*yr/i,
+    );
+    if (perYearMatch) {
+      const num = parseNumber(perYearMatch[1] || perYearMatch[2] || perYearMatch[3]);
+      if (num !== null && num > 0) return num;
+    }
+    // Total miles over term: "over 30,000 miles", "30,000 miles, and vehicle turn-in"
+    const totalMatch = plain.match(
+      /(?:over|per)\s+(\d{1,3}(?:,\d{3})*|\d+)\s*miles|(\d{1,3}(?:,\d{3})*|\d+)\s*miles,?\s+and\s+vehicle/i,
+    );
+    if (totalMatch && leaseTermMonths !== null && leaseTermMonths > 0) {
+      const totalMiles = parseNumber(totalMatch[1] || totalMatch[2]);
+      if (totalMiles !== null && totalMiles > 0) {
+        const years = leaseTermMonths / 12;
+        return Math.round(totalMiles / years);
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
   if (!str) return null;
@@ -126,6 +168,31 @@ function parseNumber(str: string | null | undefined): number | null {
     const cleaned = strValue.replace(/[,$%]/g, "").trim();
     const num = parseFloat(cleaned);
     return isNaN(num) ? null : num;
+  } catch {
+    return null;
+  }
+}
+
+// Extract dollar amount near a keyword for schema bonus/discount fields
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    const afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    const beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
   } catch {
     return null;
   }
@@ -209,6 +276,35 @@ export async function scrapeOffersFromMBUSA() {
           // Extract terms and fine print
           const packageName = offerSummary.packageName || "";
 
+          // Extract bonus/discount amounts from package, descriptions, and disclaimer text
+          const disclaimerPlain =
+            (leasePaymentDisclaimerText || "").replace(/<[^>]+>/g, " ") +
+            " " +
+            (leaseRateDisclaimerText || "").replace(/<[^>]+>/g, " ");
+          const combinedText = [packageName, rateDescription, payDescription, disclaimerPlain]
+            .filter(Boolean)
+            .join(" ");
+          const loyaltyBonus = extractAmountNearKeyword(
+            combinedText,
+            /loyalty\s*(?:bonus|cash|rebate)?/i,
+          );
+          const conquestBonus = extractAmountNearKeyword(
+            combinedText,
+            /conquest\s*(?:bonus|cash|rebate)?/i,
+          );
+          const militaryDiscount = extractAmountNearKeyword(
+            combinedText,
+            /military\s*(?:discount|bonus|rebate)?/i,
+          );
+          const collegeGrad = extractAmountNearKeyword(
+            combinedText,
+            /college\s*(?:grad|graduate|rebate|bonus)?/i,
+          );
+          const firstResponder = extractAmountNearKeyword(
+            combinedText,
+            /first\s*responder\s*(?:discount|bonus|rebate)?/i,
+          );
+
           // Only create offer if we have at least model and year
           if (model && year) {
             // Create finance offer if APR and rate description are present
@@ -234,7 +330,12 @@ export async function scrapeOffersFromMBUSA() {
                 terms: packageName || rateDescription || null,
                 finePrint: leaseRateDisclaimerText || null,
                 scrapedAt,
-                sourceUrl: mbusaApiUrl,
+                sourceUrl: MBUSA_SOURCE_URL,
+                loyaltyBonus: loyaltyBonus ?? null,
+                conquestBonus: conquestBonus ?? null,
+                militaryDiscount: militaryDiscount ?? null,
+                collegeGrad: collegeGrad ?? null,
+                firstResponder: firstResponder ?? null,
               });
             }
 
@@ -242,6 +343,10 @@ export async function scrapeOffersFromMBUSA() {
             if (leaseMonthlyPayment !== null && payDescription) {
               const leaseTermMonths = extractTermMonths(payDescription);
               const leaseDueAtSigning = extractDueAtSigning(payDescription);
+              const milesPerYear = extractMilesPerYear(
+                leasePaymentDisclaimerText,
+                leaseTermMonths,
+              );
               offers.push({
                 brand: "Mercedes-Benz",
                 year,
@@ -257,12 +362,17 @@ export async function scrapeOffersFromMBUSA() {
                 cashValue: null,
                 leaseDueAtSigning,
                 leaseMonthlyPayment,
-                milesPerYear: null,
+                milesPerYear,
                 expirationDate,
                 terms: packageName || payDescription || null,
                 finePrint: leasePaymentDisclaimerText || null,
                 scrapedAt,
-                sourceUrl: mbusaApiUrl,
+                sourceUrl: MBUSA_SOURCE_URL,
+                loyaltyBonus: loyaltyBonus ?? null,
+                conquestBonus: conquestBonus ?? null,
+                militaryDiscount: militaryDiscount ?? null,
+                collegeGrad: collegeGrad ?? null,
+                firstResponder: firstResponder ?? null,
               });
             }
           }
@@ -311,6 +421,11 @@ export async function scrapeOffersFromMBUSA() {
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
                   sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

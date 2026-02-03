@@ -2,6 +2,9 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const MAZDA_SOURCE_URL =
+  "https://www.mazdausa.com/shopping-tools/special-offers-and-incentives";
+
 // Parse date from format "1/5/2026" or "01/05/2026"
 function parseMazdaDate(dateStr: string | null | undefined): Date | null {
   if (!dateStr) return null;
@@ -30,6 +33,65 @@ function parseNumber(str: string | null | undefined): number | null {
   } catch {
     return null;
   }
+}
+
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keywords: string[],
+): number | null {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+
+  for (const keyword of keywords) {
+    const keywordIndex = lower.indexOf(keyword.toLowerCase());
+    if (keywordIndex === -1) continue;
+
+    const windowStart = Math.max(0, keywordIndex - 120);
+    const windowEnd = Math.min(text.length, keywordIndex + keyword.length + 120);
+    const windowText = text.slice(windowStart, windowEnd);
+
+    const amountMatch = windowText.match(/\$?\s*([\d,.]+)/);
+    if (amountMatch && amountMatch[1]) {
+      const cleaned = amountMatch[1].replace(/,/g, "");
+      const value = parseFloat(cleaned);
+      if (!Number.isNaN(value)) {
+        return value;
+      }
+    }
+  }
+
+  return null;
+}
+
+function extractMazdaBonuses(text: string | null | undefined) {
+  const loyaltyBonus = extractAmountNearKeyword(text, ["loyalty", "owner loyalty"]);
+  const conquestBonus = extractAmountNearKeyword(text, [
+    "conquest",
+    "competitive bonus",
+  ]);
+  const militaryDiscount = extractAmountNearKeyword(text, [
+    "military",
+    "service member",
+  ]);
+  const collegeGrad = extractAmountNearKeyword(text, [
+    "college",
+    "graduate",
+    "graduation",
+  ]);
+  const firstResponder = extractAmountNearKeyword(text, [
+    "first responder",
+    "firefighter",
+    "police",
+    "emt",
+  ]);
+
+  return {
+    loyaltyBonus,
+    conquestBonus,
+    militaryDiscount,
+    collegeGrad,
+    firstResponder,
+  };
 }
 
 export async function scrapeOffersFromMazda() {
@@ -74,6 +136,26 @@ export async function scrapeOffersFromMazda() {
             const leaseTermMonths = parseNumber(leaseOffer.leaseTerm);
             const cashValue = parseNumber(leaseOffer.leaseCashBack);
 
+            // Validate: skip lease offers without a monthly payment value
+            if (leaseMonthlyPayment === null) {
+              continue;
+            }
+
+            const combinedText = [
+              leaseOffer.description,
+              leaseOffer.disclaimer,
+            ]
+              .filter(Boolean)
+              .join(" ");
+
+            const {
+              loyaltyBonus,
+              conquestBonus,
+              militaryDiscount,
+              collegeGrad,
+              firstResponder,
+            } = extractMazdaBonuses(combinedText);
+
             offers.push({
               header: leaseOffer.header || null,
               brand: "Mazda",
@@ -91,11 +173,16 @@ export async function scrapeOffersFromMazda() {
               leaseDueAtSigning,
               leaseMonthlyPayment,
               milesPerYear: null, // Could extract from description if needed
+              loyaltyBonus,
+              conquestBonus,
+              militaryDiscount,
+              collegeGrad,
+              firstResponder,
               expirationDate,
               terms: leaseOffer.description || leaseOffer.header || null,
               finePrint: leaseOffer.disclaimer || null,
               scrapedAt,
-              sourceUrl: mazdaApiUrl,
+              sourceUrl: MAZDA_SOURCE_URL,
             });
           }
         }
@@ -108,6 +195,26 @@ export async function scrapeOffersFromMazda() {
             const aprRate = parseNumber(purchaseOffer.apr);
             const aprTermMonths = parseNumber(purchaseOffer.paymentTerm);
             const cashValue = parseNumber(purchaseOffer.cashBack);
+
+            // Validate: skip purchase offers that have neither APR nor cash value
+            if (aprRate === null && cashValue === null) {
+              continue;
+            }
+
+            const combinedText = [
+              purchaseOffer.description,
+              purchaseOffer.disclaimer,
+            ]
+              .filter(Boolean)
+              .join(" ");
+
+            const {
+              loyaltyBonus,
+              conquestBonus,
+              militaryDiscount,
+              collegeGrad,
+              firstResponder,
+            } = extractMazdaBonuses(combinedText);
 
             // Determine offer type: if there's cashValue, it's cash, otherwise financing
             const offerType = cashValue && cashValue > 0 ? "cash" : "financing";
@@ -122,17 +229,23 @@ export async function scrapeOffersFromMazda() {
               trim: trimCode || null,
               offerType,
               offerAmount: null,
-              aprRate: aprRate ? aprRate / 100 : null, // Convert percentage to decimal (5.9 -> 0.059)
+              aprRate: aprRate !== null ? aprRate / 100 : null, // Convert percentage to decimal (5.9 -> 0.059)
               aprTermMonths: offerType === "financing" ? aprTermMonths : null,
               leaseTermMonths: null,
               cashValue,
               leaseDueAtSigning: null,
               leaseMonthlyPayment: null,
               milesPerYear: null,
+              loyaltyBonus,
+              conquestBonus,
+              militaryDiscount,
+              collegeGrad,
+              firstResponder,
               expirationDate,
               terms: purchaseOffer.description || purchaseOffer.header || null,
               finePrint: purchaseOffer.disclaimer || null,
               scrapedAt,
+              sourceUrl: MAZDA_SOURCE_URL,
             });
           }
         }
@@ -213,6 +326,11 @@ export async function scrapeOffersFromMazda() {
                   leaseDueAtSigning: offer.leaseDueAtSigning,
                   leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear || null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                   terms: offer.terms,
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,

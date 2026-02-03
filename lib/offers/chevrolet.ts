@@ -895,7 +895,7 @@ export async function scrapeOffersFromChevrolet() {
           const aprTermMonths = extractTermMonths(mainText); // For financing offers
           const leaseDueAtSigning = extractDueAtSigning(mainText);
 
-          let offerType = "cash";
+          let offerType: "cash" | "financing" | "lease" = "cash";
           // Only mark as lease if leaseMonthlyPayment is not null (number was found before "Per Month")
           // If there's "Per Month" but no number before it, it's not a lease
           if (leaseMonthlyPayment !== null) {
@@ -1090,7 +1090,7 @@ export async function scrapeOffersFromChevrolet() {
       }
 
       // Map offer type
-      let offerType = "cash";
+      let offerType: "cash" | "financing" | "lease" = "cash";
       if (result.offerType === "Lease") {
         offerType = "lease";
       } else if (result.offerType === "Finance") {

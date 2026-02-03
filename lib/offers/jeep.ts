@@ -127,7 +127,7 @@ const fetchModelInfos = async () => {
 
 const fetchOfferData = async (modelInfo: any) => {
   const url = `https://www.jeep.com/hostd/api/incentives/offers/targetMedium/iSilo-Inline/zip/95556/vehicle/${modelInfo.modelYearCode}`;
-  const sourceUrl = `https://www.jeep.com/incentives.compass.html#/model/${modelInfo.modelYearCode}`;
+  const sourceUrl = `https://www.jeep.com${modelInfo.url}`;
   const requestOptions = {
     method: "GET",
     redirect: "follow" as RequestRedirect,

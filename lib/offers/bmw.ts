@@ -2,6 +2,9 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Public-facing URL for BMW offers (stored in DB)
+const BMW_SOURCE_URL = "https://www.bmwusa.com/special-offers-new.html#/";
+
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | number | null | undefined): number | null {
   if (str === null || str === undefined) return null;
@@ -11,6 +14,26 @@ function parseNumber(str: string | number | null | undefined): number | null {
     const cleaned = strValue.replace(/[,$%]/g, "").trim();
     const num = parseFloat(cleaned);
     return isNaN(num) ? null : num;
+  } catch {
+    return null;
+  }
+}
+
+// Extract dollar amount near a keyword from disclaimer/description text (for bonus fields)
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    const kw = `(?:${keyword.source})`;
+    const afterKeyword = new RegExp(`${kw}[\\s\\S]{0,80}?\\$([\\d,]+)`, "i");
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    const beforeKeyword = new RegExp(`\\$([\\d,]+)[\\s\\S]{0,80}?${kw}`, "i");
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
   } catch {
     return null;
   }
@@ -26,20 +49,26 @@ export async function scrapeOffersFromBMW() {
       const bmwApiUrl =
         "https://www.bmwusa.com/offers-api/current-offers/v2?bySeries=true";
       const response = await fetch(bmwApiUrl, {
-          method: "GET",
-          signal: controller.signal,
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            Accept: "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Accept-Encoding": "gzip, deflate, br",
-            Referer: "https://www.bmwusa.com/",
-            Origin: "https://www.bmwusa.com",
-          },
-          redirect: "follow" as RequestRedirect,
+        method: "GET",
+        signal: controller.signal,
+        headers: {
+          accept: "application/json",
+          "accept-encoding": "gzip, deflate, br, zstd",
+          "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+          priority: "u=1, i",
+          referer: "https://www.bmwusa.com/special-offers-new.html",
+          "sec-ch-ua":
+            '"Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"',
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": '"Windows"',
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "user-agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
         },
-      );
+        cache: "no-store",
+      });
 
       clearTimeout(timeoutId);
 
@@ -125,6 +154,38 @@ export async function scrapeOffersFromBMW() {
             const finePrint =
               leaseOffer.additional_disclaimer || leaseOffer.offer_disclaimer || null;
 
+            // Bonus/discount fields: loyalty_credit from API, others from disclaimer text
+            const combinedText = [terms, finePrint].filter(Boolean).join(" ");
+            const loyaltyBonus =
+              leaseOffer.loyalty_credit != null
+                ? parseNumber(leaseOffer.loyalty_credit)
+                : extractAmountNearKeyword(
+                    combinedText,
+                    /loyalty\s*(?:bonus|cash|credit|rebate)?/i,
+                  );
+            const conquestBonus = extractAmountNearKeyword(
+              combinedText,
+              /conquest\s*(?:bonus|cash|rebate)?/i,
+            );
+            const militaryDiscount = extractAmountNearKeyword(
+              combinedText,
+              /military\s+(?:and\s+first\s+responders?)?\s*bonus|military\s*(?:discount|bonus|rebate)?/i,
+            );
+            let collegeGrad: number | null = (() => {
+              const directMatch = combinedText.match(
+                /\$([\d,]+)\s+College\s+Graduate\s+Bonus/i,
+              );
+              if (directMatch && directMatch[1]) return parseNumber(directMatch[1]);
+              return extractAmountNearKeyword(
+                combinedText,
+                /college\s+graduate\s+bonus|college\s+grad(?:uate)?/i,
+              );
+            })();
+            const firstResponder = extractAmountNearKeyword(
+              combinedText,
+              /first\s+responders?\s+bonus|first\s*responder\s*(?:discount|bonus|rebate)?/i,
+            );
+
             // Only create offer if we have meaningful data
             if (leaseMonthlyPayment !== null) {
               offers.push({
@@ -147,8 +208,13 @@ export async function scrapeOffersFromBMW() {
                 expirationDate: expirationDate,
                 terms: terms,
                 finePrint: finePrint,
+                loyaltyBonus: loyaltyBonus ?? null,
+                conquestBonus: conquestBonus ?? null,
+                militaryDiscount: militaryDiscount ?? null,
+                collegeGrad: collegeGrad ?? null,
+                firstResponder: firstResponder ?? null,
                 scrapedAt: scrapedAt,
-                sourceUrl: bmwApiUrl,
+                sourceUrl: BMW_SOURCE_URL,
               });
             }
           }
@@ -195,6 +261,38 @@ export async function scrapeOffersFromBMW() {
               financeOffer.offer_disclaimer ||
               null;
 
+            // Bonus/discount fields: loyalty_credit from API if present, others from disclaimer text
+            const combinedText = [terms, finePrint].filter(Boolean).join(" ");
+            const loyaltyBonus =
+              (financeOffer as { loyalty_credit?: string }).loyalty_credit != null
+                ? parseNumber((financeOffer as { loyalty_credit?: string }).loyalty_credit)
+                : extractAmountNearKeyword(
+                    combinedText,
+                    /loyalty\s*(?:bonus|cash|credit|rebate)?/i,
+                  );
+            const conquestBonus = extractAmountNearKeyword(
+              combinedText,
+              /conquest\s*(?:bonus|cash|rebate)?/i,
+            );
+            const militaryDiscount = extractAmountNearKeyword(
+              combinedText,
+              /military\s+(?:and\s+first\s+responders?)?\s*bonus|military\s*(?:discount|bonus|rebate)?/i,
+            );
+            let collegeGrad: number | null = (() => {
+              const directMatch = combinedText.match(
+                /\$([\d,]+)\s+College\s+Graduate\s+Bonus/i,
+              );
+              if (directMatch && directMatch[1]) return parseNumber(directMatch[1]);
+              return extractAmountNearKeyword(
+                combinedText,
+                /college\s+graduate\s+bonus|college\s+grad(?:uate)?/i,
+              );
+            })();
+            const firstResponder = extractAmountNearKeyword(
+              combinedText,
+              /first\s+responders?\s+bonus|first\s*responder\s*(?:discount|bonus|rebate)?/i,
+            );
+
             // Only create offer if we have meaningful data
             if (aprRate !== null) {
               offers.push({
@@ -217,8 +315,13 @@ export async function scrapeOffersFromBMW() {
                 expirationDate: expirationDate,
                 terms: terms,
                 finePrint: finePrint,
+                loyaltyBonus: loyaltyBonus ?? null,
+                conquestBonus: conquestBonus ?? null,
+                militaryDiscount: militaryDiscount ?? null,
+                collegeGrad: collegeGrad ?? null,
+                firstResponder: firstResponder ?? null,
                 scrapedAt: scrapedAt,
-                sourceUrl: bmwApiUrl,
+                sourceUrl: BMW_SOURCE_URL,
               });
             }
           }
@@ -267,7 +370,12 @@ export async function scrapeOffersFromBMW() {
                     expirationDate: offer.expirationDate,
                     scrapedAt: offer.scrapedAt,
                     sourceUrl: offer.sourceUrl ?? null,
-                })),
+                    loyaltyBonus: offer.loyaltyBonus ?? null,
+                    conquestBonus: offer.conquestBonus ?? null,
+                    militaryDiscount: offer.militaryDiscount ?? null,
+                    collegeGrad: offer.collegeGrad ?? null,
+                    firstResponder: offer.firstResponder ?? null,
+                  })),
                   skipDuplicates: true, // Skip duplicates if any
                 });
               },
