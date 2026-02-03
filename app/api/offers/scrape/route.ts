@@ -55,11 +55,21 @@ export async function POST(request: NextRequest) {
       }
 
       // Ensure offer has meaningful data
+      // Support both old and new field names for backward compatibility during migration
+      const leaseMonthlyPayment = offer.leaseMonthlyPayment ?? offer.monthlyPayment;
+      const aprRate = offer.aprRate ?? offer.apr;
+      const cashValue = offer.cashValue ?? offer.cashBack;
+      const leaseDueAtSigning = offer.leaseDueAtSigning ?? offer.dueAtSigning;
+      const aprTermMonths =
+        offer.aprTermMonths ?? (offer.offerType === "financing" ? offer.termMonths : null);
+      const leaseTermMonths =
+        offer.leaseTermMonths ?? (offer.offerType === "lease" ? offer.termMonths : null);
+
       const hasValidData =
-        (offer.offerType === "lease" && offer.monthlyPayment) ||
-        (offer.offerType === "financing" && offer.apr !== null) ||
+        (offer.offerType === "lease" && leaseMonthlyPayment) ||
+        (offer.offerType === "financing" && aprRate !== null) ||
         (offer.offerType === "cash" &&
-          (offer.offerAmount !== null || offer.cashBack !== null || offer.tradeDiscount !== null));
+          (offer.offerAmount !== null || cashValue !== null || offer.tradeDiscount !== null));
 
       if (!hasValidData) {
         console.warn(
@@ -69,6 +79,9 @@ export async function POST(request: NextRequest) {
       }
 
       // Store as-is (Python script should have normalized all types)
+      // Support both old and new field names for backward compatibility during migration
+      const sourceUrl =
+        offer.sourceUrl ?? offer.source_url ?? null;
       validOffers.push({
         brand: String(offer.brand),
         year:
@@ -82,26 +95,28 @@ export async function POST(request: NextRequest) {
           offer.offerAmount !== null && offer.offerAmount !== undefined
             ? parseFloat(String(offer.offerAmount))
             : null,
-        apr: offer.apr !== null && offer.apr !== undefined ? parseFloat(String(offer.apr)) : null,
-        termMonths:
-          offer.termMonths !== null && offer.termMonths !== undefined
-            ? parseInt(String(offer.termMonths), 10)
+        aprRate: aprRate !== null && aprRate !== undefined ? parseFloat(String(aprRate)) : null,
+        aprTermMonths:
+          aprTermMonths !== null && aprTermMonths !== undefined
+            ? parseInt(String(aprTermMonths), 10)
             : null,
-        cashBack:
-          offer.cashBack !== null && offer.cashBack !== undefined
-            ? parseFloat(String(offer.cashBack))
+        leaseTermMonths:
+          leaseTermMonths !== null && leaseTermMonths !== undefined
+            ? parseInt(String(leaseTermMonths), 10)
             : null,
+        cashValue:
+          cashValue !== null && cashValue !== undefined ? parseFloat(String(cashValue)) : null,
         tradeDiscount:
           offer.tradeDiscount !== null && offer.tradeDiscount !== undefined
             ? parseFloat(String(offer.tradeDiscount))
             : null,
-        dueAtSigning:
-          offer.dueAtSigning !== null && offer.dueAtSigning !== undefined
-            ? parseFloat(String(offer.dueAtSigning))
+        leaseDueAtSigning:
+          leaseDueAtSigning !== null && leaseDueAtSigning !== undefined
+            ? parseFloat(String(leaseDueAtSigning))
             : null,
-        monthlyPayment:
-          offer.monthlyPayment !== null && offer.monthlyPayment !== undefined
-            ? parseFloat(String(offer.monthlyPayment))
+        leaseMonthlyPayment:
+          leaseMonthlyPayment !== null && leaseMonthlyPayment !== undefined
+            ? parseFloat(String(leaseMonthlyPayment))
             : null,
         milesPerYear:
           offer.milesPerYear !== null && offer.milesPerYear !== undefined
@@ -111,6 +126,17 @@ export async function POST(request: NextRequest) {
         terms: offer.terms ? String(offer.terms) : null,
         finePrint: offer.finePrint ? String(offer.finePrint) : null,
         scrapedAt: scrapedAtDate,
+        sourceUrl: sourceUrl ? String(sourceUrl) : null,
+        loyaltyBonus:
+          offer.loyaltyBonus != null ? parseFloat(String(offer.loyaltyBonus)) : null,
+        conquestBonus:
+          offer.conquestBonus != null ? parseFloat(String(offer.conquestBonus)) : null,
+        militaryDiscount:
+          offer.militaryDiscount != null ? parseFloat(String(offer.militaryDiscount)) : null,
+        collegeGrad:
+          offer.collegeGrad != null ? parseFloat(String(offer.collegeGrad)) : null,
+        firstResponder:
+          offer.firstResponder != null ? parseFloat(String(offer.firstResponder)) : null,
       });
     }
 
@@ -136,17 +162,24 @@ export async function POST(request: NextRequest) {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
                   tradeDiscount: offer.tradeDiscount,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: scrapedAtDate,
+                  sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

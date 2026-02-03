@@ -273,6 +273,31 @@ function extractExpirationDateFromHTML(html: string | null | undefined): Date | 
   }
 }
 
+// Extract dollar amount near a keyword for schema bonus/discount fields (API has no structured fields)
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    let afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    let beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // Strip HTML and decode entities to plain text
 function stripHtmlToText(html: string | null | undefined): string | null {
   if (!html) return null;
@@ -788,10 +813,10 @@ export async function scrapeOffersFromChevrolet() {
       redirect: "follow" as RequestRedirect,
     };
 
-    const response = await fetch(
-      "https://cws.gm.com/cof-cws/v2/currentoffers/US/en/95556?make=chevrolet&quantumHostname=www.chevrolet.com",
-      requestOptions,
-    );
+    const chevroletSourceUrl = "https://www.chevrolet.com/current-offers";
+    const chevroletApiUrl =
+      "https://cws.gm.com/cof-cws/v2/currentoffers/US/en/95556?make=chevrolet&quantumHostname=www.chevrolet.com";
+    const response = await fetch(chevroletApiUrl, requestOptions);
 
     if (!response.ok) {
       const text = await response.text();
@@ -854,48 +879,49 @@ export async function scrapeOffersFromChevrolet() {
           }
 
           // Extract APR - try HTML first (handles <span>0%</span>&nbsp;APR in h3), then fall back to text
-          let apr = extractAPRFromHTML(html);
-          if (apr === null) {
-            apr = extractAPR(mainText);
+          let aprRate = extractAPRFromHTML(html);
+          if (aprRate === null) {
+            aprRate = extractAPR(mainText);
           }
 
           // Extract monthly payment - try HTML first (handles <sup>$</sup>329 structure), then fall back to text
-          let monthlyPayment = extractMonthlyPaymentFromHTML(html);
-          if (monthlyPayment === null) {
-            monthlyPayment = extractMonthlyPayment(mainText);
+          let leaseMonthlyPayment = extractMonthlyPaymentFromHTML(html);
+          if (leaseMonthlyPayment === null) {
+            leaseMonthlyPayment = extractMonthlyPayment(mainText);
           }
 
           // Extract other details from main text
-          const termMonths = extractTermMonths(mainText);
-          const dueAtSigning = extractDueAtSigning(mainText);
+          const leaseTermMonths = extractTermMonths(mainText);
+          const aprTermMonths = extractTermMonths(mainText); // For financing offers
+          const leaseDueAtSigning = extractDueAtSigning(mainText);
 
-          let offerType = "cash";
-          // Only mark as lease if monthlyPayment is not null (number was found before "Per Month")
+          let offerType: "cash" | "financing" | "lease" = "cash";
+          // Only mark as lease if leaseMonthlyPayment is not null (number was found before "Per Month")
           // If there's "Per Month" but no number before it, it's not a lease
-          if (monthlyPayment !== null) {
+          if (leaseMonthlyPayment !== null) {
             offerType = "lease";
-          } else if (apr !== null) {
+          } else if (aprRate !== null) {
             offerType = "financing";
           }
 
-          // Extract cashBack from main text (regardless of offer type)
-          let cashBack: number | null = null;
+          // Extract cashValue from main text (regardless of offer type)
+          let cashValue: number | null = null;
 
           // Priority 1: Look for "Total Cash Allowance" (this is the sum of Customer Cash + Purchase Allowance)
           const totalCashAllowanceMatch = mainText.match(/\$([\d,]+)\s+Total\s+Cash\s+Allowance/i);
           if (totalCashAllowanceMatch && totalCashAllowanceMatch[1]) {
-            cashBack = parseNumber(totalCashAllowanceMatch[1]);
+            cashValue = parseNumber(totalCashAllowanceMatch[1]);
           } else {
             // Priority 2: Look for "Customer Cash" pattern (e.g., "$1,500 Customer Cash*" or "$ 1,500 Customer Cash")
             // Pattern handles optional space after $, optional asterisk, and handles cases where "Cash" might be missing
             let customerCashMatch = mainText.match(/\$[\s]*([\d,]+)\s+Customer\s+Cash/i);
             if (customerCashMatch && customerCashMatch[1]) {
-              cashBack = parseNumber(customerCashMatch[1]);
+              cashValue = parseNumber(customerCashMatch[1]);
             } else {
               // Try pattern without "Cash" - sometimes text might be cut off (e.g., "$ 1,500 Customer")
               customerCashMatch = mainText.match(/\$[\s]*([\d,]+)\s+Customer/i);
               if (customerCashMatch && customerCashMatch[1]) {
-                cashBack = parseNumber(customerCashMatch[1]);
+                cashValue = parseNumber(customerCashMatch[1]);
               } else {
                 // Priority 2b: Look for "Loyalty Cash" pattern (e.g., "$4,000 Loyalty Cash" or "$4,000 Loyalty Cash Allowance")
                 // Handle cases like "$4,000 Chevrolet Corvette and Camaro Loyalty Cash Allowance"
@@ -903,35 +929,35 @@ export async function scrapeOffersFromChevrolet() {
                   /\$[\s]*([\d,]+)[\s\S]*?Loyalty\s+Cash(?:\s+Allowance)?/i,
                 );
                 if (loyaltyCashMatch && loyaltyCashMatch[1]) {
-                  cashBack = parseNumber(loyaltyCashMatch[1]);
+                  cashValue = parseNumber(loyaltyCashMatch[1]);
                 } else {
                   // Priority 3: Look for "toward the purchase" pattern (e.g., "$1,000 toward the purchase" or "$1,000 toward the purchase or")
                   const towardPurchaseMatch = mainText.match(
                     /\$[\s]*([\d,]+)\s+toward\s+the\s+purchase/i,
                   );
                   if (towardPurchaseMatch && towardPurchaseMatch[1]) {
-                    cashBack = parseNumber(towardPurchaseMatch[1]);
+                    cashValue = parseNumber(towardPurchaseMatch[1]);
                   } else {
                     // Priority 4: Look for "Purchase Allowance" pattern
                     const purchaseAllowanceMatch = mainText.match(
                       /\$[\s]*([\d,]+)\s+Purchase\s+Allowance/i,
                     );
                     if (purchaseAllowanceMatch && purchaseAllowanceMatch[1]) {
-                      cashBack = parseNumber(purchaseAllowanceMatch[1]);
+                      cashValue = parseNumber(purchaseAllowanceMatch[1]);
                     } else {
                       // Priority 5: Try uppercase pattern
                       const purchaseAllowanceMatchUpper = mainText.match(
                         /\$[\s]*([\d,]+)\s+PURCHASE\s+ALLOWANCE/i,
                       );
                       if (purchaseAllowanceMatchUpper && purchaseAllowanceMatchUpper[1]) {
-                        cashBack = parseNumber(purchaseAllowanceMatchUpper[1]);
+                        cashValue = parseNumber(purchaseAllowanceMatchUpper[1]);
                       } else {
                         // Priority 6: Look for other patterns like "$X,XXX cash back", "$X,XXX off", "$X,XXX discount", or "$X,XXX bonus cash"
                         const cashBackMatch = mainText.match(
                           /\$[\s]*([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i,
                         );
                         if (cashBackMatch && cashBackMatch[1]) {
-                          cashBack = parseNumber(cashBackMatch[1]);
+                          cashValue = parseNumber(cashBackMatch[1]);
                         }
                       }
                     }
@@ -978,9 +1004,9 @@ export async function scrapeOffersFromChevrolet() {
           // Only create offer if we have meaningful data
           // Accept offers if we have any of: APR, monthly payment (for lease), cashback, trade discount, or meaningful text content
           const hasValidData =
-            apr !== null ||
-            (offerType === "lease" && monthlyPayment !== null) ||
-            cashBack !== null ||
+            aprRate !== null ||
+            (offerType === "lease" && leaseMonthlyPayment !== null) ||
+            cashValue !== null ||
             tradeDiscount !== null ||
             mainText.trim().length > 30; // At least 30 characters of text content
 
@@ -989,12 +1015,35 @@ export async function scrapeOffersFromChevrolet() {
               `Skipping featured ${offerType} offer for ${model} ${year} - insufficient data`,
             );
             console.warn(
-              `  mainText length: ${mainText.trim().length}, apr: ${apr}, cashBack: ${cashBack}, tradeDiscount: ${tradeDiscount}`,
+              `  mainText length: ${mainText.trim().length}, aprRate: ${aprRate}, cashValue: ${cashValue}, tradeDiscount: ${tradeDiscount}`,
             );
             console.warn(`  mainText preview: ${mainText.substring(0, 200)}`);
             console.warn(`=============================`);
             continue;
           }
+
+          // Optional: extract bonus/discount from text when present (API has no structured fields)
+          const combinedFeaturedText = `${mainText} ${extractedFinePrint || ""}`;
+          const loyaltyBonus = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /loyalty|current\s+lessees?\s+of\s+.*\s+GM\s+vehicles|eligible\s+current\s+lessees/i,
+          );
+          const conquestBonus = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /conquest|non-GM\s+vehicles|current\s+lessees?\s+of\s+.*\s+non-GM/i,
+          );
+          const militaryDiscount = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /military/i,
+          );
+          const collegeGrad = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /college\s+grad|college\s+graduate/i,
+          );
+          const firstResponder = extractAmountNearKeyword(
+            combinedFeaturedText,
+            /first\s+responder/i,
+          );
 
           offers.push({
             brand,
@@ -1005,17 +1054,24 @@ export async function scrapeOffersFromChevrolet() {
             trim,
             offerType,
             offerAmount: null,
-            apr,
-            termMonths,
-            cashBack,
+            aprRate,
+            aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+            leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+            cashValue,
             tradeDiscount,
-            dueAtSigning,
-            monthlyPayment,
+            leaseDueAtSigning,
+            leaseMonthlyPayment,
             milesPerYear: null,
             expirationDate,
             terms,
             finePrint,
             scrapedAt,
+            sourceUrl: chevroletSourceUrl,
+            loyaltyBonus: loyaltyBonus ?? null,
+            conquestBonus: conquestBonus ?? null,
+            militaryDiscount: militaryDiscount ?? null,
+            collegeGrad: collegeGrad ?? null,
+            firstResponder: firstResponder ?? null,
           });
 
           continue; // Move to next result
@@ -1034,7 +1090,7 @@ export async function scrapeOffersFromChevrolet() {
       }
 
       // Map offer type
-      let offerType = "cash";
+      let offerType: "cash" | "financing" | "lease" = "cash";
       if (result.offerType === "Lease") {
         offerType = "lease";
       } else if (result.offerType === "Finance") {
@@ -1050,16 +1106,17 @@ export async function scrapeOffersFromChevrolet() {
       const titleText = offerText.title?.text || "";
 
       // Extract monthly payment
-      const monthlyPayment = extractMonthlyPayment(bodyText);
+      const leaseMonthlyPayment = extractMonthlyPayment(bodyText);
 
       // Extract term months
-      const termMonths = extractTermMonths(bodyText);
+      const leaseTermMonths = extractTermMonths(bodyText);
+      const aprTermMonths = extractTermMonths(bodyText); // For financing offers
 
       // Extract due at signing
-      const dueAtSigning = extractDueAtSigning(bodyText);
+      const leaseDueAtSigning = extractDueAtSigning(bodyText);
 
       // Extract APR (usually in body or footer text)
-      const apr = extractAPR(bodyText) || extractAPR(footerText);
+      const aprRate = extractAPR(bodyText) || extractAPR(footerText);
 
       // Extract expiration date
       const expirationDate = parseExpirationDate(result.endEffDate);
@@ -1086,26 +1143,26 @@ export async function scrapeOffersFromChevrolet() {
       // offerAmount should only be set if explicitly extracted from the offer content
       let offerAmount: number | null = null;
 
-      // Extract cashBack from body text and footer text (regardless of offer type)
+      // Extract cashValue from body text and footer text (regardless of offer type)
       // Check both bodyText and footerText for cash back patterns
       const combinedText = (bodyText + " " + footerText).trim();
-      let cashBack: number | null = null;
+      let cashValue: number | null = null;
 
       // Priority 1: Look for "Total Cash Allowance" (this is the sum of Customer Cash + Purchase Allowance)
       const totalCashAllowanceMatch = combinedText.match(/\$([\d,]+)\s+Total\s+Cash\s+Allowance/i);
       if (totalCashAllowanceMatch && totalCashAllowanceMatch[1]) {
-        cashBack = parseNumber(totalCashAllowanceMatch[1]);
+        cashValue = parseNumber(totalCashAllowanceMatch[1]);
       } else {
         // Priority 2: Look for "Customer Cash" pattern (e.g., "$1,500 Customer Cash*" or "$ 1,500 Customer Cash")
         // Pattern handles optional space after $, optional asterisk, and handles cases where "Cash" might be missing
         let customerCashMatch = combinedText.match(/\$[\s]*([\d,]+)\s+Customer\s+Cash/i);
         if (customerCashMatch && customerCashMatch[1]) {
-          cashBack = parseNumber(customerCashMatch[1]);
+          cashValue = parseNumber(customerCashMatch[1]);
         } else {
           // Try pattern without "Cash" - sometimes text might be cut off (e.g., "$ 1,500 Customer")
           customerCashMatch = combinedText.match(/\$[\s]*([\d,]+)\s+Customer/i);
           if (customerCashMatch && customerCashMatch[1]) {
-            cashBack = parseNumber(customerCashMatch[1]);
+            cashValue = parseNumber(customerCashMatch[1]);
           } else {
             // Priority 2b: Look for "Loyalty Cash" pattern (e.g., "$4,000 Loyalty Cash" or "$4,000 Loyalty Cash Allowance")
             // Handle cases like "$4,000 Chevrolet Corvette and Camaro Loyalty Cash Allowance"
@@ -1113,7 +1170,7 @@ export async function scrapeOffersFromChevrolet() {
               /\$[\s]*([\d,]+)[\s\S]*?Loyalty\s+Cash(?:\s+Allowance)?/i,
             );
             if (loyaltyCashMatch && loyaltyCashMatch[1]) {
-              cashBack = parseNumber(loyaltyCashMatch[1]);
+              cashValue = parseNumber(loyaltyCashMatch[1]);
             } else {
               // Priority 3: Look for "toward the purchase" pattern (e.g., "$1,000 toward the purchase" or "$1,000 toward the purchase or")
               // This pattern matches even if there's additional text like "or" after "purchase"
@@ -1121,7 +1178,7 @@ export async function scrapeOffersFromChevrolet() {
                 /\$[\s]*([\d,]+)\s+toward\s+the\s+purchase/i,
               );
               if (towardPurchaseMatch && towardPurchaseMatch[1]) {
-                cashBack = parseNumber(towardPurchaseMatch[1]);
+                cashValue = parseNumber(towardPurchaseMatch[1]);
               } else {
                 // Priority 4: Look for "Purchase Allowance" pattern
                 // Pattern handles: "$250 Purchase Allowance" or "$250 PURCHASE ALLOWANCE" (case insensitive)
@@ -1129,14 +1186,14 @@ export async function scrapeOffersFromChevrolet() {
                   /\$[\s]*([\d,]+)\s+Purchase\s+Allowance\.?/i,
                 );
                 if (purchaseAllowanceMatch && purchaseAllowanceMatch[1]) {
-                  cashBack = parseNumber(purchaseAllowanceMatch[1]);
+                  cashValue = parseNumber(purchaseAllowanceMatch[1]);
                 } else {
                   // Priority 5: Try uppercase pattern
                   const purchaseAllowanceMatchUpper = combinedText.match(
                     /\$[\s]*([\d,]+)\s+PURCHASE\s+ALLOWANCE\.?/i,
                   );
                   if (purchaseAllowanceMatchUpper && purchaseAllowanceMatchUpper[1]) {
-                    cashBack = parseNumber(purchaseAllowanceMatchUpper[1]);
+                    cashValue = parseNumber(purchaseAllowanceMatchUpper[1]);
                   } else {
                     // Priority 6: Look for "Loyalty Cash" pattern (e.g., "$4,000 Loyalty Cash" or "$4,000 Loyalty Cash Allowance")
                     // Handle cases like "$4,000 Chevrolet Corvette and Camaro Loyalty Cash Allowance"
@@ -1144,14 +1201,14 @@ export async function scrapeOffersFromChevrolet() {
                       /\$[\s]*([\d,]+)[\s\S]*?Loyalty\s+Cash(?:\s+Allowance)?/i,
                     );
                     if (loyaltyCashMatch && loyaltyCashMatch[1]) {
-                      cashBack = parseNumber(loyaltyCashMatch[1]);
+                      cashValue = parseNumber(loyaltyCashMatch[1]);
                     } else {
                       // Priority 7: Look for other patterns like "$X,XXX cash back", "$X,XXX off", "$X,XXX discount", or "$X,XXX bonus cash"
                       const cashBackMatch = combinedText.match(
                         /\$[\s]*([\d,]+)\s+(?:cash\s+back|off|discount|bonus\s+cash)/i,
                       );
                       if (cashBackMatch && cashBackMatch[1]) {
-                        cashBack = parseNumber(cashBackMatch[1]);
+                        cashValue = parseNumber(cashBackMatch[1]);
                       }
                     }
                   }
@@ -1166,12 +1223,35 @@ export async function scrapeOffersFromChevrolet() {
       // Extract trade discount from body text (separate from cashBack)
       const tradeDiscount = extractTradeDiscount(bodyText) || extractTradeDiscount(footerText);
 
+      // Optional: extract bonus/discount from body+footer when present (API has no structured fields)
+      const combinedTextForBonus = `${bodyText} ${footerText}`;
+      const loyaltyBonus = extractAmountNearKeyword(
+        combinedTextForBonus,
+        /loyalty|current\s+lessees?\s+of\s+.*\s+GM\s+vehicles|eligible\s+current\s+lessees/i,
+      );
+      const conquestBonus = extractAmountNearKeyword(
+        combinedTextForBonus,
+        /conquest|non-GM\s+vehicles|current\s+lessees?\s+of\s+.*\s+non-GM/i,
+      );
+      const militaryDiscount = extractAmountNearKeyword(
+        combinedTextForBonus,
+        /military/i,
+      );
+      const collegeGrad = extractAmountNearKeyword(
+        combinedTextForBonus,
+        /college\s+grad|college\s+graduate/i,
+      );
+      const firstResponder = extractAmountNearKeyword(
+        combinedTextForBonus,
+        /first\s+responder/i,
+      );
+
       // Only create offer if we have meaningful data
       const hasValidData =
-        (offerType === "lease" && monthlyPayment) ||
-        (offerType === "financing" && apr !== null) ||
+        (offerType === "lease" && leaseMonthlyPayment) ||
+        (offerType === "financing" && aprRate !== null) ||
         (offerType === "cash" &&
-          (offerAmount !== null || cashBack !== null || tradeDiscount !== null));
+          (offerAmount !== null || cashValue !== null || tradeDiscount !== null));
 
       if (!hasValidData) {
         console.warn(`Skipping ${offerType} offer for ${model} ${year} - insufficient data`);
@@ -1187,17 +1267,24 @@ export async function scrapeOffersFromChevrolet() {
         trim,
         offerType,
         offerAmount,
-        apr,
-        termMonths,
-        cashBack,
+        aprRate,
+        aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+        leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+        cashValue,
         tradeDiscount,
-        dueAtSigning,
-        monthlyPayment,
+        leaseDueAtSigning,
+        leaseMonthlyPayment,
         milesPerYear: null, // Could extract from terms if needed
         expirationDate,
         terms,
         finePrint,
         scrapedAt,
+        sourceUrl: chevroletSourceUrl,
+        loyaltyBonus: loyaltyBonus ?? null,
+        conquestBonus: conquestBonus ?? null,
+        militaryDiscount: militaryDiscount ?? null,
+        collegeGrad: collegeGrad ?? null,
+        firstResponder: firstResponder ?? null,
       });
     }
 
@@ -1230,17 +1317,24 @@ export async function scrapeOffersFromChevrolet() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
                   tradeDiscount: offer.tradeDiscount,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

@@ -2,6 +2,44 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Trim leading/trailing whitespace and collapse internal runs of whitespace (spaces, newlines, tabs) to a single space
+function normalizeDescriptionText(str: string | null | undefined): string {
+  if (str == null || typeof str !== "string") return "";
+  return str.replace(/\s+/g, " ").trim();
+}
+
+// Strip HTML from fine print: remove tags, convert block/line-break elements to \n, decode entities
+function stripHtmlToText(html: string | null | undefined): string {
+  if (html == null || typeof html !== "string") return "";
+  let text = html;
+  // Convert line and block breaks to newline before stripping tags
+  text = text.replace(/<br\s*\/?>/gi, "\n");
+  text = text.replace(/<\/p\s*>/gi, "\n");
+  text = text.replace(/<p\s*[^>]*>/gi, "\n");
+  text = text.replace(/<\/div\s*>/gi, "\n");
+  text = text.replace(/<div\s*[^>]*>/gi, "\n");
+  text = text.replace(/<\/li\s*>/gi, "\n");
+  text = text.replace(/<li\s*[^>]*>/gi, "\n");
+  text = text.replace(/<\/tr\s*>/gi, "\n");
+  // Remove all remaining tags
+  text = text.replace(/<[^>]+>/g, "");
+  // Decode common HTML entities
+  text = text.replace(/&nbsp;/gi, " ");
+  text = text.replace(/&amp;/g, "&");
+  text = text.replace(/&lt;/g, "<");
+  text = text.replace(/&gt;/g, ">");
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#39;/g, "'");
+  text = text.replace(/&apos;/g, "'");
+  // Collapse multiple newlines to single \n, trim each line and overall
+  text = text
+    .split(/\n+/)
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter((line) => line.length > 0)
+    .join("\n");
+  return text.trim();
+}
+
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
   if (!str) return null;
@@ -93,6 +131,33 @@ function extractAPR(text: string | null | undefined): number | null {
   }
 }
 
+// Extract dollar amount near a keyword (e.g. "$500 military" or "military discount $500") for schema bonus/discount fields
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    // Match keyword then $X,XXX within ~80 chars
+    const afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    // Match $X,XXX then keyword within ~80 chars
+    const beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function scrapeOffersFromCadillac() {
   try {
     const myHeaders = new Headers();
@@ -102,10 +167,11 @@ export async function scrapeOffersFromCadillac() {
       redirect: "follow" as RequestRedirect,
     };
 
-    const response = await fetch(
-      "https://cws.gm.com/cof-cws/v2/currentoffers/US/en/95556?make=cadillac&quantumHostname=www.cadillac.com",
-      requestOptions,
-    );
+    // API URL used for scraping (internal); sourceUrl is the public page users can visit
+    const cadillacApiUrl =
+      "https://cws.gm.com/cof-cws/v2/currentoffers/US/en/95556?make=cadillac&quantumHostname=www.cadillac.com";
+    const sourceUrl = "https://www.cadillac.com/offers/current";
+    const response = await fetch(cadillacApiUrl, requestOptions);
 
     if (!response.ok) {
       const text = await response.text();
@@ -140,7 +206,7 @@ export async function scrapeOffersFromCadillac() {
       const trim = trims.length > 0 ? trims.join(", ") : null;
 
       // Map offer type
-      let offerType = "cash";
+      let offerType: "cash" | "financing" | "lease" = "cash";
       if (result.offerType === "Lease") {
         offerType = "lease";
       } else if (result.offerType === "Finance") {
@@ -156,54 +222,80 @@ export async function scrapeOffersFromCadillac() {
       const titleText = offerText.title?.text || "";
 
       // Extract monthly payment
-      const monthlyPayment = extractMonthlyPayment(bodyText);
+      const leaseMonthlyPayment = extractMonthlyPayment(bodyText);
 
       // Extract term months
-      const termMonths = extractTermMonths(bodyText);
+      const leaseTermMonths = extractTermMonths(bodyText);
+      const aprTermMonths = extractTermMonths(bodyText); // For financing offers
 
       // Extract due at signing
-      const dueAtSigning = extractDueAtSigning(bodyText);
+      const leaseDueAtSigning = extractDueAtSigning(bodyText);
 
       // Extract APR (usually in body or footer text)
-      const apr = extractAPR(bodyText) || extractAPR(footerText);
+      const aprRate = extractAPR(bodyText) || extractAPR(footerText);
 
       // Extract expiration date
       const expirationDate = parseExpirationDate(result.endEffDate);
 
-      // Build terms text from body
-      const terms = bodyText.trim() || null;
+      // Build terms (description) from body - remove leading/trailing and collapse internal whitespace
+      const termsRaw = normalizeDescriptionText(bodyText);
+      const terms = termsRaw.length > 0 ? termsRaw : null;
 
-      // Build fine print from footer
-      const finePrint = footerText.trim() || null;
+      // Build fine print from footer: strip HTML, keep only text with \n for line/block breaks
+      const finePrintRaw = stripHtmlToText(footerText);
+      const finePrint = finePrintRaw.length > 0 ? finePrintRaw : null;
 
       // Don't populate offerAmount from monthlyPayment or cashBack - keep them separate
       // offerAmount should only be set if explicitly extracted from the offer content
       let offerAmount: number | null = null;
 
-      // Extract cashBack for cash offers from body text
-      let cashBack: number | null = null;
+      // Extract cashValue for cash offers from body text
+      let cashValue: number | null = null;
       if (offerType === "cash") {
         // Look for patterns like "$X,XXX Purchase Allowance", "$X,XXX Competitive Cash Allowance", "$X,XXX Costco Executive Member Incentive"
         const cashBackMatch = bodyText.match(
           /\$([\d,]+)\s+(?:Purchase\s+Allowance|Competitive\s+Cash\s+Allowance|Costco\s+Executive\s+Member\s+Incentive|off|discount)/i,
         );
         if (cashBackMatch && cashBackMatch[1]) {
-          cashBack = parseNumber(cashBackMatch[1]);
+          cashValue = parseNumber(cashBackMatch[1]);
         }
         // Also check for standalone dollar amounts in cash offers
-        if (!cashBack) {
+        if (!cashValue) {
           const standaloneMatch = bodyText.match(/\$([\d,]+)/);
           if (standaloneMatch && standaloneMatch[1]) {
-            cashBack = parseNumber(standaloneMatch[1]);
+            cashValue = parseNumber(standaloneMatch[1]);
           }
         }
       }
 
+      // Optional: extract bonus/discount amounts from body+footer when API text mentions them (no structured fields in API)
+      const combinedText = `${bodyText} ${footerText}`;
+      const loyaltyBonus = extractAmountNearKeyword(
+        combinedText,
+        /loyalty|current\s+lessees?\s+of\s+.*\s+GM\s+vehicles/i,
+      );
+      const conquestBonus = extractAmountNearKeyword(
+        combinedText,
+        /conquest|non-GM\s+vehicles|current\s+lessees?\s+of\s+.*\s+non-GM/i,
+      );
+      const militaryDiscount = extractAmountNearKeyword(
+        combinedText,
+        /military/i,
+      );
+      const collegeGrad = extractAmountNearKeyword(
+        combinedText,
+        /college\s+grad|college\s+graduate/i,
+      );
+      const firstResponder = extractAmountNearKeyword(
+        combinedText,
+        /first\s+responder/i,
+      );
+
       // Only create offer if we have meaningful data
       const hasValidData =
-        (offerType === "lease" && monthlyPayment) ||
-        (offerType === "financing" && apr !== null) ||
-        (offerType === "cash" && (offerAmount !== null || cashBack !== null));
+        (offerType === "lease" && leaseMonthlyPayment) ||
+        (offerType === "financing" && aprRate !== null) ||
+        (offerType === "cash" && (offerAmount !== null || cashValue !== null));
 
       if (!hasValidData) {
         console.warn(`Skipping ${offerType} offer for ${model} ${year} - insufficient data`);
@@ -219,16 +311,23 @@ export async function scrapeOffersFromCadillac() {
         trim,
         offerType,
         offerAmount,
-        apr,
-        termMonths,
-        cashBack,
-        dueAtSigning,
-        monthlyPayment,
+        aprRate,
+        aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+        leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+        cashValue,
+        leaseDueAtSigning,
+        leaseMonthlyPayment,
         milesPerYear: null, // Could extract from terms if needed
         expirationDate,
         terms,
         finePrint,
         scrapedAt,
+        sourceUrl,
+        loyaltyBonus: loyaltyBonus ?? null,
+        conquestBonus: conquestBonus ?? null,
+        militaryDiscount: militaryDiscount ?? null,
+        collegeGrad: collegeGrad ?? null,
+        firstResponder: firstResponder ?? null,
       });
     }
 
@@ -261,16 +360,23 @@ export async function scrapeOffersFromCadillac() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

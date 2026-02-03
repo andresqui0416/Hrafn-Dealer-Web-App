@@ -2,6 +2,9 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Public-facing URL for Volkswagen offers (stored in DB)
+const VW_SOURCE_URL = "https://www.vw.com/en/offers.html";
+
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | number | null | undefined): number | null {
   if (str === null || str === undefined) return null;
@@ -16,13 +19,60 @@ function parseNumber(str: string | number | null | undefined): number | null {
   }
 }
 
+// Extract due at signing from text (e.g., "$3,499 due at signing")
+function extractDueAtSigning(text: string | null | undefined): number | null {
+  if (!text) return null;
+  try {
+    const match = text.match(/\$([\d,]+)\s+due\s+at\s+signing/i);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Extract miles per year from lease text (dealLegal/dealSubtitle).
+// Looks for explicit "X miles per year" or derives from total miles (e.g. "over 30,000 miles" with 36-month lease -> 10,000 mi/year).
+function extractMilesPerYear(
+  text: string | null | undefined,
+  leaseTermMonths: number | null,
+): number | null {
+  if (!text) return null;
+  try {
+    const plain = text.replace(/<[^>]+>/g, " ");
+    // Explicit miles per year
+    const perYearMatch = plain.match(
+      /(\d{1,3}(?:,\d{3})*|\d+)\s*miles?\s+per\s+year|(\d{1,3}(?:,\d{3})*|\d+)\s*mi\s*\/\s*year|(\d{1,3}(?:,\d{3})*|\d+)\s*mi\s*\/\s*yr/i,
+    );
+    if (perYearMatch) {
+      const num = parseNumber(perYearMatch[1] || perYearMatch[2] || perYearMatch[3]);
+      if (num !== null && num > 0) return num;
+    }
+    // Total miles: "over 30,000 miles", "30,000 miles and excessive"
+    const totalMatch = plain.match(
+      /(?:over|per)\s+(\d{1,3}(?:,\d{3})*|\d+)\s*miles|(\d{1,3}(?:,\d{3})*|\d+)\s*miles,?\s+(?:and\s+(?:excessive|vehicle))/i,
+    );
+    if (totalMatch && leaseTermMonths !== null && leaseTermMonths > 0) {
+      const totalMiles = parseNumber(totalMatch[1] || totalMatch[2]);
+      if (totalMiles !== null && totalMiles > 0) {
+        const years = leaseTermMonths / 12;
+        return Math.round(totalMiles / years);
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // Extract cash back amount from text (e.g., "$2,500 Customer Bonus", "$7,500 Customer Bonus")
 function extractCashBack(text: string | null | undefined): number | null {
   if (!text) return null;
   try {
-    // Look for patterns like "$X,XXX Customer Bonus", "$X,XXX Bonus", "$X,XXX Conquest Bonus"
+    // Look for patterns like "$X,XXX Customer Bonus", "$500 Military, Veterans & First Responders Bonus", "$X,XXX Bonus"
     const patterns = [
       /\$([\d,]+)\s+(?:Customer|Conquest|College\s+Graduate|Military|Veterans)\s+Bonus/i,
+      /\$([\d,]+)\s+Military,?\s*Veterans\s*&(?:amp;)?\s*First\s+Responders?\s+Bonus/i,
       /\$([\d,]+)\s+Bonus/i,
     ];
 
@@ -32,6 +82,27 @@ function extractCashBack(text: string | null | undefined): number | null {
         return parseNumber(match[1]);
       }
     }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Extract dollar amount near a keyword for schema bonus/discount fields.
+// Wraps keyword in (?: ) so alternation (|) inside the keyword doesn't break the regex.
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    const kw = `(?:${keyword.source})`;
+    const afterKeyword = new RegExp(`${kw}[\\s\\S]{0,80}?\\$([\\d,]+)`, "i");
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    const beforeKeyword = new RegExp(`\\$([\\d,]+)[\\s\\S]{0,80}?${kw}`, "i");
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
     return null;
   } catch {
     return null;
@@ -86,7 +157,8 @@ export async function scrapeOffersFromVW() {
       },
     });
 
-    const response = await fetch("https://api.vw.com/graphql", {
+    const vwApiUrl = "https://api.vw.com/graphql";
+    const response = await fetch(vwApiUrl, {
       method: "POST",
       headers,
       body,
@@ -140,7 +212,7 @@ export async function scrapeOffersFromVW() {
           : null;
 
       // Determine offer type from dealOfferTypes array
-      let offerType = "cash";
+      let offerType: "cash" | "financing" | "lease" = "cash";
       if (Array.isArray(offer.dealOfferTypes)) {
         if (offer.dealOfferTypes.includes("LEASE")) {
           offerType = "lease";
@@ -152,44 +224,58 @@ export async function scrapeOffersFromVW() {
       }
 
       // Extract offer details based on type
-      let apr: number | null = null;
-      let termMonths: number | null = null;
-      let monthlyPayment: number | null = null;
-      let cashBack: number | null = null;
+      let aprRate: number | null = null;
+      let aprTermMonths: number | null = null;
+      let leaseTermMonths: number | null = null;
+      let leaseMonthlyPayment: number | null = null;
+      let leaseDueAtSigning: number | null = null;
+      let milesPerYear: number | null = null;
+      let cashValue: number | null = null;
 
       if (offerType === "financing") {
         // For financing offers, use dealRate and dealTerm
         if (offer.dealRate !== null && offer.dealRate !== undefined) {
-          apr = parseNumber(offer.dealRate) ? parseNumber(offer.dealRate)! / 100 : null;
+          aprRate = parseNumber(offer.dealRate) ? parseNumber(offer.dealRate)! / 100 : null;
         }
         if (offer.dealTerm !== null && offer.dealTerm !== undefined) {
-          termMonths = parseInt(String(offer.dealTerm), 10);
-          if (isNaN(termMonths)) termMonths = null;
+          aprTermMonths = parseInt(String(offer.dealTerm), 10);
+          if (isNaN(aprTermMonths)) aprTermMonths = null;
         }
         // Also check for cash back in title/legal text
-        cashBack = extractCashBack(offer.dealTitle || offer.dealLegal || "");
+        cashValue = extractCashBack(offer.dealTitle || offer.dealLegal || "");
       } else if (offerType === "lease") {
         // For lease offers, use dealPricePerMonth
-        monthlyPayment =
+        leaseMonthlyPayment =
           offer.dealPricePerMonth !== null && offer.dealPricePerMonth !== undefined
             ? parseNumber(offer.dealPricePerMonth)
             : null;
-        // Extract term from dealTerm, or from dealSubtitle/dealLegal if dealTerm is null
+        // Extract term from dealTerm, or from dealTitle/dealSubtitle/dealLegal (e.g., "36-month lease", "36 mos", "36 months")
         if (offer.dealTerm !== null && offer.dealTerm !== undefined) {
-          termMonths = parseInt(String(offer.dealTerm), 10);
-          if (isNaN(termMonths)) termMonths = null;
+          leaseTermMonths = parseInt(String(offer.dealTerm), 10);
+          if (isNaN(leaseTermMonths)) leaseTermMonths = null;
         }
-        // If dealTerm is null, extract from dealSubtitle or dealLegal (e.g., "36-mos", "36 mos", "36 months")
-        if (termMonths === null) {
-          const termMatch = (offer.dealSubtitle || offer.dealLegal || "").match(/(\d+)[-\s]*mos?/i);
+        if (leaseTermMonths === null) {
+          const leaseText = [offer.dealTitle, offer.dealSubtitle, offer.dealLegal]
+            .filter(Boolean)
+            .join(" ");
+          const termMatch = leaseText.match(/(\d+)[-\s]*(?:mos?|months?)/i);
           if (termMatch && termMatch[1]) {
-            termMonths = parseInt(termMatch[1], 10);
-            if (isNaN(termMonths)) termMonths = null;
+            leaseTermMonths = parseInt(termMatch[1], 10);
+            if (isNaN(leaseTermMonths)) leaseTermMonths = null;
           }
         }
+        // Extract due at signing from dealTitle, dealSubtitle, or dealLegal (e.g., "$3,499 due at signing")
+        leaseDueAtSigning = extractDueAtSigning(
+          offer.dealTitle + offer.dealSubtitle + offer.dealLegal || "",
+        );
+        // Extract miles per year from dealLegal/dealSubtitle (e.g. "over 30,000 miles" with 36-month lease -> 10,000 mi/year)
+        const leaseText = [offer.dealTitle, offer.dealSubtitle, offer.dealLegal]
+          .filter(Boolean)
+          .join(" ");
+        milesPerYear = extractMilesPerYear(leaseText, leaseTermMonths);
       } else if (offerType === "cash") {
         // For cash offers, extract cash back from title or legal text
-        cashBack = extractCashBack(offer.dealTitle || offer.dealLegal || "");
+        cashValue = extractCashBack(offer.dealTitle || offer.dealLegal || "");
       }
 
       // Parse expiration date
@@ -210,11 +296,43 @@ export async function scrapeOffersFromVW() {
       // Fine print from dealLegal
       const finePrint = offer.dealLegal || null;
 
+      // Extract bonus/discount amounts from title, subtitle, and legal text
+      const combinedText = [offer.dealTitle, offer.dealSubtitle, offer.dealLegal]
+        .filter(Boolean)
+        .join(" ");
+      const loyaltyBonus = extractAmountNearKeyword(
+        combinedText,
+        /loyalty\s*(?:bonus|cash|rebate)?/i,
+      );
+      const conquestBonus = extractAmountNearKeyword(
+        combinedText,
+        /conquest\s*(?:bonus|cash|rebate)?/i,
+      );
+      // VW dealLegal: "$500 Military and First Responders Bonus" → military discount
+      const militaryDiscount = extractAmountNearKeyword(
+        combinedText,
+        /military\s+(?:and\s+first\s+responders?)?\s*bonus|military\s*(?:discount|bonus|rebate)?/i,
+      );
+      // VW dealTitle/dealLegal: "$1,000 College Graduate Bonus" or "$500 College Graduate Bonus" → college grad value
+      let collegeGrad = (() => {
+        const directMatch = combinedText.match(/\$([\d,]+)\s+College\s+Graduate\s+Bonus/i);
+        if (directMatch && directMatch[1]) return parseNumber(directMatch[1]);
+        return extractAmountNearKeyword(
+          combinedText,
+          /college\s+graduate\s+bonus|college\s+grad(?:uate)?/i,
+        );
+      })();
+      // VW dealLegal: same "$500 Military and First Responders Bonus" can set firstResponder
+      const firstResponder = extractAmountNearKeyword(
+        combinedText,
+        /first\s+responders?\s+bonus|first\s*responder\s*(?:discount|bonus|rebate)?/i,
+      );
+
       // Only create offer if we have meaningful data
       const hasValidData =
-        (offerType === "lease" && monthlyPayment !== null) ||
-        (offerType === "financing" && apr !== null) ||
-        (offerType === "cash" && (cashBack !== null || terms !== null));
+        (offerType === "lease" && leaseMonthlyPayment !== null) ||
+        (offerType === "financing" && aprRate !== null) ||
+        (offerType === "cash" && (cashValue !== null || terms !== null));
 
       if (!hasValidData) {
         console.warn(`Skipping ${offerType} offer for ${modelName} ${year} - insufficient data`);
@@ -230,17 +348,24 @@ export async function scrapeOffersFromVW() {
         trim: trim,
         offerType: offerType,
         offerAmount: null,
-        apr: apr,
-        termMonths: termMonths,
-        cashBack: cashBack,
+        aprRate: aprRate,
+        aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+        leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+        cashValue: cashValue,
         tradeDiscount: null,
-        dueAtSigning: null, // Could extract from dealLegal if needed
-        monthlyPayment: monthlyPayment,
-        milesPerYear: null,
+        leaseDueAtSigning,
+        leaseMonthlyPayment: leaseMonthlyPayment,
+        milesPerYear,
         expirationDate: expirationDate,
         terms: terms,
         finePrint: finePrint,
         scrapedAt: scrapedAt,
+        sourceUrl: VW_SOURCE_URL,
+        loyaltyBonus: loyaltyBonus ?? null,
+        conquestBonus: conquestBonus ?? null,
+        militaryDiscount: militaryDiscount ?? null,
+        collegeGrad: collegeGrad ?? null,
+        firstResponder: firstResponder ?? null,
       });
     }
 
@@ -273,17 +398,24 @@ export async function scrapeOffersFromVW() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
                   tradeDiscount: offer.tradeDiscount,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

@@ -2,6 +2,9 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const MAZDA_SOURCE_URL =
+  "https://www.mazdausa.com/shopping-tools/special-offers-and-incentives";
+
 // Parse date from format "1/5/2026" or "01/05/2026"
 function parseMazdaDate(dateStr: string | null | undefined): Date | null {
   if (!dateStr) return null;
@@ -32,15 +35,73 @@ function parseNumber(str: string | null | undefined): number | null {
   }
 }
 
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keywords: string[],
+): number | null {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+
+  for (const keyword of keywords) {
+    const keywordIndex = lower.indexOf(keyword.toLowerCase());
+    if (keywordIndex === -1) continue;
+
+    const windowStart = Math.max(0, keywordIndex - 120);
+    const windowEnd = Math.min(text.length, keywordIndex + keyword.length + 120);
+    const windowText = text.slice(windowStart, windowEnd);
+
+    const amountMatch = windowText.match(/\$?\s*([\d,.]+)/);
+    if (amountMatch && amountMatch[1]) {
+      const cleaned = amountMatch[1].replace(/,/g, "");
+      const value = parseFloat(cleaned);
+      if (!Number.isNaN(value)) {
+        return value;
+      }
+    }
+  }
+
+  return null;
+}
+
+function extractMazdaBonuses(text: string | null | undefined) {
+  const loyaltyBonus = extractAmountNearKeyword(text, ["loyalty", "owner loyalty"]);
+  const conquestBonus = extractAmountNearKeyword(text, [
+    "conquest",
+    "competitive bonus",
+  ]);
+  const militaryDiscount = extractAmountNearKeyword(text, [
+    "military",
+    "service member",
+  ]);
+  const collegeGrad = extractAmountNearKeyword(text, [
+    "college",
+    "graduate",
+    "graduation",
+  ]);
+  const firstResponder = extractAmountNearKeyword(text, [
+    "first responder",
+    "firefighter",
+    "police",
+    "emt",
+  ]);
+
+  return {
+    loyaltyBonus,
+    conquestBonus,
+    militaryDiscount,
+    collegeGrad,
+    firstResponder,
+  };
+}
+
 export async function scrapeOffersFromMazda() {
   try {
-    const response = await fetch(
-      "https://www.mazdausa.com/api/incentives/v3/95556?blockid=824742",
-      {
-        method: "GET",
-        redirect: "follow",
-      },
-    );
+    const mazdaApiUrl =
+      "https://www.mazdausa.com/api/incentives/v3/95556?blockid=824742";
+    const response = await fetch(mazdaApiUrl, {
+      method: "GET",
+      redirect: "follow",
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -70,10 +131,30 @@ export async function scrapeOffersFromMazda() {
           for (const leaseOffer of vehicleSpecialOffer.leaseOffers) {
             const trimCode = leaseOffer.offerTrimCode || leaseOffer.vehicleTrimCode || "";
             const expirationDate = parseMazdaDate(leaseOffer.expirationDate);
-            const monthlyPayment = parseNumber(leaseOffer.monthlyPayment);
-            const dueAtSigning = parseNumber(leaseOffer.dueAtSigning);
-            const termMonths = parseNumber(leaseOffer.leaseTerm);
-            const cashBack = parseNumber(leaseOffer.leaseCashBack);
+            const leaseMonthlyPayment = parseNumber(leaseOffer.monthlyPayment);
+            const leaseDueAtSigning = parseNumber(leaseOffer.dueAtSigning);
+            const leaseTermMonths = parseNumber(leaseOffer.leaseTerm);
+            const cashValue = parseNumber(leaseOffer.leaseCashBack);
+
+            // Validate: skip lease offers without a monthly payment value
+            if (leaseMonthlyPayment === null) {
+              continue;
+            }
+
+            const combinedText = [
+              leaseOffer.description,
+              leaseOffer.disclaimer,
+            ]
+              .filter(Boolean)
+              .join(" ");
+
+            const {
+              loyaltyBonus,
+              conquestBonus,
+              militaryDiscount,
+              collegeGrad,
+              firstResponder,
+            } = extractMazdaBonuses(combinedText);
 
             offers.push({
               header: leaseOffer.header || null,
@@ -85,16 +166,23 @@ export async function scrapeOffersFromMazda() {
               trim: trimCode || null,
               offerType: "lease",
               offerAmount: null,
-              apr: null,
-              termMonths,
-              cashBack: cashBack,
-              dueAtSigning,
-              monthlyPayment,
+              aprRate: null,
+              aprTermMonths: null,
+              leaseTermMonths,
+              cashValue: cashValue,
+              leaseDueAtSigning,
+              leaseMonthlyPayment,
               milesPerYear: null, // Could extract from description if needed
+              loyaltyBonus,
+              conquestBonus,
+              militaryDiscount,
+              collegeGrad,
+              firstResponder,
               expirationDate,
               terms: leaseOffer.description || leaseOffer.header || null,
               finePrint: leaseOffer.disclaimer || null,
               scrapedAt,
+              sourceUrl: MAZDA_SOURCE_URL,
             });
           }
         }
@@ -104,12 +192,32 @@ export async function scrapeOffersFromMazda() {
           for (const purchaseOffer of vehicleSpecialOffer.purchaseOffers) {
             const trimCode = purchaseOffer.offerTrimCode || purchaseOffer.vehicleTrimCode || "";
             const expirationDate = parseMazdaDate(purchaseOffer.expirationDate);
-            const apr = parseNumber(purchaseOffer.apr);
-            const termMonths = parseNumber(purchaseOffer.paymentTerm);
-            const cashBack = parseNumber(purchaseOffer.cashBack);
+            const aprRate = parseNumber(purchaseOffer.apr);
+            const aprTermMonths = parseNumber(purchaseOffer.paymentTerm);
+            const cashValue = parseNumber(purchaseOffer.cashBack);
 
-            // Determine offer type: if there's cashBack, it's cash, otherwise financing
-            const offerType = cashBack && cashBack > 0 ? "cash" : "financing";
+            // Validate: skip purchase offers that have neither APR nor cash value
+            if (aprRate === null && cashValue === null) {
+              continue;
+            }
+
+            const combinedText = [
+              purchaseOffer.description,
+              purchaseOffer.disclaimer,
+            ]
+              .filter(Boolean)
+              .join(" ");
+
+            const {
+              loyaltyBonus,
+              conquestBonus,
+              militaryDiscount,
+              collegeGrad,
+              firstResponder,
+            } = extractMazdaBonuses(combinedText);
+
+            // Determine offer type: if there's cashValue, it's cash, otherwise financing
+            const offerType = cashValue && cashValue > 0 ? "cash" : "financing";
 
             offers.push({
               header: purchaseOffer.header || null,
@@ -121,16 +229,23 @@ export async function scrapeOffersFromMazda() {
               trim: trimCode || null,
               offerType,
               offerAmount: null,
-              apr: apr ? apr / 100 : null, // Convert percentage to decimal (5.9 -> 0.059)
-              termMonths,
-              cashBack,
-              dueAtSigning: null,
-              monthlyPayment: null,
+              aprRate: aprRate !== null ? aprRate / 100 : null, // Convert percentage to decimal (5.9 -> 0.059)
+              aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+              leaseTermMonths: null,
+              cashValue,
+              leaseDueAtSigning: null,
+              leaseMonthlyPayment: null,
               milesPerYear: null,
+              loyaltyBonus,
+              conquestBonus,
+              militaryDiscount,
+              collegeGrad,
+              firstResponder,
               expirationDate,
               terms: purchaseOffer.description || purchaseOffer.header || null,
               finePrint: purchaseOffer.disclaimer || null,
               scrapedAt,
+              sourceUrl: MAZDA_SOURCE_URL,
             });
           }
         }
@@ -204,16 +319,23 @@ export async function scrapeOffersFromMazda() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear || null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                   terms: offer.terms,
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

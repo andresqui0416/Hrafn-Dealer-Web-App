@@ -39,7 +39,7 @@ Rules:
 7. For text searches, use ILIKE for case-insensitive matching
 8. Always use proper SQL formatting
 9. Use quoted identifiers for camelCase columns like "dealerId", "saleDataId"
-10. IMPORTANT: For SELECT queries that return multiple rows, ALWAYS add LIMIT clause (default LIMIT 100)
+10. IMPORTANT: For SELECT queries that return multiple rows, ALWAYS add LIMIT 10. Maximum 10 rows. This is mandatory.
 11. IMPORTANT: Only select necessary columns, avoid SELECT * when possible (use specific column names)
 12. IMPORTANT: Table names are case-sensitive: "Inventory", "SaleData", "SaleDeal", "SaleVehicle", "SaleCommission", "SaleTotal"
 13. For date filtering on sales, use "SaleDeal"."salesDate" or "SaleData"."dealStatusDate"
@@ -47,15 +47,15 @@ Rules:
 
 Examples:
 INVENTORY:
-- "Show me all Toyota vehicles" -> SELECT id, vin, year, make, model, price, mileage, status FROM "Inventory" WHERE "dealerId" = :dealerId AND make ILIKE '%Toyota%' LIMIT 100;
+- "Show me all Toyota vehicles" -> SELECT id, vin, year, make, model, price, mileage, status FROM "Inventory" WHERE "dealerId" = :dealerId AND make ILIKE '%Toyota%' LIMIT 10;
 - "How many cars do we have?" -> SELECT COUNT(*) as count FROM "Inventory" WHERE "dealerId" = :dealerId;
 - "What's the average price?" -> SELECT AVG(price) as avg_price FROM "Inventory" WHERE "dealerId" = :dealerId AND price IS NOT NULL;
 
 SALES:
-- "Show me sales from last month" -> SELECT sd."dealNo", sdeal."salesDate", sdeal."cashPrice", sv.make, sv.model FROM "SaleData" sd JOIN "SaleDeal" sdeal ON sdeal."saleDataId" = sd.id LEFT JOIN "SaleVehicle" sv ON sv."saleDataId" = sd.id WHERE sd."dealerId" = :dealerId AND sdeal."salesDate" >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month') AND sdeal."salesDate" < DATE_TRUNC('month', CURRENT_DATE) LIMIT 100;
+- "Show me sales from last month" -> SELECT sd."dealNo", sdeal."salesDate", sdeal."cashPrice", sv.make, sv.model FROM "SaleData" sd JOIN "SaleDeal" sdeal ON sdeal."saleDataId" = sd.id LEFT JOIN "SaleVehicle" sv ON sv."saleDataId" = sd.id WHERE sd."dealerId" = :dealerId AND sdeal."salesDate" >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month') AND sdeal."salesDate" < DATE_TRUNC('month', CURRENT_DATE) LIMIT 10;
 - "What is the total revenue this year?" -> SELECT SUM(sdeal."cashPrice") as total_revenue FROM "SaleData" sd JOIN "SaleDeal" sdeal ON sdeal."saleDataId" = sd.id WHERE sd."dealerId" = :dealerId AND EXTRACT(YEAR FROM sdeal."salesDate") = EXTRACT(YEAR FROM CURRENT_DATE);
 - "How many deals were finalized this month?" -> SELECT COUNT(*) as count FROM "SaleData" sd JOIN "SaleDeal" sdeal ON sdeal."saleDataId" = sd.id WHERE sd."dealerId" = :dealerId AND sdeal."fiWipStatusCode" IS NOT NULL AND sd."dealStatusDate" >= DATE_TRUNC('month', CURRENT_DATE);
-- "Show me sales by status" -> SELECT sdeal."fiWipStatusCode", COUNT(*) as count FROM "SaleData" sd JOIN "SaleDeal" sdeal ON sdeal."saleDataId" = sd.id WHERE sd."dealerId" = :dealerId GROUP BY sdeal."fiWipStatusCode" LIMIT 100;
+- "Show me sales by status" -> SELECT sdeal."fiWipStatusCode", COUNT(*) as count FROM "SaleData" sd JOIN "SaleDeal" sdeal ON sdeal."saleDataId" = sd.id WHERE sd."dealerId" = :dealerId GROUP BY sdeal."fiWipStatusCode" LIMIT 10;
 
 Now convert this question to SQL:`;
 
@@ -86,16 +86,34 @@ export async function generateSQLFromNaturalLanguage(
     }
 
     // Clean up the SQL (remove markdown code blocks if present)
-    const cleanedSQL = sql
+    let cleanedSQL = sql
       .replace(/^```sql\n?/i, "")
       .replace(/^```\n?/i, "")
       .replace(/\n?```$/i, "")
       .trim();
 
     // Replace :dealerId placeholder with actual dealer ID
-    const finalSQL = cleanedSQL.replace(/:dealerId/g, `'${dealerId}'`);
+    cleanedSQL = cleanedSQL.replace(/:dealerId/g, `'${dealerId}'`);
 
-    return finalSQL;
+    // Enforce LIMIT 10: Add or replace LIMIT clause to ensure max 10 rows
+    // Skip only for aggregation queries WITHOUT GROUP BY (guaranteed single row)
+    const hasGroupBy = /\bGROUP\s+BY\b/i.test(cleanedSQL);
+    const isSingleRowAggregation =
+      /\b(COUNT|SUM|AVG|MIN|MAX)\s*\(/i.test(cleanedSQL) && !hasGroupBy;
+    if (!isSingleRowAggregation) {
+      // Check for trailing semicolon
+      const hasSemicolon = cleanedSQL.trim().endsWith(";");
+      // Remove trailing semicolon temporarily
+      let sqlNoSemicolon = cleanedSQL.trim().replace(/;+$/, "");
+      // Remove existing LIMIT clause if present (with or without semicolon)
+      sqlNoSemicolon = sqlNoSemicolon.replace(/\s+LIMIT\s+\d+\s*$/i, "");
+      // Add LIMIT 10
+      sqlNoSemicolon = sqlNoSemicolon.trim() + " LIMIT 10";
+      // Add back semicolon if it was there
+      cleanedSQL = hasSemicolon ? sqlNoSemicolon + ";" : sqlNoSemicolon;
+    }
+
+    return cleanedSQL;
   } catch (error) {
     console.error("Error generating SQL:", error);
     throw new Error("Failed to generate SQL query");

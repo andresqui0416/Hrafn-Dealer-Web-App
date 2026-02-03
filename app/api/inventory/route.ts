@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
 
     // Get all status values from query params (can be multiple)
     const statusValues = searchParams.getAll("status");
+    const searchQuery = searchParams.get("search")?.trim() || "";
 
     // Build where clause
     const where: any = {
@@ -35,6 +36,24 @@ export async function GET(request: NextRequest) {
       where.status = {
         in: statusValues,
       };
+    }
+
+    // Add search filter if provided
+    if (searchQuery) {
+      const searchConditions: any[] = [
+        { vin: { contains: searchQuery, mode: "insensitive" as const } },
+        { make: { contains: searchQuery, mode: "insensitive" as const } },
+        { model: { contains: searchQuery, mode: "insensitive" as const } },
+        { trim: { contains: searchQuery, mode: "insensitive" as const } },
+      ];
+
+      // If search query is a number, also search by year
+      const yearNum = parseInt(searchQuery, 10);
+      if (!isNaN(yearNum)) {
+        searchConditions.push({ year: yearNum });
+      }
+
+      where.OR = searchConditions;
     }
 
     const [inventory, totalCount] = await Promise.all([

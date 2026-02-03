@@ -1,0 +1,252 @@
+[
+  {
+    "from_table": "DealerDepartment",
+    "from_mapped_table": "DealerDepartment",
+    "from_column": "dealerId",
+    "from_mapped_column": "dealerId",
+    "to_table": "Dealer",
+    "to_mapped_table": "Dealer",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "DealerDepartment",
+    "from_mapped_table": "DealerDepartment",
+    "from_column": "serviceId",
+    "from_mapped_column": "serviceId",
+    "to_table": "DealerService",
+    "to_mapped_table": "DealerService",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "Session",
+    "from_mapped_table": "Session",
+    "from_column": "userId",
+    "from_mapped_column": "userId",
+    "to_table": "User",
+    "to_mapped_table": "User",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "AdminSession",
+    "from_mapped_table": "AdminSession",
+    "from_column": "adminId",
+    "from_mapped_column": "adminId",
+    "to_table": "Admin",
+    "to_mapped_table": "Admin",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "InventoryListing",
+    "from_mapped_table": "Inventory",
+    "from_column": "dealerId",
+    "from_mapped_column": "dealerId",
+    "to_table": "Dealer",
+    "to_mapped_table": "Dealer",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "UserDealerRole",
+    "from_mapped_table": "UserDealerRole",
+    "from_column": "userId",
+    "from_mapped_column": "userId",
+    "to_table": "User",
+    "to_mapped_table": "User",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "UserDealerRole",
+    "from_mapped_table": "UserDealerRole",
+    "from_column": "dealerId",
+    "from_mapped_column": "dealerId",
+    "to_table": "Dealer",
+    "to_mapped_table": "Dealer",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "DealerService",
+    "from_mapped_table": "DealerService",
+    "from_column": "dealerId",
+    "from_mapped_column": "dealerId",
+    "to_table": "Dealer",
+    "to_mapped_table": "Dealer",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "DealerService",
+    "from_mapped_table": "DealerService",
+    "from_column": "serviceKindId",
+    "from_mapped_column": "serviceKindId",
+    "to_table": "ServiceKind",
+    "to_mapped_table": "ServiceKind",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "Chat",
+    "from_mapped_table": "Chat",
+    "from_column": "userId",
+    "from_mapped_column": "userId",
+    "to_table": "User",
+    "to_mapped_table": "User",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "Chat",
+    "from_mapped_table": "Chat",
+    "from_column": "adminId",
+    "from_mapped_column": "adminId",
+    "to_table": "Admin",
+    "to_mapped_table": "Admin",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "Message",
+    "from_mapped_table": "Message",
+    "from_column": "chatId",
+    "from_mapped_column": "chatId",
+    "to_table": "Chat",
+    "to_mapped_table": "Chat",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleData",
+    "from_mapped_table": "SaleData",
+    "from_column": "dealerId",
+    "from_mapped_column": "dealerId",
+    "to_table": "Dealer",
+    "to_mapped_table": "Dealer",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleCommission",
+    "from_mapped_table": "SaleCommission",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleDeal",
+    "from_mapped_table": "SaleDeal",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleDealAuxiliary",
+    "from_mapped_table": "SaleDealAuxiliary",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleDealEvent",
+    "from_mapped_table": "SaleDealEvent",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleFee",
+    "from_mapped_table": "SaleFee",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleIncentive",
+    "from_mapped_table": "SaleIncentive",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleInsurance",
+    "from_mapped_table": "SaleInsurance",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleSalesPerson",
+    "from_mapped_table": "SaleSalesPerson",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleTax",
+    "from_mapped_table": "SaleTax",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleTotal",
+    "from_mapped_table": "SaleTotal",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleTrade",
+    "from_mapped_table": "SaleTrade",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "SaleVehicle",
+    "from_mapped_table": "SaleVehicle",
+    "from_column": "saleDataId",
+    "from_mapped_column": "saleDataId",
+    "to_table": "SaleData",
+    "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  }
+]
