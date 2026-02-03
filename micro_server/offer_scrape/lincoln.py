@@ -32,6 +32,11 @@ except ImportError:
     print("Error: requests or beautifulsoup4 is not installed. Please install with: pip install requests beautifulsoup4")
     sys.exit(1)
 
+try:
+    from .utils import to_utc_iso8601
+except ImportError:
+    from utils import to_utc_iso8601
+
 
 class LincolnScraper:
     def __init__(self, api_url: str = None):
@@ -232,6 +237,48 @@ class LincolnScraper:
         if match:
             return self.parse_number(match.group(1))
         return None
+
+    def extract_amount_near_keyword(self, text: str, keyword_pattern: str) -> Optional[float]:
+        """Extract dollar amount near a keyword (e.g. loyalty, military, college graduate)."""
+        if not text:
+            return None
+        # Look for $X,XXX within ~80 chars after keyword
+        after = re.search(
+            r'(?:' + keyword_pattern + r')[\s\S]{0,80}?\$([\d,]+)',
+            text,
+            re.IGNORECASE,
+        )
+        if after and after.group(1):
+            return self.parse_number(after.group(1))
+        # Look for $X,XXX within ~80 chars before keyword
+        before = re.search(
+            r'\$([\d,]+)[\s\S]{0,80}?(?:' + keyword_pattern + r')',
+            text,
+            re.IGNORECASE,
+        )
+        if before and before.group(1):
+            return self.parse_number(before.group(1))
+        return None
+
+    def _extract_bonus_fields(self, detail_text: str, disclaimer_text: Optional[str]) -> Dict[str, Optional[float]]:
+        """Extract loyaltyBonus, conquestBonus, militaryDiscount, collegeGrad, firstResponder from combined text."""
+        combined = ' '.join(filter(None, [detail_text, disclaimer_text]))
+        return {
+            'loyaltyBonus': self.extract_amount_near_keyword(combined, r'loyalty\s*(?:bonus|cash|credit|rebate)?'),
+            'conquestBonus': self.extract_amount_near_keyword(combined, r'conquest\s*(?:bonus|cash|rebate)?'),
+            'militaryDiscount': self.extract_amount_near_keyword(
+                combined,
+                r'military\s+(?:and\s+first\s+responders?)?\s*bonus|military\s*(?:discount|bonus|rebate)?',
+            ),
+            'collegeGrad': self.extract_amount_near_keyword(
+                combined,
+                r'college\s+graduate\s+bonus|college\s+grad(?:uate)?',
+            ),
+            'firstResponder': self.extract_amount_near_keyword(
+                combined,
+                r'first\s+responders?\s+bonus|first\s*responder\s*(?:discount|bonus|rebate)?',
+            ),
+        }
 
     def extract_expiration_date_from_text(self, text: str) -> Optional[datetime]:
         """
@@ -536,16 +583,19 @@ class LincolnScraper:
             html_content = self.driver.page_source
             soup = BeautifulSoup(html_content, 'html.parser')
             
+            # source_url is the model page URL (url_path)
+            source_url = model_info.get('url_path', url)
+
             # Extract lease offers from featured-lease-offers-lines-container
             lease_container = soup.find('div', id='featured-lease-offers-lines-container')
             if lease_container:
-                lease_offers = self._extract_offers_from_container(lease_container, model_info, 'lease')
+                lease_offers = self._extract_offers_from_container(lease_container, model_info, 'lease', source_url)
                 offers.extend(lease_offers)
             
             # Extract financing offers from featured-retail-offer-lines-container
             retail_container = soup.find('div', id='featured-retail-offer-lines-container')
             if retail_container:
-                retail_offers = self._extract_offers_from_container(retail_container, model_info, 'financing')
+                retail_offers = self._extract_offers_from_container(retail_container, model_info, 'financing', source_url)
                 offers.extend(retail_offers)
             
             print(f"    Extracted {len(offers)} offers for {model_info['name']}")
@@ -557,7 +607,7 @@ class LincolnScraper:
         
         return offers
 
-    def _extract_offers_from_container(self, container, model_info: Dict, offer_type: str) -> List[Dict[str, Any]]:
+    def _extract_offers_from_container(self, container, model_info: Dict, offer_type: str, source_url: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Extract offers from a container (lease or retail)
         
@@ -565,6 +615,7 @@ class LincolnScraper:
             container: BeautifulSoup element containing offers
             model_info: Dictionary with model information
             offer_type: 'lease' or 'financing'
+            source_url: Page URL where offers were scraped
             
         Returns:
             List of offer dictionaries
@@ -651,9 +702,9 @@ class LincolnScraper:
                     
                     # Extract offer data based on type
                     if offer_type == 'lease':
-                        offer = self._extract_lease_offer_from_card(detail_html, detail_text, disclaimer_text, model_info, trim, expiration_date)
+                        offer = self._extract_lease_offer_from_card(detail_html, detail_text, disclaimer_text, model_info, trim, expiration_date, source_url)
                     else:  # financing
-                        offer = self._extract_finance_offer_from_card(detail_html, detail_text, disclaimer_text, model_info, trim, expiration_date)
+                        offer = self._extract_finance_offer_from_card(detail_html, detail_text, disclaimer_text, model_info, trim, expiration_date, source_url)
                     
                     if offer:
                         offers.append(offer)
@@ -674,7 +725,7 @@ class LincolnScraper:
         
         return offers
 
-    def _extract_lease_offer_from_card(self, detail_html: str, detail_text: str, disclaimer_text: Optional[str], model_info: Dict, trim: Optional[str], expiration_date: Optional[datetime]) -> Optional[Dict[str, Any]]:
+    def _extract_lease_offer_from_card(self, detail_html: str, detail_text: str, disclaimer_text: Optional[str], model_info: Dict, trim: Optional[str], expiration_date: Optional[datetime], source_url: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """Extract lease offer data from card detail HTML and text"""
         try:
             # Extract monthly payment (e.g., "$499/mo. for 36 mos.")
@@ -696,6 +747,8 @@ class LincolnScraper:
             if disclaimer_text:
                 cash_back = self.extract_cashback_from_disclaimer(disclaimer_text)
             
+            bonus = self._extract_bonus_fields(detail_text, disclaimer_text)
+            
             if monthly_payment or due_at_signing:
                 return {
                     'brand': self.brand,
@@ -704,20 +757,26 @@ class LincolnScraper:
                     'model': model_info.get('name'),
                     'trim': trim,
                     'offerType': 'lease',
-                    'monthlyPayment': monthly_payment,
-                    'dueAtSigning': due_at_signing,
-                    'termMonths': term_months,
+                    'leaseMonthlyPayment': monthly_payment,
+                    'leaseDueAtSigning': due_at_signing,
+                    'leaseTermMonths': term_months,
                     'milesPerYear': miles_per_year,
-                    'cashBack': cash_back,
-                    'expirationDate': expiration_date.isoformat() if expiration_date else None,
-                    'terms': disclaimer_text,
-                    'finePrint': disclaimer_text
+                    'cashValue': cash_back,
+                    'expirationDate': to_utc_iso8601(expiration_date),
+                    'terms': detail_text,
+                    'finePrint': disclaimer_text,
+                    'source_url': source_url,
+                    'loyaltyBonus': bonus.get('loyaltyBonus'),
+                    'conquestBonus': bonus.get('conquestBonus'),
+                    'militaryDiscount': bonus.get('militaryDiscount'),
+                    'collegeGrad': bonus.get('collegeGrad'),
+                    'firstResponder': bonus.get('firstResponder'),
                 }
         except Exception as e:
             print(f"      Error extracting lease offer: {e}")
         return None
 
-    def _extract_finance_offer_from_card(self, detail_html: str, detail_text: str, disclaimer_text: Optional[str], model_info: Dict, trim: Optional[str], expiration_date: Optional[datetime]) -> Optional[Dict[str, Any]]:
+    def _extract_finance_offer_from_card(self, detail_html: str, detail_text: str, disclaimer_text: Optional[str], model_info: Dict, trim: Optional[str], expiration_date: Optional[datetime], source_url: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """Extract finance offer data from card detail HTML and text"""
         try:
             # Extract APR (e.g., "2.9% APR for 60 mos." or "0% APR for 72 mos.")
@@ -743,6 +802,7 @@ class LincolnScraper:
             # Check if we have valid offer data (apr can be 0.0, so check for not None)
             # For financing offers, only check APR, not monthly payment
             print(f"          Checking offer validity: apr={apr} (is not None: {apr is not None})")
+            bonus = self._extract_bonus_fields(detail_text, disclaimer_text)
             if apr is not None:
                 return {
                     'brand': self.brand,
@@ -751,13 +811,19 @@ class LincolnScraper:
                     'model': model_info.get('name'),
                     'trim': trim,
                     'offerType': 'financing',
-                    'apr': apr,
-                    'termMonths': term_months,
-                    'monthlyPayment': None,  # Not extracted for financing offers
-                    'cashBack': cash_back,
-                    'expirationDate': expiration_date.isoformat() if expiration_date else None,
-                    'terms': disclaimer_text,
-                    'finePrint': disclaimer_text
+                    'aprRate': apr,
+                    'aprTermMonths': term_months,
+                    'leaseMonthlyPayment': None,  # Not extracted for financing offers
+                    'cashValue': cash_back,
+                    'expirationDate': to_utc_iso8601(expiration_date),
+                    'terms': detail_text,
+                    'finePrint': disclaimer_text,
+                    'source_url': source_url,
+                    'loyaltyBonus': bonus.get('loyaltyBonus'),
+                    'conquestBonus': bonus.get('conquestBonus'),
+                    'militaryDiscount': bonus.get('militaryDiscount'),
+                    'collegeGrad': bonus.get('collegeGrad'),
+                    'firstResponder': bonus.get('firstResponder'),
                 }
         except Exception as e:
             print(f"      Error extracting finance offer: {e}")
@@ -808,11 +874,11 @@ class LincolnScraper:
                     'model': model_info.get('name'),
                     'trim': trim,
                     'offerType': 'lease',
-                    'monthlyPayment': monthly_payment,
-                    'dueAtSigning': due_at_signing,
-                    'termMonths': term_months,
+                    'leaseMonthlyPayment': monthly_payment,
+                    'leaseDueAtSigning': due_at_signing,
+                    'leaseTermMonths': term_months,
                     'milesPerYear': miles_per_year,
-                    'expirationDate': expiration_date.isoformat() if expiration_date else None,
+                    'expirationDate': to_utc_iso8601(expiration_date),
                     'terms': terms,
                     'finePrint': None
                 }
@@ -854,11 +920,11 @@ class LincolnScraper:
                     'model': model_info.get('name'),
                     'trim': trim,
                     'offerType': 'financing',
-                    'apr': apr,
-                    'termMonths': term_months,
-                    'monthlyPayment': monthly_payment,
-                    'cashBack': cash_back,  # Down payment is cash back
-                    'expirationDate': expiration_date.isoformat() if expiration_date else None,
+                    'aprRate': apr,
+                    'aprTermMonths': term_months,
+                    'leaseMonthlyPayment': monthly_payment,
+                    'cashValue': cash_back,  # Down payment is cash back
+                    'expirationDate': to_utc_iso8601(expiration_date),
                     'terms': terms,
                     'finePrint': None
                 }
@@ -899,8 +965,8 @@ class LincolnScraper:
                 'model': model_info.get('name'),
                 'trim': trim,
                 'offerType': 'cash',
-                'cashBack': cash_back,
-                'expirationDate': expiration_date.isoformat() if expiration_date else None,
+                'cashValue': cash_back,
+                'expirationDate': to_utc_iso8601(expiration_date),
                 'terms': terms,
                 'finePrint': None
             }
@@ -1033,12 +1099,12 @@ def main():
         for i, offer in enumerate(offers[:3], 1):
             print(f"\n{i}. {offer.get('brand')} {offer.get('year')} {offer.get('make')} {offer.get('model')}")
             print(f"   Type: {offer.get('offerType')}")
-            if offer.get('monthlyPayment'):
-                print(f"   Monthly Payment: ${offer.get('monthlyPayment')}")
-            if offer.get('apr'):
-                print(f"   APR: {offer.get('apr') * 100}%")
-            if offer.get('cashBack'):
-                print(f"   Cash Back: ${offer.get('cashBack')}")
+            if offer.get('leaseMonthlyPayment'):
+                print(f"   Monthly Payment: ${offer.get('leaseMonthlyPayment')}")
+            if offer.get('aprRate'):
+                print(f"   APR: {offer.get('aprRate') * 100}%")
+            if offer.get('cashValue'):
+                print(f"   Cash Value: ${offer.get('cashValue')}")
     
     # Send to API unless --no-send flag is set
     if not args.no_send:

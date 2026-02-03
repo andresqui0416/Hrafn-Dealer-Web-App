@@ -2,6 +2,9 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Public-facing URL for Hyundai offers (stored in DB)
+const HYUNDAI_SOURCE_URL = "https://www.hyundaiusa.com/us/en/offers";
+
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
   if (!str) return null;
@@ -47,6 +50,31 @@ function extractDueAtSigning(text: string | null | undefined): number | null {
   }
 }
 
+// Extract dollar amount near a keyword (e.g. "$500 military" or "loyalty bonus $500") for schema bonus/discount fields
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    const afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    const beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 interface HyundaiOffer {
   brand: string;
   year: number | null;
@@ -56,16 +84,24 @@ interface HyundaiOffer {
   trim: string | null;
   offerType: "lease" | "financing" | "cash";
   offerAmount: number | null;
-  apr: number | null;
-  termMonths: number | null;
-  cashBack: number | null;
-  dueAtSigning: number | null;
-  monthlyPayment: number | null;
+  aprRate: number | null;
+  aprTermMonths: number | null;
+  leaseTermMonths: number | null;
+  cashValue: number | null;
+  tradeDiscount: number | null;
+  leaseDueAtSigning: number | null;
+  leaseMonthlyPayment: number | null;
   milesPerYear: number | null;
   terms: string | null;
   finePrint: string | null;
   expirationDate: Date | null;
   scrapedAt: Date;
+  sourceUrl: string | null;
+  loyaltyBonus: number | null;
+  conquestBonus: number | null;
+  militaryDiscount: number | null;
+  collegeGrad: number | null;
+  firstResponder: number | null;
 }
 
 export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
@@ -124,6 +160,14 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
           if (cardOrder.lease1) {
             const lease1 = cardOrder.lease1;
             const dueAtSigning = extractDueAtSigning(lease1.header || lease1.shortDescription);
+            const termsText = lease1.shortDescription || "";
+            const finePrintText = lease1.disclaimer || "";
+            const combinedText = [termsText, finePrintText].filter(Boolean).join("\n");
+            const loyaltyBonus = extractAmountNearKeyword(combinedText, /loyalty\s*(?:bonus|cash|rebate)?/i);
+            const conquestBonus = extractAmountNearKeyword(combinedText, /conquest\s*(?:bonus|cash|rebate)?/i);
+            const militaryDiscount = extractAmountNearKeyword(combinedText, /military\s*(?:discount|bonus|rebate)?/i);
+            const collegeGrad = extractAmountNearKeyword(combinedText, /college\s*(?:grad|graduate|rebate|bonus)?/i);
+            const firstResponder = extractAmountNearKeyword(combinedText, /first\s*responder\s*(?:discount|bonus|rebate)?/i);
 
             offers.push({
               brand: "Hyundai",
@@ -134,16 +178,24 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               trim: lease1.trimName || null,
               offerType: "lease",
               offerAmount: null,
-              apr: null,
-              termMonths: lease1.term || null,
-              cashBack: null,
-              dueAtSigning,
-              monthlyPayment: lease1.offerMonthlyPayment || null,
+              aprRate: null,
+              aprTermMonths: null,
+              leaseTermMonths: lease1.term || null,
+              cashValue: null,
+              tradeDiscount: null,
+              leaseDueAtSigning: dueAtSigning,
+              leaseMonthlyPayment: lease1.offerMonthlyPayment || null,
               milesPerYear: null,
               terms: lease1.shortDescription || null,
               finePrint: lease1.disclaimer || null,
               expirationDate: parseDate(lease1.endDate),
               scrapedAt,
+              sourceUrl: HYUNDAI_SOURCE_URL,
+              loyaltyBonus: loyaltyBonus ?? null,
+              conquestBonus: conquestBonus ?? null,
+              militaryDiscount: militaryDiscount ?? null,
+              collegeGrad: collegeGrad ?? null,
+              firstResponder: firstResponder ?? null,
             });
           }
 
@@ -151,6 +203,14 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
           if (cardOrder.lease2) {
             const lease2 = cardOrder.lease2;
             const dueAtSigning = extractDueAtSigning(lease2.header || lease2.shortDescription);
+            const termsText = lease2.shortDescription || "";
+            const finePrintText = lease2.disclaimer || "";
+            const combinedText = [termsText, finePrintText].filter(Boolean).join("\n");
+            const loyaltyBonus = extractAmountNearKeyword(combinedText, /loyalty\s*(?:bonus|cash|rebate)?/i);
+            const conquestBonus = extractAmountNearKeyword(combinedText, /conquest\s*(?:bonus|cash|rebate)?/i);
+            const militaryDiscount = extractAmountNearKeyword(combinedText, /military\s*(?:discount|bonus|rebate)?/i);
+            const collegeGrad = extractAmountNearKeyword(combinedText, /college\s*(?:grad|graduate|rebate|bonus)?/i);
+            const firstResponder = extractAmountNearKeyword(combinedText, /first\s*responder\s*(?:discount|bonus|rebate)?/i);
 
             offers.push({
               brand: "Hyundai",
@@ -161,23 +221,40 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               trim: lease2.trimName || null,
               offerType: "lease",
               offerAmount: null,
-              apr: null,
-              termMonths: lease2.term || null,
-              cashBack: null,
-              dueAtSigning,
-              monthlyPayment: lease2.offerMonthlyPayment || null,
+              aprRate: null,
+              aprTermMonths: null,
+              leaseTermMonths: lease2.term || null,
+              cashValue: null,
+              tradeDiscount: null,
+              leaseDueAtSigning: dueAtSigning,
+              leaseMonthlyPayment: lease2.offerMonthlyPayment || null,
               milesPerYear: null,
               terms: lease2.shortDescription || null,
               finePrint: lease2.disclaimer || null,
               expirationDate: parseDate(lease2.endDate),
               scrapedAt,
+              sourceUrl: HYUNDAI_SOURCE_URL,
+              loyaltyBonus: loyaltyBonus ?? null,
+              conquestBonus: conquestBonus ?? null,
+              militaryDiscount: militaryDiscount ?? null,
+              collegeGrad: collegeGrad ?? null,
+              firstResponder: firstResponder ?? null,
             });
           }
 
           // Process lowApr (financing) offer
           if (cardOrder.lowApr) {
             const lowApr = cardOrder.lowApr;
-            const apr = lowApr.apr !== undefined && lowApr.apr !== null ? lowApr.apr / 100 : null;
+            const aprRate =
+              lowApr.apr !== undefined && lowApr.apr !== null ? lowApr.apr / 100 : null;
+            const termsText = lowApr.shortDescription || "";
+            const finePrintText = lowApr.disclaimer || "";
+            const combinedText = [termsText, finePrintText].filter(Boolean).join("\n");
+            const loyaltyBonus = extractAmountNearKeyword(combinedText, /loyalty\s*(?:bonus|cash|rebate)?/i);
+            const conquestBonus = extractAmountNearKeyword(combinedText, /conquest\s*(?:bonus|cash|rebate)?/i);
+            const militaryDiscount = extractAmountNearKeyword(combinedText, /military\s*(?:discount|bonus|rebate)?/i);
+            const collegeGrad = extractAmountNearKeyword(combinedText, /college\s*(?:grad|graduate|rebate|bonus)?/i);
+            const firstResponder = extractAmountNearKeyword(combinedText, /first\s*responder\s*(?:discount|bonus|rebate)?/i);
 
             offers.push({
               brand: "Hyundai",
@@ -188,22 +265,38 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               trim: lowApr.trimName || null,
               offerType: "financing",
               offerAmount: null,
-              apr,
-              termMonths: lowApr.term || null,
-              cashBack: lowApr.hmfBonusCash || null,
-              dueAtSigning: null,
-              monthlyPayment: null,
+              aprRate,
+              aprTermMonths: lowApr.term || null,
+              leaseTermMonths: null,
+              cashValue: lowApr.hmfBonusCash || null,
+              tradeDiscount: null,
+              leaseDueAtSigning: null,
+              leaseMonthlyPayment: null,
               milesPerYear: null,
               terms: lowApr.shortDescription || null,
               finePrint: lowApr.disclaimer || null,
               expirationDate: parseDate(lowApr.endDate),
               scrapedAt,
+              sourceUrl: HYUNDAI_SOURCE_URL,
+              loyaltyBonus: loyaltyBonus ?? null,
+              conquestBonus: conquestBonus ?? null,
+              militaryDiscount: militaryDiscount ?? null,
+              collegeGrad: collegeGrad ?? null,
+              firstResponder: firstResponder ?? null,
             });
           }
 
           // Process savings (cash) offer
           if (cardOrder.savings) {
             const savings = cardOrder.savings;
+            const termsText = savings.shortDescription || "";
+            const finePrintText = savings.disclaimer || "";
+            const combinedText = [termsText, finePrintText].filter(Boolean).join("\n");
+            const loyaltyBonus = extractAmountNearKeyword(combinedText, /loyalty\s*(?:bonus|cash|rebate)?/i);
+            const conquestBonus = extractAmountNearKeyword(combinedText, /conquest\s*(?:bonus|cash|rebate)?/i);
+            const militaryDiscount = extractAmountNearKeyword(combinedText, /military\s*(?:discount|bonus|rebate)?/i);
+            const collegeGrad = extractAmountNearKeyword(combinedText, /college\s*(?:grad|graduate|rebate|bonus)?/i);
+            const firstResponder = extractAmountNearKeyword(combinedText, /first\s*responder\s*(?:discount|bonus|rebate)?/i);
 
             offers.push({
               brand: "Hyundai",
@@ -214,16 +307,24 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
               trim: savings.trimName || null,
               offerType: "cash",
               offerAmount: null,
-              apr: null,
-              termMonths: null,
-              cashBack: savings.price || null,
-              dueAtSigning: null,
-              monthlyPayment: null,
+              aprRate: null,
+              aprTermMonths: null,
+              leaseTermMonths: null,
+              cashValue: savings.price || null,
+              tradeDiscount: null,
+              leaseDueAtSigning: null,
+              leaseMonthlyPayment: null,
               milesPerYear: null,
               terms: savings.shortDescription || null,
               finePrint: savings.disclaimer || null,
               expirationDate: parseDate(savings.endDate),
               scrapedAt,
+              sourceUrl: HYUNDAI_SOURCE_URL,
+              loyaltyBonus: loyaltyBonus ?? null,
+              conquestBonus: conquestBonus ?? null,
+              militaryDiscount: militaryDiscount ?? null,
+              collegeGrad: collegeGrad ?? null,
+              firstResponder: firstResponder ?? null,
             });
           }
         }
@@ -259,16 +360,24 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
+                  tradeDiscount: offer.tradeDiscount,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

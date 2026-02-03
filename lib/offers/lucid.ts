@@ -2,6 +2,8 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const LucidSourceUrl = "https://lucidmotors.com/offers";
+
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
   if (!str) return null;
@@ -87,9 +89,35 @@ function extractDueAtSigning(text: string | null | undefined): number | null {
   }
 }
 
+// Extract dollar amount near a keyword (e.g. "$500 military" or "loyalty bonus $500") for schema bonus/discount fields
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    const afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    const beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function scrapeOffersFromLucid() {
   try {
-    const response = await fetch("https://lucidmotors.com/offers", {
+    const lucidOffersUrl = "https://lucidmotors.com/offers";
+    const response = await fetch(lucidOffersUrl, {
       method: "GET",
       redirect: "follow",
       headers: {
@@ -301,7 +329,7 @@ export async function scrapeOffersFromLucid() {
             continue;
           }
 
-          let offerType = "cash";
+          let offerType: "cash" | "financing" | "lease" = "cash";
           if (offerTypeStr === "lease") {
             offerType = "lease";
           } else if (offerTypeStr === "finance") {
@@ -350,11 +378,12 @@ export async function scrapeOffersFromLucid() {
             }
           }
 
-          let monthlyPayment: number | null = null;
-          let apr: number | null = null;
-          let termMonths: number | null = null;
-          let dueAtSigning: number | null = null;
-          let cashBack: number | null = null;
+          let leaseMonthlyPayment: number | null = null;
+          let aprRate: number | null = null;
+          let aprTermMonths: number | null = null;
+          let leaseTermMonths: number | null = null;
+          let leaseDueAtSigning: number | null = null;
+          let cashValue: number | null = null;
           let offerAmount: number | null = null;
           let terms: string | null = null;
 
@@ -435,13 +464,13 @@ export async function scrapeOffersFromLucid() {
             const eyebrowLower = eyebrow.toLowerCase();
             if (eyebrowLower === "from" && offerType === "lease") {
               // Monthly payment for lease
-              monthlyPayment = parseNumber(headline);
-              termMonths = extractTermMonths(description) || termMonths;
-              dueAtSigning = extractDueAtSigning(description) || dueAtSigning;
+              leaseMonthlyPayment = parseNumber(headline);
+              leaseTermMonths = extractTermMonths(description) || leaseTermMonths;
+              leaseDueAtSigning = extractDueAtSigning(description) || leaseDueAtSigning;
             } else if (eyebrowLower === "apr" && offerType === "financing") {
               // APR for finance
-              apr = parseNumber(headline);
-              termMonths = extractTermMonths(description) || termMonths;
+              aprRate = parseNumber(headline);
+              aprTermMonths = extractTermMonths(description) || aprTermMonths;
             } else if ((eyebrowLower === "from" || eyebrowLower === "") && offerType === "cash") {
               // Cash price - handle both "from" and empty eyebrow (might be the main price)
               const price = parseNumber(headline);
@@ -460,8 +489,8 @@ export async function scrapeOffersFromLucid() {
                   const creditMatch = description.match(pattern);
                   if (creditMatch && creditMatch[1]) {
                     const creditAmount = parseNumber(creditMatch[1]);
-                    if (creditAmount && !cashBack) {
-                      cashBack = creditAmount;
+                    if (creditAmount && !cashValue) {
+                      cashValue = creditAmount;
                       break; // Use first match
                     }
                   }
@@ -475,8 +504,8 @@ export async function scrapeOffersFromLucid() {
                 // For financing offers, "Plus" indicates cashback (e.g., "Plus $7,500 Air Credits")
                 // For lease offers, "Including" indicates total discounts (e.g., "Including $16,500 in total discounts")
                 // Always set cashback if we have an amount, but prefer "Plus" for financing if both exist
-                if (eyebrowLower === "plus" || !cashBack) {
-                  cashBack = amount;
+                if (eyebrowLower === "plus" || !cashValue) {
+                  cashValue = amount;
                 }
               }
             } else if (offerType === "cash" && headline) {
@@ -497,8 +526,8 @@ export async function scrapeOffersFromLucid() {
                   const creditMatch = description.match(pattern);
                   if (creditMatch && creditMatch[1]) {
                     const creditAmount = parseNumber(creditMatch[1]);
-                    if (creditAmount && !cashBack) {
-                      cashBack = creditAmount;
+                    if (creditAmount && !cashValue) {
+                      cashValue = creditAmount;
                       break;
                     }
                   }
@@ -524,28 +553,28 @@ export async function scrapeOffersFromLucid() {
           if (offerType === "cash" || offerType === "financing") {
             const logData: any = {
               offerAmount,
-              cashBack,
+              cashValue,
               specContainersCount: specContainers.length,
               hasOfferAmount: !!offerAmount,
-              hasCashBack: !!cashBack,
+              hasCashValue: !!cashValue,
             };
             if (offerType === "financing") {
-              logData.apr = apr;
+              logData.aprRate = aprRate;
             }
           }
 
           const hasValidData =
-            (offerType === "lease" && monthlyPayment) ||
-            (offerType === "financing" && apr) ||
-            (offerType === "cash" && (offerAmount || cashBack));
+            (offerType === "lease" && leaseMonthlyPayment) ||
+            (offerType === "financing" && aprRate) ||
+            (offerType === "cash" && (offerAmount || cashValue));
 
           if (!hasValidData) {
             console.warn(`Skipping ${offerType} offer for ${model} ${year} - insufficient data:`, {
               offerType,
-              monthlyPayment,
-              apr,
+              leaseMonthlyPayment,
+              aprRate,
               offerAmount,
-              cashBack,
+              cashValue,
               specContainersCount: specContainers.length,
             });
           }
@@ -553,6 +582,14 @@ export async function scrapeOffersFromLucid() {
           if (hasValidData) {
             // Extract expiration date from terms (common expiration is December 31, 2025)
             const expirationDate = extractExpirationDateFromText(terms || "");
+
+            // Bonus/discount: extract from terms (and finePrint if present)
+            const combinedText = [terms || "", null].filter(Boolean).join("\n");
+            const loyaltyBonus = extractAmountNearKeyword(combinedText, /loyalty\s*(?:bonus|cash|rebate)?/i);
+            const conquestBonus = extractAmountNearKeyword(combinedText, /conquest\s*(?:bonus|cash|rebate)?/i);
+            const militaryDiscount = extractAmountNearKeyword(combinedText, /military\s*(?:discount|bonus|rebate)?/i);
+            const collegeGrad = extractAmountNearKeyword(combinedText, /college\s*(?:grad|graduate|rebate|bonus)?/i);
+            const firstResponder = extractAmountNearKeyword(combinedText, /first\s*responder\s*(?:discount|bonus|rebate)?/i);
 
             offers.push({
               brand: "Lucid",
@@ -562,17 +599,25 @@ export async function scrapeOffersFromLucid() {
               modelCode: null,
               trim: null,
               offerType,
-              offerAmount: null, // Don't set from monthlyPayment - keep them separate
-              apr: apr ? apr / 100 : null, // Convert percentage to decimal
-              termMonths,
-              cashBack,
-              dueAtSigning,
-              monthlyPayment,
+              // Cash: From price (e.g. $70,900) = offerAmount; Plus $12,500 Air Credit = cashValue
+              offerAmount: offerAmount ?? null,
+              aprRate: aprRate ? aprRate / 100 : null, // Convert percentage to decimal
+              aprTermMonths: offerType === "financing" ? aprTermMonths : null,
+              leaseTermMonths: offerType === "lease" ? leaseTermMonths : null,
+              cashValue,
+              leaseDueAtSigning,
+              leaseMonthlyPayment,
               milesPerYear: null,
               expirationDate,
               terms: terms || null,
               finePrint: null, // Fine print is in separate disclaimers on the page
               scrapedAt,
+              sourceUrl: LucidSourceUrl,
+              loyaltyBonus: loyaltyBonus ?? null,
+              conquestBonus: conquestBonus ?? null,
+              militaryDiscount: militaryDiscount ?? null,
+              collegeGrad: collegeGrad ?? null,
+              firstResponder: firstResponder ?? null,
             });
           }
         }
@@ -611,16 +656,23 @@ export async function scrapeOffersFromLucid() {
                   trim: offer.trim,
                   offerType: offer.offerType,
                   offerAmount: offer.offerAmount,
-                  apr: offer.apr,
-                  termMonths: offer.termMonths,
-                  cashBack: offer.cashBack,
-                  dueAtSigning: offer.dueAtSigning,
-                  monthlyPayment: offer.monthlyPayment,
+                  aprRate: offer.aprRate,
+                  aprTermMonths: offer.aprTermMonths,
+                  leaseTermMonths: offer.leaseTermMonths,
+                  cashValue: offer.cashValue,
+                  leaseDueAtSigning: offer.leaseDueAtSigning,
+                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
                   milesPerYear: offer.milesPerYear,
                   terms: offer.terms,
                   finePrint: offer.finePrint,
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
+                  sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

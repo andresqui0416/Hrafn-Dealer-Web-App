@@ -1,0 +1,327 @@
+[
+  {
+    "type": "NLQ",
+    "question": "What is the total sales revenue from all deals?",
+    "answer": "SELECT SUM(totals.\"totalGross\") FROM \"SaleData\" sd JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND totals.\"totalGross\" IS NOT NULL;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List all available vehicles in inventory.",
+    "answer": "WITH filtered AS (SELECT vin, year, make, model, trim, price, mileage, status, ROW_NUMBER() OVER (ORDER BY created_at DESC, vin) AS row_num, COUNT(*) OVER () AS total_count FROM \"Inventory\" WHERE \"dealerId\" = :dealerId AND status = 'available'), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT vin, year, make, model, trim, price, mileage, status, total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "How many vehicles are low in stock (status not available)?",
+    "answer": "SELECT COUNT(*) FROM \"Inventory\" WHERE \"dealerId\" = :dealerId AND status != 'available';"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show the number of offers by offer type created in the last month.",
+    "answer": "SELECT offer_type, COUNT(*) AS offer_count FROM \"Offers\" WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month') AND created_at < DATE_TRUNC('month', CURRENT_DATE) GROUP BY offer_type ORDER BY offer_count DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Which offer types have the highest average offer amount?",
+    "answer": "SELECT offer_type, AVG(offer_amount) AS avg_offer_amount FROM \"Offers\" WHERE offer_amount IS NOT NULL GROUP BY offer_type ORDER BY avg_offer_amount DESC NULLS LAST LIMIT 10;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Get a list of all active offers.",
+    "answer": "WITH filtered AS (SELECT id, brand, make, model, offer_type, offer_amount, expiration_date, created_at, ROW_NUMBER() OVER (ORDER BY created_at DESC) AS row_num, COUNT(*) OVER () AS total_count FROM \"Offers\" WHERE expiration_date >= CURRENT_DATE OR expiration_date IS NULL), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT id, brand, make, model, offer_type, offer_amount, expiration_date, created_at, total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "What is the average deal amount from sales?",
+    "answer": "SELECT AVG(totals.\"totalGross\") as avg_deal_amount FROM \"SaleData\" sd JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND totals.\"totalGross\" IS NOT NULL;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List the top 5 selling vehicle makes.",
+    "answer": "SELECT veh.make, COUNT(*) as sales_count FROM \"SaleData\" sd JOIN \"SaleVehicle\" veh ON sd.id = veh.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND veh.make IS NOT NULL GROUP BY veh.make ORDER BY sales_count DESC LIMIT 5;"
+  },
+  {
+    "type": "NLQ",
+    "question": "How many sales occurred with offers?",
+    "answer": "SELECT COUNT(*) FROM \"SaleData\" sd JOIN \"SaleDeal\" deal ON sd.id = deal.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND deal.\"dealNo\" IS NOT NULL;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Find all vehicles in inventory that have never been sold.",
+    "answer": "WITH filtered AS (SELECT inv.vin, inv.make, inv.model, inv.year, ROW_NUMBER() OVER (ORDER BY inv.created_at DESC, inv.vin) AS row_num, COUNT(*) OVER () AS total_count FROM \"Inventory\" inv WHERE inv.\"dealerId\" = :dealerId AND inv.vin NOT IN (SELECT veh.vin FROM \"SaleVehicle\" veh JOIN \"SaleData\" sd ON veh.\"saleDataId\" = sd.id WHERE veh.vin IS NOT NULL AND sd.\"dealerId\" = :dealerId)), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT vin, make, model, year, total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "What was the inventory status of a specific VIN?",
+    "answer": "SELECT vin, status, price, mileage, updated_at FROM \"Inventory\" WHERE \"dealerId\" = :dealerId AND vin = $1 ORDER BY updated_at DESC LIMIT 1;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show the number of offers by brand and offer type.",
+    "answer": "SELECT brand, offer_type, COUNT(*) AS offer_count FROM \"Offers\" GROUP BY brand, offer_type ORDER BY offer_count DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "For financing offers, what is the average APR?",
+    "answer": "SELECT offer_type, AVG(apr) AS avg_apr FROM \"Offers\" WHERE offer_type = 'financing' AND apr IS NOT NULL GROUP BY offer_type;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List all inventory entries with low mileage (under 10,000 miles).",
+    "answer": "WITH filtered AS (SELECT vin, make, model, year, mileage, price, ROW_NUMBER() OVER (ORDER BY mileage ASC, created_at DESC) AS row_num, COUNT(*) OVER () AS total_count FROM \"Inventory\" WHERE \"dealerId\" = :dealerId AND mileage < 10000 AND status = 'available'), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT vin, make, model, year, mileage, price, total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Get total commission per salesperson.",
+    "answer": "SELECT sp.\"salesperson1\", SUM(comm.\"sp1TotalCommission\") as total_commission FROM \"SaleData\" sd JOIN \"SaleSalesPerson\" sp ON sd.id = sp.\"saleDataId\" JOIN \"SaleCommission\" comm ON sd.id = comm.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND sp.\"salesperson1\" IS NOT NULL AND comm.\"sp1TotalCommission\" IS NOT NULL GROUP BY sp.\"salesperson1\" ORDER BY total_commission DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List offers that have no expiration date.",
+    "answer": "WITH filtered AS (SELECT id, brand, make, model, offer_type, created_at, ROW_NUMBER() OVER (ORDER BY created_at DESC, id) AS row_num, COUNT(*) OVER () AS total_count FROM \"Offers\" WHERE expiration_date IS NULL), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT id, brand, make, model, offer_type, created_at, total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "What percentage of sales used offers vs. those that did not?",
+    "answer": "SELECT (SUM(CASE WHEN deal.\"dealNo\" IS NOT NULL THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) as offer_percentage, (SUM(CASE WHEN deal.\"dealNo\" IS NULL THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) as non_offer_percentage FROM \"SaleData\" sd LEFT JOIN \"SaleDeal\" deal ON sd.id = deal.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show daily sales for vehicles by make.",
+    "answer": "SELECT DATE(deal.\"salesDate\") as sale_date, veh.make, COUNT(*) as sales_count FROM \"SaleData\" sd JOIN \"SaleDeal\" deal ON sd.id = deal.\"saleDataId\" JOIN \"SaleVehicle\" veh ON sd.id = veh.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND deal.\"salesDate\" IS NOT NULL AND veh.make IS NOT NULL GROUP BY DATE(deal.\"salesDate\"), veh.make ORDER BY sale_date DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "For each dealer, what is the total number of sales?",
+    "answer": "SELECT d.name, COUNT(sd.id) as total_sales FROM \"Dealer\" d LEFT JOIN \"SaleData\" sd ON d.id = sd.\"dealerId\" GROUP BY d.id, d.name ORDER BY total_sales DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Compare average sales amount before and after a specific date.",
+    "answer": "SELECT AVG(CASE WHEN deal.\"salesDate\" < '2023-06-01' THEN totals.\"totalGross\" ELSE NULL END) as avg_before, AVG(CASE WHEN deal.\"salesDate\" >= '2023-06-01' THEN totals.\"totalGross\" ELSE NULL END) as avg_after FROM \"SaleData\" sd JOIN \"SaleDeal\" deal ON sd.id = deal.\"saleDataId\" JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND totals.\"totalGross\" IS NOT NULL;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List all sales transactions where the deal amount was over $50,000.",
+    "answer": "WITH filtered AS (SELECT sd.id, sd.\"dealNo\", totals.\"totalGross\", ROW_NUMBER() OVER (ORDER BY totals.\"totalGross\" DESC, sd.\"createdAt\" DESC) AS row_num, COUNT(*) OVER () AS total_count FROM \"SaleData\" sd JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND totals.\"totalGross\" > 50000), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT id, \"dealNo\", \"totalGross\", total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show inventory value by make for current inventory.",
+    "answer": "SELECT make, COUNT(*) as vehicle_count, SUM(price) as total_value FROM \"Inventory\" WHERE \"dealerId\" = :dealerId AND status = 'available' AND price IS NOT NULL GROUP BY make ORDER BY total_value DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Find total number of new sales this quarter.",
+    "answer": "SELECT COUNT(*) FROM \"SaleData\" WHERE \"dealerId\" = :dealerId AND \"createdAt\" >= DATE_TRUNC('quarter', CURRENT_DATE);"
+  },
+  {
+    "type": "NLQ",
+    "question": "Get a list of vehicles that never had offers applied.",
+    "answer": "WITH filtered AS (SELECT inv.vin, inv.make, inv.model, ROW_NUMBER() OVER (ORDER BY inv.created_at DESC, inv.vin) AS row_num, COUNT(*) OVER () AS total_count FROM \"Inventory\" inv WHERE inv.\"dealerId\" = :dealerId AND inv.vin NOT IN (SELECT veh.vin FROM \"SaleVehicle\" veh JOIN \"SaleDeal\" deal ON veh.\"saleDataId\" = deal.\"saleDataId\" JOIN \"SaleData\" sd ON veh.\"saleDataId\" = sd.id WHERE veh.vin IS NOT NULL AND deal.\"dealNo\" IS NOT NULL AND sd.\"dealerId\" = :dealerId)), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT vin, make, model, total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show weekly sales trends.",
+    "answer": "SELECT DATE_TRUNC('week', deal.\"salesDate\") AS week, COUNT(*) as sales_count, SUM(totals.\"totalGross\") as total_revenue FROM \"SaleData\" sd JOIN \"SaleDeal\" deal ON sd.id = deal.\"saleDataId\" JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND deal.\"salesDate\" IS NOT NULL AND totals.\"totalGross\" IS NOT NULL GROUP BY week ORDER BY week DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List out-of-stock vehicles (status not available).",
+    "answer": "WITH filtered AS (SELECT vin, make, model, year, status, updated_at, ROW_NUMBER() OVER (ORDER BY updated_at DESC, vin) AS row_num, COUNT(*) OVER () AS total_count FROM \"Inventory\" WHERE \"dealerId\" = :dealerId AND status != 'available'), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT vin, make, model, year, status, updated_at, total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Which offer types are most common?",
+    "answer": "SELECT offer_type, COUNT(*) AS offer_count FROM \"Offers\" GROUP BY offer_type ORDER BY offer_count DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "What is the sales performance for vehicles by year?",
+    "answer": "SELECT veh.year, COUNT(*) as sales_count, AVG(totals.\"totalGross\") as avg_sale_price FROM \"SaleData\" sd JOIN \"SaleVehicle\" veh ON sd.id = veh.\"saleDataId\" JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND veh.year IS NOT NULL AND totals.\"totalGross\" IS NOT NULL GROUP BY veh.year ORDER BY veh.year DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show the average days until expiration for active offers.",
+    "answer": "SELECT AVG(expiration_date - CURRENT_DATE) AS avg_days_until_expiration FROM \"Offers\" WHERE expiration_date IS NOT NULL AND expiration_date >= CURRENT_DATE;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List all active inventory items involved in recent sales.",
+    "answer": "WITH base AS (SELECT DISTINCT inv.vin, inv.make, inv.model, inv.status, inv.updated_at FROM \"Inventory\" inv JOIN \"SaleVehicle\" veh ON inv.vin = veh.vin WHERE inv.\"dealerId\" = :dealerId AND veh.\"saleDataId\" IN (SELECT id FROM \"SaleData\" WHERE \"dealerId\" = :dealerId AND \"createdAt\" >= DATE_TRUNC('quarter', CURRENT_DATE - INTERVAL '1 quarter'))), filtered AS (SELECT vin, make, model, status, updated_at, ROW_NUMBER() OVER (ORDER BY updated_at DESC, vin) AS row_num, COUNT(*) OVER () AS total_count FROM base), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT vin, make, model, status, updated_at, total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "How much total revenue was generated last year?",
+    "answer": "SELECT SUM(totals.\"totalGross\") as total_revenue FROM \"SaleData\" sd JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND sd.\"createdAt\" >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') AND sd.\"createdAt\" < DATE_TRUNC('year', CURRENT_DATE) AND totals.\"totalGross\" IS NOT NULL;"
+  },
+  {
+    "type": "NLQ",
+    "question": "How many items were sold at full price versus those sold with offers?",
+    "answer": "SELECT SUM(CASE WHEN deal.\"dealNo\" IS NULL THEN 1 ELSE 0 END) AS full_price_sold, SUM(CASE WHEN deal.\"dealNo\" IS NOT NULL THEN 1 ELSE 0 END) AS offer_sold FROM \"SaleData\" sd LEFT JOIN \"SaleDeal\" deal ON sd.id = deal.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show the distribution of inventory by make and model.",
+    "answer": "SELECT make, model, COUNT(*) as count FROM \"Inventory\" WHERE \"dealerId\" = :dealerId AND status = 'available' GROUP BY make, model ORDER BY count DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "What is the median sale price of all sales?",
+    "answer": "SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY totals.\"totalGross\") AS median_price FROM \"SaleTotal\" totals JOIN \"SaleData\" sd ON totals.\"saleDataId\" = sd.id WHERE sd.\"dealerId\" = :dealerId AND totals.\"totalGross\" IS NOT NULL;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Get all offers set to expire within 7 days.",
+    "answer": "SELECT id, brand, offer_type, expiration_date FROM \"Offers\" WHERE expiration_date BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '7 days');"
+  },
+  {
+    "type": "NLQ",
+    "question": "Which brands have the most active offers?",
+    "answer": "SELECT brand, COUNT(*) AS active_offer_count FROM \"Offers\" WHERE expiration_date IS NULL OR expiration_date >= CURRENT_DATE GROUP BY brand ORDER BY active_offer_count DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List the top 10 offers by offer amount.",
+    "answer": "SELECT id, brand, make, model, trim, offer_type, offer_amount, expiration_date FROM \"Offers\" WHERE offer_amount IS NOT NULL ORDER BY offer_amount DESC NULLS LAST LIMIT 10;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show changes in inventory for vehicles involved in sales.",
+    "answer": "SELECT veh.make, veh.model, COUNT(sd.id) as total_sold FROM \"SaleData\" sd JOIN \"SaleVehicle\" veh ON sd.id = veh.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND veh.make IS NOT NULL GROUP BY veh.make, veh.model ORDER BY total_sold DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Get aggregate sales stats per dealer for the last month.",
+    "answer": "SELECT d.name, COUNT(sd.id) as total_sales, SUM(totals.\"totalGross\") as total_revenue FROM \"Dealer\" d LEFT JOIN \"SaleData\" sd ON d.id = sd.\"dealerId\" AND sd.\"createdAt\" >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month') LEFT JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" GROUP BY d.id, d.name ORDER BY total_revenue DESC NULLS LAST;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List offers with start dates in the next 2 weeks.",
+    "answer": "WITH filtered AS (SELECT id, brand, offer_type, expiration_date, created_at, ROW_NUMBER() OVER (ORDER BY expiration_date ASC NULLS LAST, created_at DESC, id) AS row_num, COUNT(*) OVER () AS total_count FROM \"Offers\" WHERE expiration_date BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '14 days')), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT id, brand, offer_type, expiration_date, created_at, total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show average offer amount by offer type for active offers.",
+    "answer": "SELECT offer_type, AVG(offer_amount) AS avg_offer_amount FROM \"Offers\" WHERE offer_amount IS NOT NULL AND (expiration_date IS NULL OR expiration_date >= CURRENT_DATE) GROUP BY offer_type ORDER BY avg_offer_amount DESC NULLS LAST;"
+  },
+  {
+    "type": "NLQ",
+    "question": "What is the most common offer type?",
+    "answer": "SELECT offer_type, COUNT(*) AS offer_count FROM \"Offers\" GROUP BY offer_type ORDER BY offer_count DESC LIMIT 1;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Which offers are expired?",
+    "answer": "SELECT id, brand, offer_type, expiration_date FROM \"Offers\" WHERE expiration_date IS NOT NULL AND expiration_date < CURRENT_DATE ORDER BY expiration_date DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show daily offer creations for the top 3 offer types this quarter.",
+    "answer": "WITH top_types AS (SELECT offer_type FROM \"Offers\" WHERE created_at >= DATE_TRUNC('quarter', CURRENT_DATE) GROUP BY offer_type ORDER BY COUNT(*) DESC LIMIT 3) SELECT DATE_TRUNC('day', created_at) AS day, offer_type, COUNT(*) AS offers_created FROM \"Offers\" WHERE created_at >= DATE_TRUNC('quarter', CURRENT_DATE) AND offer_type IN (SELECT offer_type FROM top_types) GROUP BY day, offer_type ORDER BY day DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "What's the inventory holding value for all available vehicles?",
+    "answer": "SELECT SUM(price) as total_inventory_value FROM \"Inventory\" WHERE \"dealerId\" = :dealerId AND status = 'available' AND price IS NOT NULL;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List all sales where the deal amount exceeded the MSRP.",
+    "answer": "WITH filtered AS (SELECT sd.id, veh.vin, totals.\"totalGross\", inv.msrp, ROW_NUMBER() OVER (ORDER BY (totals.\"totalGross\" - inv.msrp) DESC, sd.\"createdAt\" DESC) AS row_num, COUNT(*) OVER () AS total_count FROM \"SaleData\" sd JOIN \"SaleVehicle\" veh ON sd.id = veh.\"saleDataId\" JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" JOIN \"Inventory\" inv ON veh.vin = inv.vin WHERE sd.\"dealerId\" = :dealerId AND inv.\"dealerId\" = :dealerId AND totals.\"totalGross\" IS NOT NULL AND inv.msrp IS NOT NULL AND totals.\"totalGross\" > inv.msrp), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT id, vin, \"totalGross\", msrp, (\"totalGross\" - msrp) AS amount_over_msrp, total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Which vehicle makes account for the majority of sales?",
+    "answer": "SELECT veh.make, COUNT(*) as sales_count FROM \"SaleData\" sd JOIN \"SaleVehicle\" veh ON sd.id = veh.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND veh.make IS NOT NULL GROUP BY veh.make ORDER BY sales_count DESC LIMIT 5;"
+  },
+  {
+    "type": "NLQ",
+    "question": "What is the revenue for Q1 2023?",
+    "answer": "SELECT SUM(totals.\"totalGross\") as q1_revenue FROM \"SaleData\" sd JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND sd.\"createdAt\" >= '2023-01-01' AND sd.\"createdAt\" < '2023-04-01' AND totals.\"totalGross\" IS NOT NULL;"
+  },
+  {
+    "type": "NLQ",
+    "question": "How many active users did we have last month?",
+    "answer": "SELECT COUNT(*) FROM \"User\" WHERE \"createdAt\" >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month') AND \"createdAt\" < DATE_TRUNC('month', CURRENT_DATE);"
+  },
+  {
+    "type": "NLQ",
+    "question": "List all sales placed in March 2023.",
+    "answer": "WITH filtered AS (SELECT sd.id, sd.\"dealNo\", deal.\"salesDate\", totals.\"totalGross\", ROW_NUMBER() OVER (ORDER BY deal.\"salesDate\" DESC, sd.\"createdAt\" DESC) AS row_num, COUNT(*) OVER () AS total_count FROM \"SaleData\" sd JOIN \"SaleDeal\" deal ON sd.id = deal.\"saleDataId\" JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND deal.\"salesDate\" >= '2023-03-01' AND deal.\"salesDate\" < '2023-04-01'), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT id, \"dealNo\", \"salesDate\", \"totalGross\", total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "What vehicles have low stock (status not available)?",
+    "answer": "SELECT vin, make, model, year, status FROM \"Inventory\" WHERE \"dealerId\" = :dealerId AND status != 'available' ORDER BY updated_at DESC;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show me the top 5 selling vehicle models this week.",
+    "answer": "SELECT veh.model, COUNT(*) as sales_count FROM \"SaleData\" sd JOIN \"SaleVehicle\" veh ON sd.id = veh.\"saleDataId\" JOIN \"SaleDeal\" deal ON sd.id = deal.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND deal.\"salesDate\" >= DATE_TRUNC('week', CURRENT_DATE) AND veh.model IS NOT NULL GROUP BY veh.model ORDER BY sales_count DESC LIMIT 5;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Get the list of dealers.",
+    "answer": "SELECT id, name, address FROM \"Dealer\" ORDER BY name;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Who are the top 10 dealers by total sales?",
+    "answer": "SELECT d.name, COUNT(sd.id) AS total_sales, SUM(totals.\"totalGross\") as total_revenue FROM \"Dealer\" d LEFT JOIN \"SaleData\" sd ON d.id = sd.\"dealerId\" LEFT JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" GROUP BY d.id, d.name ORDER BY total_sales DESC LIMIT 10;"
+  },
+  {
+    "type": "NLQ",
+    "question": "What is the average deal amount?",
+    "answer": "SELECT AVG(totals.\"totalGross\") as avg_deal_amount FROM \"SaleTotal\" totals JOIN \"SaleData\" sd ON totals.\"saleDataId\" = sd.id WHERE sd.\"dealerId\" = :dealerId AND totals.\"totalGross\" IS NOT NULL;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List all pending sales.",
+    "answer": "WITH filtered AS (SELECT sd.id, sd.\"dealNo\", sd.status, deal.\"salesDate\", ROW_NUMBER() OVER (ORDER BY sd.\"createdAt\" DESC, sd.id) AS row_num, COUNT(*) OVER () AS total_count FROM \"SaleData\" sd LEFT JOIN \"SaleDeal\" deal ON sd.id = deal.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND sd.status = 'P'), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT id, \"dealNo\", status, \"salesDate\", total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Find dealers by name.",
+    "answer": "SELECT id, name, address FROM \"Dealer\" WHERE name ILIKE '%' || $1 || '%';"
+  },
+  {
+    "type": "NLQ",
+    "question": "How many sales are finalized?",
+    "answer": "SELECT COUNT(*) FROM \"SaleData\" WHERE \"dealerId\" = :dealerId AND status = 'F';"
+  },
+  {
+    "type": "NLQ",
+    "question": "Show vehicles sold after 2020.",
+    "answer": "WITH filtered AS (SELECT veh.vin, veh.make, veh.model, veh.year, deal.\"salesDate\", ROW_NUMBER() OVER (ORDER BY deal.\"salesDate\" DESC, sd.\"createdAt\" DESC) AS row_num, COUNT(*) OVER () AS total_count FROM \"SaleData\" sd JOIN \"SaleVehicle\" veh ON sd.id = veh.\"saleDataId\" JOIN \"SaleDeal\" deal ON sd.id = deal.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND deal.\"salesDate\" > '2020-12-31'), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT vin, make, model, year, \"salesDate\", total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Which vehicle make has the highest average sale price?",
+    "answer": "SELECT veh.make, AVG(totals.\"totalGross\") as avg_price FROM \"SaleData\" sd JOIN \"SaleVehicle\" veh ON sd.id = veh.\"saleDataId\" JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND veh.make IS NOT NULL AND totals.\"totalGross\" IS NOT NULL GROUP BY veh.make ORDER BY avg_price DESC LIMIT 1;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Get last month's sales by dealer.",
+    "answer": "SELECT d.name, COUNT(sd.id) as sales_count, SUM(totals.\"totalGross\") as total_revenue FROM \"Dealer\" d LEFT JOIN \"SaleData\" sd ON d.id = sd.\"dealerId\" AND sd.\"createdAt\" >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month') AND sd.\"createdAt\" < DATE_TRUNC('month', CURRENT_DATE) LEFT JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" GROUP BY d.id, d.name ORDER BY total_revenue DESC NULLS LAST;"
+  },
+  {
+    "type": "NLQ",
+    "question": "List all vehicles with zero inventory (sold).",
+    "answer": "WITH filtered AS (SELECT inv.vin, inv.make, inv.model, inv.status, inv.updated_at, ROW_NUMBER() OVER (ORDER BY inv.updated_at DESC, inv.vin) AS row_num, COUNT(*) OVER () AS total_count FROM \"Inventory\" inv WHERE inv.\"dealerId\" = :dealerId AND inv.status = 'sold'), paged AS (SELECT * FROM filtered WHERE row_num BETWEEN 1 AND 10) SELECT vin, make, model, status, updated_at, total_count, (SELECT MIN(row_num) FROM paged) AS row_from, (SELECT MAX(row_num) FROM paged) AS row_to, row_num FROM paged ORDER BY row_num;"
+  },
+  {
+    "type": "NLQ",
+    "question": "How many sales were finalized this year?",
+    "answer": "SELECT COUNT(*) FROM \"SaleData\" WHERE \"dealerId\" = :dealerId AND status = 'F' AND EXTRACT(YEAR FROM \"createdAt\") = EXTRACT(YEAR FROM CURRENT_DATE);"
+  },
+  {
+    "type": "NLQ",
+    "question": "Return all sales over $50,000.",
+    "answer": "SELECT sd.id, sd.\"dealNo\", totals.\"totalGross\" FROM \"SaleData\" sd JOIN \"SaleTotal\" totals ON sd.id = totals.\"saleDataId\" WHERE sd.\"dealerId\" = :dealerId AND totals.\"totalGross\" > 50000 ORDER BY totals.\"totalGross\" DESC LIMIT 10;"
+  },
+  {
+    "type": "NLQ",
+    "question": "Get a list of expired offers.",
+    "answer": "SELECT id, brand, offer_type, expiration_date FROM \"Offers\" WHERE expiration_date IS NOT NULL AND expiration_date < CURRENT_DATE ORDER BY expiration_date DESC;"
+  }
+]

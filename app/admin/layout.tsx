@@ -12,6 +12,7 @@ import {
   faX,
   faServer,
   faInbox,
+  faBrain,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
@@ -32,6 +33,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         return "Service Management";
       case "/admin/inbox":
         return "Inbox";
+      case "/admin/fine-tuning":
+        return "Fine-Tuning Samples";
       default:
         return null;
     }
@@ -51,6 +54,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { href: "/admin/dealers", label: "Dealer Management", icon: faBuilding },
     { href: "/admin/services", label: "Service Management", icon: faServer },
     { href: "/admin/inbox", label: "Inbox", icon: faInbox },
+    { href: "/admin/fine-tuning", label: "Fine-Tuning", icon: faBrain },
   ];
 
   // If on login page, render children directly without layout

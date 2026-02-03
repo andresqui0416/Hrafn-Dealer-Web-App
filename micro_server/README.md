@@ -119,7 +119,7 @@ The Python script handles all data normalization before sending to the API:
 
 - **Types**: Ensures all numeric fields are proper floats/ints, strings are trimmed
 - **APR**: Converts percentage to decimal (e.g., 2.9% → 0.029)
-- **Dates**: Converts to ISO format (YYYY-MM-DD)
+- **Dates**: **OEM date format is UTC ISO-8601.** All date fields (e.g. `expirationDate`, `scrapedAt`) are serialized as UTC using ISO-8601 (e.g. `2026-01-15T10:30:00+00:00`). Use the shared `to_utc_iso8601()` helper in `offer_scrape/utils.py` for consistency.
 - **Validation**: Only sends offers with valid data (lease needs monthly payment, financing needs APR, cash needs amount)
 - **Offer Types**: Normalized to lowercase ("lease", "financing", "cash")
 
