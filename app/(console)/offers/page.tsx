@@ -55,6 +55,11 @@ type Offer = {
   finePrint: string | null;
   scrapedAt: string;
   sourceUrl: string | null;
+  loyaltyBonus: number | null;
+  conquestBonus: number | null;
+  militaryDiscount: number | null;
+  collegeGrad: number | null;
+  firstResponder: number | null;
 };
 
 type PaginationInfo = {
@@ -523,9 +528,6 @@ export default function OffersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <DialogTitle>Offer Details</DialogTitle>
-                <DialogDescription className="mt-2">
-                  Complete information about this offer
-                </DialogDescription>
               </div>
               <Button
                 variant="ghost"
@@ -695,6 +697,74 @@ export default function OffersPage() {
                         </label>
                         <p className="text-lg font-semibold mt-1">
                           {selectedOffer.milesPerYear.toLocaleString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Bonuses & Discounts */}
+              {(selectedOffer.loyaltyBonus != null ||
+                selectedOffer.conquestBonus != null ||
+                selectedOffer.militaryDiscount != null ||
+                selectedOffer.collegeGrad != null ||
+                selectedOffer.firstResponder != null) && (
+                <div className="border-t border-white/10 pt-4">
+                  <h3 className="text-lg font-semibold mb-4">Bonuses & Discounts</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectedOffer.loyaltyBonus != null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
+                          Loyalty Bonus
+                        </label>
+                        <p className="text-lg font-semibold mt-1">
+                          {formatCurrency(Number(selectedOffer.loyaltyBonus))}
+                        </p>
+                      </div>
+                    )}
+                    {selectedOffer.conquestBonus != null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
+                          Conquest Bonus
+                        </label>
+                        <p className="text-lg font-semibold mt-1">
+                          {formatCurrency(Number(selectedOffer.conquestBonus))}
+                        </p>
+                      </div>
+                    )}
+                    {selectedOffer.militaryDiscount != null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
+                          Military Discount
+                        </label>
+                        <p className="text-lg font-semibold mt-1">
+                          {formatCurrency(Number(selectedOffer.militaryDiscount))}
+                        </p>
+                      </div>
+                    )}
+                    {selectedOffer.collegeGrad != null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
+                          College Grad
+                        </label>
+                        <p className="text-lg font-semibold mt-1">
+                          {formatCurrency(Number(selectedOffer.collegeGrad))}
+                        </p>
+                      </div>
+                    )}
+                    {selectedOffer.firstResponder != null && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <FontAwesomeIcon icon={faDollarSign} className="h-3 w-3" />
+                          First Responder
+                        </label>
+                        <p className="text-lg font-semibold mt-1">
+                          {formatCurrency(Number(selectedOffer.firstResponder))}
                         </p>
                       </div>
                     )}

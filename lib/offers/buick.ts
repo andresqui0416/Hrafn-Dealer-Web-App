@@ -778,7 +778,7 @@ export async function scrapeOffersFromBuick() {
       }
 
       // Map offer type
-      let offerType = "cash";
+      let offerType: "cash" | "financing" | "lease" = "cash";
       if (result.offerType === "Lease") {
         offerType = "lease";
       } else if (result.offerType === "Finance") {

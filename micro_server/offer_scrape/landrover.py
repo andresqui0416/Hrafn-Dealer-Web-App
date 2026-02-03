@@ -32,6 +32,11 @@ except ImportError:
     print("Error: requests or beautifulsoup4 is not installed. Please install with: pip install requests beautifulsoup4")
     sys.exit(1)
 
+try:
+    from .utils import to_utc_iso8601
+except ImportError:
+    from utils import to_utc_iso8601
+
 
 class LandRoverScraper:
     def __init__(self, api_url: str = None):
@@ -199,6 +204,48 @@ class LandRoverScraper:
                     pass
         
         return None
+
+    def extract_amount_near_keyword(self, text: str, keyword_pattern: str) -> Optional[float]:
+        """Extract dollar amount near a keyword (e.g. loyalty, military, college graduate)."""
+        if not text:
+            return None
+        # Look for $X,XXX within ~80 chars after keyword
+        after = re.search(
+            r'(?:' + keyword_pattern + r')[\s\S]{0,80}?\$([\d,]+)',
+            text,
+            re.IGNORECASE,
+        )
+        if after and after.group(1):
+            return self.parse_number(after.group(1))
+        # Look for $X,XXX within ~80 chars before keyword
+        before = re.search(
+            r'\$([\d,]+)[\s\S]{0,80}?(?:' + keyword_pattern + r')',
+            text,
+            re.IGNORECASE,
+        )
+        if before and before.group(1):
+            return self.parse_number(before.group(1))
+        return None
+
+    def _extract_bonus_fields(self, detail_text: str, disclaimer_text: Optional[str]) -> Dict[str, Optional[float]]:
+        """Extract loyaltyBonus, conquestBonus, militaryDiscount, collegeGrad, firstResponder from combined text."""
+        combined = ' '.join(filter(None, [detail_text, disclaimer_text]))
+        return {
+            'loyaltyBonus': self.extract_amount_near_keyword(combined, r'loyalty\s*(?:bonus|cash|credit|rebate)?'),
+            'conquestBonus': self.extract_amount_near_keyword(combined, r'conquest\s*(?:bonus|cash|rebate)?'),
+            'militaryDiscount': self.extract_amount_near_keyword(
+                combined,
+                r'military\s+(?:and\s+first\s+responders?)?\s*bonus|military\s*(?:discount|bonus|rebate)?',
+            ),
+            'collegeGrad': self.extract_amount_near_keyword(
+                combined,
+                r'college\s+graduate\s+bonus|college\s+grad(?:uate)?',
+            ),
+            'firstResponder': self.extract_amount_near_keyword(
+                combined,
+                r'first\s+responders?\s+bonus|first\s*responder\s*(?:discount|bonus|rebate)?',
+            ),
+        }
 
     def extract_offer_type_from_title(self, text: str) -> Optional[str]:
         """
@@ -528,6 +575,7 @@ class LandRoverScraper:
             term_months = None
             due_at_signing = None
             cash_back = None
+            body_text = ""
             info_body = offer_div.find('div', class_='Offers__info-body-copy')
             if info_body:
                 body_text = self.clean_html_text(info_body.get_text())
@@ -585,6 +633,8 @@ class LandRoverScraper:
                         # Treat as monthly payment
                         monthly_payment = amount_value
 
+            bonus = self._extract_bonus_fields(body_text, fine_print)
+
             # Only create offer if we have meaningful pricing info
             if monthly_payment or apr:
                 offer = {
@@ -600,9 +650,14 @@ class LandRoverScraper:
                     'leaseDueAtSigning': due_at_signing,
                     'cashValue': cash_back,
                     'milesPerYear': miles_per_year,
-                    'expirationDate': expiration_date.isoformat() if expiration_date else None,
+                    'expirationDate': to_utc_iso8601(expiration_date),
                     'finePrint': fine_print,
                     'source_url': source_url,
+                    'loyaltyBonus': bonus.get('loyaltyBonus'),
+                    'conquestBonus': bonus.get('conquestBonus'),
+                    'militaryDiscount': bonus.get('militaryDiscount'),
+                    'collegeGrad': bonus.get('collegeGrad'),
+                    'firstResponder': bonus.get('firstResponder'),
                 }
                 return offer
             

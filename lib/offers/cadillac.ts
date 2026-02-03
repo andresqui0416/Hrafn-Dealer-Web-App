@@ -206,7 +206,7 @@ export async function scrapeOffersFromCadillac() {
       const trim = trims.length > 0 ? trims.join(", ") : null;
 
       // Map offer type
-      let offerType = "cash";
+      let offerType: "cash" | "financing" | "lease" = "cash";
       if (result.offerType === "Lease") {
         offerType = "lease";
       } else if (result.offerType === "Finance") {

@@ -245,22 +245,22 @@ export async function GET(_request: NextRequest) {
     //   results.chrysler.error = error?.message || "Failed to scrape Chrysler offers";
     // }
 
-    // Scrape Jeep offers
-    try {
-      const jeepResult = (await scrapeOffersFromJeep()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.jeep = {
-        success: jeepResult.success,
-        totalOffers: jeepResult.totalOffers || 0,
-        error: jeepResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Jeep offers:", error?.message || error);
-      results.jeep.error = error?.message || "Failed to scrape Jeep offers";
-    }
+    // // Scrape Jeep offers
+    // try {
+    //   const jeepResult = (await scrapeOffersFromJeep()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.jeep = {
+    //     success: jeepResult.success,
+    //     totalOffers: jeepResult.totalOffers || 0,
+    //     error: jeepResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Jeep offers:", error?.message || error);
+    //   results.jeep.error = error?.message || "Failed to scrape Jeep offers";
+    // }
 
     // // Scrape RAM offers
     // try {
@@ -313,22 +313,22 @@ export async function GET(_request: NextRequest) {
     //   results.porsche.error = error?.message || "Failed to scrape Porsche offers";
     // }
 
-    // // Scrape Honda offers
-    // try {
-    //   const hondaResult = (await scrapeOffersFromHonda()) as {
-    //     success: boolean;
-    //     totalOffers?: number;
-    //     error?: string;
-    //   };
-    //   results.honda = {
-    //     success: hondaResult.success,
-    //     totalOffers: hondaResult.totalOffers || 0,
-    //     error: hondaResult.error || "",
-    //   };
-    // } catch (error: any) {
-    //   console.error("Error scraping Honda offers:", error?.message || error);
-    //   results.honda.error = error?.message || "Failed to scrape Honda offers";
-    // }
+    // Scrape Honda offers
+    try {
+      const hondaResult = (await scrapeOffersFromHonda()) as {
+        success: boolean;
+        totalOffers?: number;
+        error?: string;
+      };
+      results.honda = {
+        success: hondaResult.success,
+        totalOffers: hondaResult.totalOffers || 0,
+        error: hondaResult.error || "",
+      };
+    } catch (error: any) {
+      console.error("Error scraping Honda offers:", error?.message || error);
+      results.honda.error = error?.message || "Failed to scrape Honda offers";
+    }
 
     // // Scrape BMW offers
     // try {

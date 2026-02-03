@@ -2,6 +2,71 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Public-facing URL for Audi offers (stored in DB)
+const AUDI_SOURCE_URL = "https://www.audiusa.com/en/offers/";
+
+// Parse number from string, removing commas, dollar signs, and other formatting
+function parseNumber(str: string | null | undefined): number | null {
+  if (!str) return null;
+  try {
+    const strValue = typeof str === "string" ? str : String(str);
+    const cleaned = strValue.replace(/[,$%]/g, "").trim();
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+  } catch {
+    return null;
+  }
+}
+
+// Extract dollar amount near a keyword (e.g. "$500 military" or "loyalty bonus $500") for schema bonus/discount fields
+function extractAmountNearKeyword(
+  text: string | null | undefined,
+  keyword: RegExp,
+): number | null {
+  if (!text) return null;
+  try {
+    const afterKeyword = new RegExp(
+      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
+      "i",
+    );
+    let match = text.match(afterKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    const beforeKeyword = new RegExp(
+      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
+      "i",
+    );
+    match = text.match(beforeKeyword);
+    if (match && match[1]) return parseNumber(match[1]);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Extract miles per year from lease offer disclaimer (e.g., "in excess of 30,000 miles")
+function extractMilesPerYearFromDisclaimer(
+  disclaimer: string | null | undefined,
+  termMonths: number | null | undefined,
+): number | null {
+  if (!disclaimer || !termMonths || termMonths <= 0) return null;
+  try {
+    const match = disclaimer.match(/in excess of\s+([\d,]+)\s+miles/i);
+    if (match && match[1]) {
+      const totalMiles = parseNumber(match[1]);
+      if (totalMiles && totalMiles > 0) {
+        const years = termMonths / 12;
+        if (years > 0) {
+          const milesPerYear = totalMiles / years;
+          return Math.round(milesPerYear);
+        }
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function scrapeOffersFromAudi() {
   try {
     const headers = new Headers();
@@ -12,7 +77,7 @@ export async function scrapeOffersFromAudi() {
     const body = JSON.stringify({
       operationName: "UsCustomerOffers",
       variables: {
-        zipCode: "",
+        zipCode: "95556",
       },
       query:
         "query UsCustomerOffers($zipCode: String, $offerMonth: String) {\n  usCustomerOffers(zipCode: $zipCode, offerMonth: $offerMonth) {\n    zipClusterID\n    offerModelDetail {\n      modelCode\n      modelYear\n      bodyType\n      trimline\n      productModelCode\n      modelCodeDescription\n      msrp\n      modelFamily\n      __typename\n    }\n    stackableOffers {\n      offerType\n      creditBonus\n      programShortDescription\n      offerDisclaimer\n      programName\n      __typename\n    }\n    offerDisclaimer\n    offerImageUrl\n    featuredOfferImageUrl\n    programName\n    offerType\n    programPriority\n    programFromDate\n    programToDate\n    programShortDescription\n    region\n    zipClusterID\n    aprRate\n    creditBonus\n    term\n    totalDueAtSign\n    customerDownPayment\n    monthlyPayment\n    __typename\n  }\n}",
@@ -62,7 +127,7 @@ export async function scrapeOffersFromAudi() {
       }
 
       // Map offerType from API to our schema
-      let offerType = "cash";
+      let offerType: "cash" | "financing" | "lease" = "cash";
       if (offer.offerType === "lease") {
         offerType = "lease";
       } else if (offer.offerType === "finance") {
@@ -75,6 +140,43 @@ export async function scrapeOffersFromAudi() {
       // offerAmount should only be set if explicitly extracted from the offer content
       let offerAmount: number | null = null;
 
+      // APR / term fields
+      const aprTermMonths =
+        offer.offerType === "finance" && offer.term && offer.term > 0 ? offer.term : null;
+      const leaseTermMonths =
+        offer.offerType === "lease" && offer.term && offer.term > 0 ? offer.term : null;
+
+      // Bonus/discount: extract from programShortDescription + offerDisclaimer (API has no structured fields)
+      const termsText = offer.programShortDescription || "";
+      const finePrintText = offer.offerDisclaimer || "";
+      const combinedText = [termsText, finePrintText].filter(Boolean).join("\n");
+      const loyaltyBonus = extractAmountNearKeyword(
+        combinedText,
+        /loyalty\s*(?:bonus|cash|rebate)?/i,
+      );
+      const conquestBonus = extractAmountNearKeyword(
+        combinedText,
+        /conquest\s*(?:bonus|cash|rebate)?/i,
+      );
+      const militaryDiscount = extractAmountNearKeyword(
+        combinedText,
+        /military\s*(?:discount|bonus|rebate)?/i,
+      );
+      const collegeGrad = extractAmountNearKeyword(
+        combinedText,
+        /college\s*(?:grad|graduate|rebate|bonus)?/i,
+      );
+      const firstResponder = extractAmountNearKeyword(
+        combinedText,
+        /first\s*responder\s*(?:discount|bonus|rebate)?/i,
+      );
+
+      // Miles per year from lease disclaimer (only for lease offers)
+      const milesPerYear =
+        offer.offerType === "lease"
+          ? extractMilesPerYearFromDisclaimer(offer.offerDisclaimer, leaseTermMonths)
+          : null;
+
       // Create offer record
       offers.push({
         brand: "Audi",
@@ -86,20 +188,24 @@ export async function scrapeOffersFromAudi() {
         offerType,
         offerAmount,
         aprRate: offer.aprRate && offer.aprRate > 0 ? offer.aprRate : null,
-        aprTermMonths:
-          offer.offerType === "financing" && offer.term && offer.term > 0 ? offer.term : null,
-        leaseTermMonths:
-          offer.offerType === "lease" && offer.term && offer.term > 0 ? offer.term : null,
+        aprTermMonths,
+        leaseTermMonths,
         cashValue: offer.creditBonus && offer.creditBonus > 0 ? offer.creditBonus : null,
         leaseDueAtSigning:
           offer.totalDueAtSign && offer.totalDueAtSign > 0 ? offer.totalDueAtSign : null,
         leaseMonthlyPayment:
           offer.monthlyPayment && offer.monthlyPayment > 0 ? offer.monthlyPayment : null,
+        milesPerYear,
         expirationDate,
         terms: offer.programShortDescription || null,
         finePrint: offer.offerDisclaimer || null,
         scrapedAt,
-        sourceUrl: audiApiUrl,
+        sourceUrl: AUDI_SOURCE_URL,
+        loyaltyBonus: loyaltyBonus ?? null,
+        conquestBonus: conquestBonus ?? null,
+        militaryDiscount: militaryDiscount ?? null,
+        collegeGrad: collegeGrad ?? null,
+        firstResponder: firstResponder ?? null,
       });
 
       // Also process stackable offers (additional offers that can be combined)
@@ -168,6 +274,11 @@ export async function scrapeOffersFromAudi() {
                   expirationDate: offer.expirationDate,
                   scrapedAt: offer.scrapedAt,
                   sourceUrl: offer.sourceUrl ?? null,
+                  loyaltyBonus: offer.loyaltyBonus ?? null,
+                  conquestBonus: offer.conquestBonus ?? null,
+                  militaryDiscount: offer.militaryDiscount ?? null,
+                  collegeGrad: offer.collegeGrad ?? null,
+                  firstResponder: offer.firstResponder ?? null,
                 })),
                 skipDuplicates: true, // Skip duplicates if any
               });

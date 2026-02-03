@@ -2,6 +2,10 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Public-facing URL for Porsche offers (stored in DB)
+const PORSCHE_SOURCE_URL =
+  "https://www.porsche.com/usa/accessoriesandservice/porschefinancialservices/pfs-leasing-offers/";
+
 // Helper function to extract text content from HTML
 function extractTextFromHTML(html: string): string {
   if (!html) return "";
@@ -90,9 +94,7 @@ function extractMilesPerYear(text: string): number | null {
 }
 
 const fetchOfferData = async () => {
-  const url =
-    "https://www.porsche.com/usa/accessoriesandservice/porschefinancialservices/pfs-leasing-offers";
-  const response = await fetch(url, {
+  const response = await fetch(PORSCHE_SOURCE_URL, {
     method: "GET",
     redirect: "follow" as RequestRedirect,
     headers: {
@@ -262,7 +264,7 @@ const fetchOfferData = async () => {
       terms: shortDisclaimer,
       finePrint: finePrint,
       expirationDate: expirationDate,
-      sourceUrl: url,
+      sourceUrl: PORSCHE_SOURCE_URL,
     });
   }
 

@@ -76,7 +76,7 @@ const fetchModelInfos = async () => {
 
 const fetChOfferData = async (modelInfo: any) => {
   const url = `https://www.chrysler.com/hostd/api/incentives/offers/targetMedium/iSilo-Inline/zip/95556/vehicle/${modelInfo.modelYearCode}`;
-  const sourceUrl = `https://www.chrysler.com/incentives.pacifica.html#/model/${modelInfo.modelYearCode}`;
+  const sourceUrl = `https://www.chrysler.com${modelInfo.key}`;
   const requestOptions = {
     method: "GET",
     redirect: "follow" as RequestRedirect,
