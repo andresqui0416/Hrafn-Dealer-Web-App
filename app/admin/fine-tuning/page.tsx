@@ -73,13 +73,13 @@ export default function FineTuningPage() {
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  // We intentionally only re-run this effect when the activeTab changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Only re-run when activeTab changes; loadSamples is intentionally omitted to avoid re-running on every loadSamples identity change.
   useEffect(() => {
     setExpandedSampleId(null);
     setSelectedIds(new Set());
     setPage(1);
     loadSamples({ nextPage: 1 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run only on activeTab change
   }, [activeTab]);
 
   const loadSamples = async (opts?: {

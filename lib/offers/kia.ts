@@ -178,6 +178,23 @@ interface KiaOffer {
   firstResponder: number | null;
 }
 
+const KIA_BROWSER_HEADERS = {
+  Accept:
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+  "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+  "Cache-Control": "max-age=0",
+  "Sec-Ch-Ua": '"Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"',
+  "Sec-Ch-Ua-Mobile": "?0",
+  "Sec-Ch-Ua-Platform": '"Windows"',
+  "Sec-Fetch-Dest": "document",
+  "Sec-Fetch-Mode": "navigate",
+  "Sec-Fetch-Site": "none",
+  "Sec-Fetch-User": "?1",
+  "Upgrade-Insecure-Requests": "1",
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+} as const;
+
 export async function scrapeOffersFromKia(zipCode: string = "95556") {
   try {
     const url = `https://www.kia.com/us/services/en/offers/${zipCode}`;
@@ -185,12 +202,7 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
     // Fetch dropdown data (vehicles + categories) from Kia dropDowns API
     const dropDownsRes = await fetch("https://www.kia.com/us/services/en/offers/dropDowns", {
       method: "GET",
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      },
+      headers: { ...KIA_BROWSER_HEADERS },
       redirect: "follow",
     });
 
@@ -242,13 +254,13 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
     const response = await fetch(url, {
       method: "POST",
       headers: {
+        ...KIA_BROWSER_HEADERS,
         "Content-Type": "application/json",
         Accept: "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
         Origin: "https://www.kia.com",
         Referer: "https://www.kia.com/",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
       },
       body: JSON.stringify(requestBody),
       redirect: "follow",
@@ -304,12 +316,12 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
         const detailsResponse = await fetch(detailsUrl, {
           method: "GET",
           headers: {
+            ...KIA_BROWSER_HEADERS,
             Accept: "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
             Origin: "https://www.kia.com",
-            Referer: `https://www.kia.com/us/en/offers`,
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            Referer: "https://www.kia.com/us/en/offers",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
           },
           redirect: "follow",
         });
