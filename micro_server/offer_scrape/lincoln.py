@@ -48,7 +48,7 @@ class LincolnScraper:
         """
         self.api_url = api_url or os.getenv(
             "OFFERS_SCRAPER_API_URL",
-            "http://localhost:3000/api/offers/scrape"
+            "http://localhost:3000/api/incentives/scrape"
         )
         self.driver = None
         self.offers = []

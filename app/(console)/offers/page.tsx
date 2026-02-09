@@ -13,8 +13,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -81,9 +79,20 @@ export default function OffersPage() {
   const [pageInput, setPageInput] = useState("1");
   const [searchQuery, setSearchQuery] = useState("");
   const [offerTypeFilter, setOfferTypeFilter] = useState<string[]>([]);
+  const [brandFilter, setBrandFilter] = useState<string[]>([]);
+  const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
+  const [pendingBrands, setPendingBrands] = useState<string[]>([]);
+  const [brandSearchQuery, setBrandSearchQuery] = useState("");
+  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+  const [brandsLoading, setBrandsLoading] = useState(false);
+  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
+  const [pendingOfferTypes, setPendingOfferTypes] = useState<string[]>([]);
+  const [includeExpired, setIncludeExpired] = useState(false);
+  const [includeUnverified, setIncludeUnverified] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const brandSearchInputRef = useRef<HTMLInputElement | null>(null);
 
   const loadOffers = useCallback(async () => {
     if (abortControllerRef.current) {
@@ -110,10 +119,19 @@ export default function OffersPage() {
         });
       }
 
-      const response = await fetch(`/api/offers?${params.toString()}`, { signal });
+      brandFilter.forEach((b) => params.append("brand", b));
+
+      if (includeExpired) {
+        params.append("includeExpired", "true");
+      }
+      if (includeUnverified) {
+        params.append("includeUnverified", "true");
+      }
+
+      const response = await fetch(`/api/incentives?${params.toString()}`, { signal });
       if (response.ok) {
         const data = await response.json();
-        setOffers(data.offers || []);
+        setOffers(data.incentives || []);
         setPagination(data.pagination || null);
         // Update page input to match current page
         if (data.pagination) {
@@ -130,11 +148,77 @@ export default function OffersPage() {
         setOffersLoading(false);
       }
     }
-  }, [currentPage, itemsPerPage, searchQuery, offerTypeFilter]);
+  }, [
+    currentPage,
+    itemsPerPage,
+    searchQuery,
+    offerTypeFilter,
+    brandFilter,
+    includeExpired,
+    includeUnverified,
+  ]);
 
   useEffect(() => {
     loadOffers();
   }, [loadOffers]);
+
+  const loadBrands = useCallback(async () => {
+    setBrandsLoading(true);
+    try {
+      const res = await fetch("/api/incentives/brands");
+      if (res.ok) {
+        const data = await res.json();
+        setAvailableBrands(data.brands || []);
+      }
+    } catch (err) {
+      console.error("Error loading brands:", err);
+    } finally {
+      setBrandsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadBrands();
+  }, [loadBrands]);
+
+  const handleBrandDropdownOpenChange = useCallback(
+    (open: boolean) => {
+      setBrandDropdownOpen(open);
+      if (open) {
+        setPendingBrands([...brandFilter]);
+      } else {
+        setBrandSearchQuery("");
+      }
+    },
+    [brandFilter],
+  );
+
+  const applyBrandFilter = useCallback(() => {
+    setBrandFilter(pendingBrands);
+    setCurrentPage(1);
+    setPageInput("1");
+    setBrandDropdownOpen(false);
+  }, [pendingBrands]);
+
+  const resetBrandFilter = useCallback(() => {
+    setPendingBrands([]);
+    setBrandFilter([]);
+    setCurrentPage(1);
+    setPageInput("1");
+    setBrandDropdownOpen(false);
+  }, []);
+
+  const filteredBrandsForDropdown = availableBrands.filter((b) =>
+    b.toLowerCase().includes(brandSearchQuery.trim().toLowerCase()),
+  );
+
+  // Keep focus on search input when typing; Radix moves focus to first menu item when list updates
+  useEffect(() => {
+    if (brandDropdownOpen && brandSearchInputRef.current) {
+      const el = brandSearchInputRef.current;
+      requestAnimationFrame(() => el.focus());
+    }
+  }, [brandSearchQuery, brandDropdownOpen]);
 
   const offerTypeOptions = [
     { value: "cash", label: "Cash/Credit" },
@@ -142,17 +226,30 @@ export default function OffersPage() {
     { value: "lease", label: "Lease" },
   ];
 
-  const handleOfferTypeToggle = (type: string) => {
-    setOfferTypeFilter((prev) => {
-      if (prev.includes(type)) {
-        return prev.filter((t) => t !== type);
-      } else {
-        return [...prev, type];
+  const handleTypeDropdownOpenChange = useCallback(
+    (open: boolean) => {
+      setTypeDropdownOpen(open);
+      if (open) {
+        setPendingOfferTypes([...offerTypeFilter]);
       }
-    });
+    },
+    [offerTypeFilter],
+  );
+
+  const applyTypeFilter = useCallback(() => {
+    setOfferTypeFilter(pendingOfferTypes);
     setCurrentPage(1);
     setPageInput("1");
-  };
+    setTypeDropdownOpen(false);
+  }, [pendingOfferTypes]);
+
+  const resetTypeFilter = useCallback(() => {
+    setPendingOfferTypes([]);
+    setOfferTypeFilter([]);
+    setCurrentPage(1);
+    setPageInput("1");
+    setTypeDropdownOpen(false);
+  }, []);
 
   const getOfferTypeBadge = (type: string) => {
     const typeInfo: Record<string, { label: string; className: string }> = {
@@ -237,56 +334,46 @@ export default function OffersPage() {
             className="pl-10"
           />
         </div>
-        <Button variant="outline" onClick={handleRefresh} disabled={refreshing} className="gap-2">
+        <div className="flex items-center gap-4 border-l border-white/10 pl-4">
+          <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={includeExpired}
+              onChange={(e) => {
+                setIncludeExpired(e.target.checked);
+                setCurrentPage(1);
+                setPageInput("1");
+              }}
+              className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20"
+            />
+            <span>Include expired offers</span>
+          </label>
+          <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={includeUnverified}
+              onChange={(e) => {
+                setIncludeUnverified(e.target.checked);
+                setCurrentPage(1);
+                setPageInput("1");
+              }}
+              className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20"
+            />
+            <span>Include unverified offers</span>
+          </label>
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="gap-2 ml-auto"
+        >
           <FontAwesomeIcon
             icon={refreshing ? faSpinner : faRotateRight}
             className={cn("h-4 w-4", refreshing && "animate-spin")}
           />
           {refreshing ? "Refreshing..." : "Refresh"}
         </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <FontAwesomeIcon icon={faFilter} className="h-4 w-4" />
-              Filter by Type
-              {offerTypeFilter.length > 0 && (
-                <span className="ml-1 px-2 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
-                  {offerTypeFilter.length}
-                </span>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 bg-background text-foreground">
-            <DropdownMenuLabel>Filter by Offer Type</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {offerTypeOptions.map((option) => (
-              <DropdownMenuCheckboxItem
-                key={option.value}
-                checked={offerTypeFilter.includes(option.value)}
-                onCheckedChange={() => handleOfferTypeToggle(option.value)}
-                className="cursor-pointer"
-              >
-                {option.label}
-              </DropdownMenuCheckboxItem>
-            ))}
-            {offerTypeFilter.length > 0 && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuCheckboxItem
-                  checked={false}
-                  onCheckedChange={() => {
-                    setOfferTypeFilter([]);
-                    setCurrentPage(1);
-                    setPageInput("1");
-                  }}
-                  className="cursor-pointer text-muted-foreground"
-                >
-                  Clear filters
-                </DropdownMenuCheckboxItem>
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
       {/* Table */}
@@ -295,13 +382,193 @@ export default function OffersPage() {
           <table className="w-full">
             <thead className="bg-white/5 border-b border-white/10">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Brand</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">
+                  <div className="flex items-center gap-1.5">
+                    <span>Brand</span>
+                    <DropdownMenu open={brandDropdownOpen} onOpenChange={handleBrandDropdownOpenChange}>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 cursor-pointer"
+                          title="Filter by brand"
+                        >
+                          <FontAwesomeIcon
+                            icon={faFilter}
+                            className={cn(
+                              "h-3.5 w-3.5",
+                              brandFilter.length > 0 && "text-primary",
+                            )}
+                          />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="start"
+                        className="w-56 bg-background text-foreground"
+                        onCloseAutoFocus={(e) => e.preventDefault()}
+                      >
+                        <div className="p-2">
+                          <Input
+                            ref={brandSearchInputRef}
+                            placeholder="Search brands..."
+                            value={brandSearchQuery}
+                            onChange={(e) => setBrandSearchQuery(e.target.value)}
+                            className="h-8 text-sm"
+                            onKeyDown={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                        <DropdownMenuSeparator />
+                        {!brandsLoading && filteredBrandsForDropdown.length > 0 && (
+                          <div className="px-2 py-1 flex gap-2 text-xs">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPendingBrands((prev) => {
+                                  const combined = new Set([...prev, ...filteredBrandsForDropdown]);
+                                  return [...combined];
+                                })
+                              }
+                              className="text-primary hover:underline cursor-pointer"
+                            >
+                              Select all
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPendingBrands([])}
+                              className="text-muted-foreground hover:underline cursor-pointer"
+                            >
+                              Clear selection
+                            </button>
+                          </div>
+                        )}
+                        <div className="max-h-48 overflow-y-auto">
+                          {brandsLoading ? (
+                            <div className="py-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                              <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                              Loading…
+                            </div>
+                          ) : filteredBrandsForDropdown.length === 0 ? (
+                            <div className="py-4 text-center text-sm text-muted-foreground">
+                              No brands found
+                            </div>
+                          ) : (
+                            filteredBrandsForDropdown.map((brand) => (
+                              <label
+                                key={brand}
+                                className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-white/10 focus-within:bg-white/10"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={pendingBrands.includes(brand)}
+                                  onChange={(e) => {
+                                    const checked = e.target.checked;
+                                    setPendingBrands((prev) =>
+                                      checked
+                                        ? [...prev, brand]
+                                        : prev.filter((b) => b !== brand),
+                                    );
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20 cursor-pointer shrink-0"
+                                />
+                                <span className="truncate">{brand}</span>
+                              </label>
+                            ))
+                          )}
+                        </div>
+                        <DropdownMenuSeparator />
+                        <div className="p-2 flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={resetBrandFilter}
+                          >
+                            Reset
+                          </Button>
+                          <Button size="sm" className="flex-1" onClick={applyBrandFilter}>
+                            Filter
+                          </Button>
+                        </div>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Year</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Model</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Type</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">
+                  <div className="flex items-center gap-1.5">
+                    <span>Type</span>
+                    <DropdownMenu
+                      open={typeDropdownOpen}
+                      onOpenChange={handleTypeDropdownOpenChange}
+                    >
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 cursor-pointer"
+                          title="Filter by offer type"
+                        >
+                          <FontAwesomeIcon
+                            icon={faFilter}
+                            className={cn(
+                              "h-3.5 w-3.5",
+                              offerTypeFilter.length > 0 && "text-primary",
+                            )}
+                          />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="start"
+                        className="w-48 bg-background text-foreground"
+                        onCloseAutoFocus={(e) => e.preventDefault()}
+                      >
+                        <div className="max-h-48 overflow-y-auto py-1">
+                          {offerTypeOptions.map((option) => (
+                            <label
+                              key={option.value}
+                              className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-white/10 focus-within:bg-white/10"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={pendingOfferTypes.includes(option.value)}
+                                onChange={(e) => {
+                                  const checked = e.target.checked;
+                                  setPendingOfferTypes((prev) =>
+                                    checked
+                                      ? [...prev, option.value]
+                                      : prev.filter((t) => t !== option.value),
+                                  );
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20 cursor-pointer shrink-0"
+                              />
+                              <span>{option.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <DropdownMenuSeparator />
+                        <div className="p-2 flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={resetTypeFilter}
+                          >
+                            Reset
+                          </Button>
+                          <Button size="sm" className="flex-1" onClick={applyTypeFilter}>
+                            Filter
+                          </Button>
+                        </div>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Amount</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Lease/mo</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Cash Back</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Trade Discount</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">APR</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Term</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Expires</th>
@@ -324,24 +591,17 @@ export default function OffersPage() {
                     </td>
                     <td className="px-4 py-3 text-sm">{getOfferTypeBadge(offer.offerType)}</td>
                     <td className="px-4 py-3 text-sm">
-                      {offer.offerType === "lease"
-                        ? // For lease, show monthly payment only
-                          offer.leaseMonthlyPayment
-                          ? formatCurrency(offer.leaseMonthlyPayment)
-                          : "-"
-                        : offer.offerType === "financing"
-                          ? // For financing, show "-"
-                            "-"
-                          : // For cash offers, show offer amount only
-                            offer.offerAmount
-                            ? formatCurrency(offer.offerAmount)
-                            : "-"}
+                      {offer.offerAmount != null
+                        ? formatCurrency(offer.offerAmount)
+                        : "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {offer.leaseMonthlyPayment != null
+                        ? formatCurrency(offer.leaseMonthlyPayment)
+                        : "-"}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {offer.cashValue ? formatCurrency(offer.cashValue) : "-"}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {offer.tradeDiscount ? formatCurrency(offer.tradeDiscount) : "-"}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {offer.aprRate ? `${(offer.aprRate * 100).toFixed(2)}%` : "-"}

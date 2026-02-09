@@ -16,7 +16,7 @@ pip install -r requirements.txt
 
 3. Set API URL (optional):
 ```bash
-export OFFERS_SCRAPER_API_URL=http://localhost:3000/api/offers/scrape
+export OFFERS_SCRAPER_API_URL=http://localhost:3000/api/incentives/scrape
 ```
 
 ## Usage
@@ -33,7 +33,7 @@ python gmc.py --use-website
 
 ### Custom API endpoint:
 ```bash
-python gmc.py --api-url http://your-api-url/api/offers/scrape
+python gmc.py --api-url http://your-api-url/api/incentives/scrape
 ```
 
 ### Test without sending to API:
@@ -73,7 +73,7 @@ python gmc.py --help
 
 ## API Endpoint
 
-The scraper sends data to: `POST /api/offers/scrape`
+The scraper sends data to: `POST /api/incentives/scrape`
 
 This is a generic endpoint that accepts normalized offer data from any brand/manufacturer. All data normalization is handled in the Python script before sending.
 

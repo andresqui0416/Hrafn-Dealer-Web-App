@@ -107,7 +107,7 @@ def main():
     print(f"{'='*60}")
     
     # Get API URL from environment variable or use default
-    api_url = os.getenv("OFFERS_SCRAPER_API_URL", "http://localhost:3000/api/offers/scrape")
+    api_url = os.getenv("OFFERS_SCRAPER_API_URL", "http://localhost:3000/api/incentives/scrape")
     
     # Run Lincoln scraper
     lincoln_success, lincoln_count = run_lincoln_scraper(api_url=api_url)
