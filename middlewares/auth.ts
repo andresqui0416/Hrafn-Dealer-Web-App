@@ -5,7 +5,7 @@ export async function authMiddleware(request: NextRequest): Promise<NextResponse
   const { pathname } = request.nextUrl;
   if (
     pathname.startsWith("/api/cdk/") ||
-    pathname.startsWith("/api/offers/scrape") ||
+    pathname.startsWith("/api/incentives/scrape") ||
     pathname.startsWith("/api/auth/login") ||
     pathname.startsWith("/api/auth/signup") ||
     pathname.startsWith("/api/auth/logout") ||

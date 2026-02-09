@@ -153,7 +153,7 @@ async def run_scrapers():
     # Get API URL from environment variable or use default
     api_url = os.getenv(
         "OFFERS_SCRAPER_API_URL",
-        "http://localhost:3000/api/offers/scrape"
+        "http://localhost:3000/api/incentives/scrape"
     )
     
     try:

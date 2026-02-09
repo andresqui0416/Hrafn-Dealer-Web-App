@@ -62,5 +62,8 @@
       "prettier --write",
       "eslint --fix --max-warnings=0"
     ]
+  },
+  "notes": {
+    "deprecationWarnings": "npm warn deprecated (rimraf, glob, inflight, @humanwhocodes/*, eslint@8) come from ESLint 8's dependency tree. .npmrc sets loglevel=error to hide them. To fix fully, upgrade to Next 15 and ESLint 9 when ready."
   }
 }
