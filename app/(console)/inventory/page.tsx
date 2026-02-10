@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,6 +43,8 @@ type PaginationInfo = {
 };
 
 export default function InventoryPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(true);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -160,6 +163,83 @@ export default function InventoryPage() {
   useEffect(() => {
     loadFilters();
   }, [loadFilters]);
+
+  useEffect(() => {
+    if (!searchParams) return;
+
+    const pageParam = searchParams.get("page");
+    const limitParam = searchParams.get("limit");
+    const searchParam = searchParams.get("search") || "";
+    const statusParams = searchParams.getAll("status");
+    const makeParams = searchParams.getAll("make");
+    const yearParams = searchParams.getAll("year");
+    const sortParam = searchParams.get("sort");
+    const orderParam = searchParams.get("order");
+
+    if (pageParam && !Number.isNaN(parseInt(pageParam, 10))) {
+      const pageNum = parseInt(pageParam, 10);
+      setCurrentPage(pageNum);
+      setPageInput(pageNum.toString());
+    }
+    if (limitParam && !Number.isNaN(parseInt(limitParam, 10))) {
+      setItemsPerPage(parseInt(limitParam, 10));
+    }
+    setSearchQuery(searchParam);
+    setStatusFilter(statusParams);
+    setMakeFilter(makeParams);
+    setYearFilter(
+      yearParams.map((value) => parseInt(value, 10)).filter((value) => !Number.isNaN(value)),
+    );
+    if (sortParam === "price" && (orderParam === "asc" || orderParam === "desc")) {
+      setPriceSort(orderParam);
+    } else {
+      setPriceSort(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!searchParams) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", currentPage.toString());
+    params.set("limit", itemsPerPage.toString());
+
+    if (searchQuery) {
+      params.set("search", searchQuery);
+    } else {
+      params.delete("search");
+    }
+
+    params.delete("status");
+    statusFilter.forEach((status) => params.append("status", status));
+
+    params.delete("make");
+    makeFilter.forEach((make) => params.append("make", make));
+
+    params.delete("year");
+    yearFilter.forEach((year) => params.append("year", year.toString()));
+
+    if (priceSort) {
+      params.set("sort", "price");
+      params.set("order", priceSort);
+    } else {
+      params.delete("sort");
+      params.delete("order");
+    }
+
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [
+    currentPage,
+    itemsPerPage,
+    searchQuery,
+    statusFilter,
+    makeFilter,
+    yearFilter,
+    priceSort,
+    router,
+    searchParams,
+  ]);
 
   const statusOptions = [
     { value: "available", label: "Available" },
