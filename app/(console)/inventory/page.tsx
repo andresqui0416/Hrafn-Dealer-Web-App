@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuCheckboxItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -19,6 +18,7 @@ import {
   faRotateRight,
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
+import { cn } from "@/lib/utils";
 
 type InventoryItem = {
   id: string;
@@ -49,6 +49,12 @@ export default function InventoryPage() {
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [pageInput, setPageInput] = useState("1");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [makeFilter, setMakeFilter] = useState<string[]>([]);
+  const [yearFilter, setYearFilter] = useState<number[]>([]);
+  const [availableMakes, setAvailableMakes] = useState<string[]>([]);
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
+  const [filtersLoading, setFiltersLoading] = useState(false);
+  const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -60,9 +66,16 @@ export default function InventoryPage() {
         setIsRefreshing(true);
         const statusParam =
           statusFilter.length > 0 ? `&${statusFilter.map((s) => `status=${s}`).join("&")}` : "";
+        const makeParam =
+          makeFilter.length > 0
+            ? `&${makeFilter.map((m) => `make=${encodeURIComponent(m)}`).join("&")}`
+            : "";
+        const yearParam =
+          yearFilter.length > 0 ? `&${yearFilter.map((y) => `year=${y}`).join("&")}` : "";
+        const sortParam = priceSort ? `&sort=price&order=${priceSort}` : "";
         const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
         const response = await fetch(
-          `/api/inventory?page=${currentPage}&limit=${itemsPerPage}${statusParam}${searchParam}`,
+          `/api/inventory?page=${currentPage}&limit=${itemsPerPage}${statusParam}${makeParam}${yearParam}${sortParam}${searchParam}`,
           { signal },
         );
         if (response.ok) {
@@ -85,7 +98,7 @@ export default function InventoryPage() {
         setIsRefreshing(false);
       }
     },
-    [currentPage, itemsPerPage, statusFilter, searchQuery],
+    [currentPage, itemsPerPage, statusFilter, makeFilter, yearFilter, priceSort, searchQuery],
   );
 
   const handleRefresh = () => {
@@ -117,7 +130,36 @@ export default function InventoryPage() {
     return () => {
       abortController.abort();
     };
-  }, [loadInventory, currentPage, itemsPerPage, statusFilter, searchQuery]);
+  }, [
+    loadInventory,
+    currentPage,
+    itemsPerPage,
+    statusFilter,
+    makeFilter,
+    yearFilter,
+    priceSort,
+    searchQuery,
+  ]);
+
+  const loadFilters = useCallback(async () => {
+    setFiltersLoading(true);
+    try {
+      const response = await fetch("/api/inventory/filters");
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableMakes(data.makes || []);
+        setAvailableYears(data.years || []);
+      }
+    } catch (error) {
+      console.error("Error loading inventory filters:", error);
+    } finally {
+      setFiltersLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFilters();
+  }, [loadFilters]);
 
   const statusOptions = [
     { value: "available", label: "Available" },
@@ -138,8 +180,42 @@ export default function InventoryPage() {
     setPageInput("1");
   };
 
+  const handleMakeToggle = (make: string) => {
+    setMakeFilter((prev) => {
+      if (prev.includes(make)) {
+        return prev.filter((m) => m !== make);
+      } else {
+        return [...prev, make];
+      }
+    });
+    setCurrentPage(1);
+    setPageInput("1");
+  };
+
+  const handleYearToggle = (year: number) => {
+    setYearFilter((prev) => {
+      if (prev.includes(year)) {
+        return prev.filter((y) => y !== year);
+      } else {
+        return [...prev, year];
+      }
+    });
+    setCurrentPage(1);
+    setPageInput("1");
+  };
+
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
+    setCurrentPage(1);
+    setPageInput("1");
+  };
+
+  const togglePriceSort = () => {
+    setPriceSort((prev) => {
+      if (prev === "asc") return "desc";
+      if (prev === "desc") return null;
+      return "asc";
+    });
     setCurrentPage(1);
     setPageInput("1");
   };
@@ -151,35 +227,34 @@ export default function InventoryPage() {
           <h2 className="text-2xl font-semibold">Inventory</h2>
           <p className="text-sm text-muted-foreground">Manage your inventory</p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <FontAwesomeIcon
-              icon={faSearch}
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"
-            />
-            <Input
-              type="text"
-              placeholder="Search by VIN, make, model, trim, or year..."
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              disabled={inventoryLoading}
-              className="pl-9 w-64 bg-background text-foreground"
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={inventoryLoading || isRefreshing}
-            className="flex items-center gap-2"
-          >
-            <FontAwesomeIcon
-              icon={faRotateRight}
-              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
-            />
-            <span>Refresh</span>
-          </Button>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1 max-w-md">
+          <FontAwesomeIcon
+            icon={faSearch}
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"
+          />
+          <Input
+            type="text"
+            placeholder="Search by VIN, make, model, trim, or year..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            disabled={inventoryLoading}
+            className="pl-10"
+          />
         </div>
+        <Button
+          variant="outline"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="gap-2 ml-auto"
+        >
+          <FontAwesomeIcon
+            icon={isRefreshing ? faSpinner : faRotateRight}
+            className={cn("h-4 w-4", isRefreshing && "animate-spin")}
+          />
+          <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+        </Button>
       </div>
 
       <div className="rounded-lg border border-white/10 overflow-hidden">
@@ -188,11 +263,171 @@ export default function InventoryPage() {
             <thead className="bg-white/5 border-b border-white/10">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-semibold">VIN</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Year</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Make</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">
+                  <div className="flex items-center gap-2 justify-between">
+                    <span>Year</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className="h-4 w-4 flex items-center justify-center cursor-pointer hover:text-foreground transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <FontAwesomeIcon
+                            icon={faFilter}
+                            className={cn(
+                              "h-3 w-3 text-muted-foreground hover:text-foreground",
+                              yearFilter.length > 0 && "text-primary",
+                            )}
+                            title="Filter by year"
+                          />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-48 bg-background text-foreground"
+                      >
+                        <DropdownMenuLabel>Filter by Year</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <div className="max-h-48 overflow-y-auto">
+                          {filtersLoading ? (
+                            <div className="py-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                              <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                              Loading...
+                            </div>
+                          ) : availableYears.length === 0 ? (
+                            <div className="py-4 text-center text-sm text-muted-foreground">
+                              No years found
+                            </div>
+                          ) : (
+                            availableYears.map((year) => (
+                              <label
+                                key={year}
+                                className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-white/10 focus-within:bg-white/10"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={yearFilter.includes(year)}
+                                  onChange={() => handleYearToggle(year)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20 cursor-pointer shrink-0"
+                                />
+                                <span className="truncate">{year}</span>
+                              </label>
+                            ))
+                          )}
+                        </div>
+                        {yearFilter.length > 0 && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <div className="px-2 py-1 text-xs">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setYearFilter([]);
+                                  setCurrentPage(1);
+                                  setPageInput("1");
+                                }}
+                                className="text-muted-foreground hover:underline cursor-pointer"
+                              >
+                                Clear selection
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">
+                  <div className="flex items-center gap-2 justify-between">
+                    <span>Make</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className="h-4 w-4 flex items-center justify-center cursor-pointer hover:text-foreground transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <FontAwesomeIcon
+                            icon={faFilter}
+                            className={cn(
+                              "h-3 w-3 text-muted-foreground hover:text-foreground",
+                              makeFilter.length > 0 && "text-primary",
+                            )}
+                            title="Filter by make"
+                          />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-48 bg-background text-foreground"
+                      >
+                        <DropdownMenuLabel>Filter by Make</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <div className="max-h-48 overflow-y-auto">
+                          {filtersLoading ? (
+                            <div className="py-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                              <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                              Loading...
+                            </div>
+                          ) : availableMakes.length === 0 ? (
+                            <div className="py-4 text-center text-sm text-muted-foreground">
+                              No makes found
+                            </div>
+                          ) : (
+                            availableMakes.map((make) => (
+                              <label
+                                key={make}
+                                className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-white/10 focus-within:bg-white/10"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={makeFilter.includes(make)}
+                                  onChange={() => handleMakeToggle(make)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20 cursor-pointer shrink-0"
+                                />
+                                <span className="truncate">{make}</span>
+                              </label>
+                            ))
+                          )}
+                        </div>
+                        {makeFilter.length > 0 && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <div className="px-2 py-1 text-xs">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMakeFilter([]);
+                                  setCurrentPage(1);
+                                  setPageInput("1");
+                                }}
+                                className="text-muted-foreground hover:underline cursor-pointer"
+                              >
+                                Clear selection
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Model</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Trim</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Price</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">
+                  <button
+                    type="button"
+                    onClick={togglePriceSort}
+                    className="flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors"
+                    title="Sort by price"
+                  >
+                    <span>Price</span>
+                    <span className="text-xs text-muted-foreground">
+                      {priceSort === "asc" ? "↑" : priceSort === "desc" ? "↓" : ""}
+                    </span>
+                  </button>
+                </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Mileage</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">
                   <div className="flex items-center gap-2 justify-between">
@@ -216,30 +451,39 @@ export default function InventoryPage() {
                       >
                         <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        {statusOptions.map((option) => (
-                          <DropdownMenuCheckboxItem
-                            key={option.value}
-                            checked={statusFilter.includes(option.value)}
-                            onCheckedChange={() => handleStatusToggle(option.value)}
-                            className="cursor-pointer"
-                          >
-                            {option.label}
-                          </DropdownMenuCheckboxItem>
-                        ))}
+                        <div className="max-h-48 overflow-y-auto">
+                          {statusOptions.map((option) => (
+                            <label
+                              key={option.value}
+                              className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-white/10 focus-within:bg-white/10"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={statusFilter.includes(option.value)}
+                                onChange={() => handleStatusToggle(option.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20 cursor-pointer shrink-0"
+                              />
+                              <span className="truncate">{option.label}</span>
+                            </label>
+                          ))}
+                        </div>
                         {statusFilter.length > 0 && (
                           <>
                             <DropdownMenuSeparator />
-                            <DropdownMenuCheckboxItem
-                              checked={false}
-                              onCheckedChange={() => {
-                                setStatusFilter([]);
-                                setCurrentPage(1);
-                                setPageInput("1");
-                              }}
-                              className="cursor-pointer text-muted-foreground"
-                            >
-                              Clear filters
-                            </DropdownMenuCheckboxItem>
+                            <div className="px-2 py-1 text-xs">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setStatusFilter([]);
+                                  setCurrentPage(1);
+                                  setPageInput("1");
+                                }}
+                                className="text-muted-foreground hover:underline cursor-pointer"
+                              >
+                                Clear selection
+                              </button>
+                            </div>
                           </>
                         )}
                       </DropdownMenuContent>
@@ -263,15 +507,14 @@ export default function InventoryPage() {
                     <td className="px-4 py-3 text-sm">{item.mileage.toLocaleString()} mi</td>
                     <td className="px-4 py-3 text-sm">
                       <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          item.status === "available"
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${item.status === "available"
                             ? "bg-green-500/20 text-green-400"
                             : item.status === "sold"
                               ? "bg-red-500/20 text-red-400"
                               : item.status === "pending"
                                 ? "bg-yellow-500/20 text-yellow-400"
                                 : "bg-gray-500/20 text-gray-400"
-                        }`}
+                          }`}
                       >
                         {item.status}
                       </span>

@@ -403,12 +403,14 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6 mx-auto py-6">
-      <div>
-        <h2 className="text-2xl font-semibold">Settings</h2>
-        <p className="text-sm text-muted-foreground">
-          Manage your dealership information and service applications
-        </p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold">Settings</h2>
+          <p className="text-sm text-muted-foreground">
+            Manage your dealership information and service applications
+          </p>
+        </div>
       </div>
 
       {error && (
