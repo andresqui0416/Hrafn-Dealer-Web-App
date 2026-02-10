@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { getUserDealer } from "@/lib/auth/getUserDealer";
 
 const prisma = new PrismaClient();
@@ -27,6 +27,8 @@ export async function GET(request: NextRequest) {
     const makeValues = searchParams.getAll("make");
     const yearValues = searchParams.getAll("year");
     const searchQuery = searchParams.get("search")?.trim() || "";
+    const sortParam = searchParams.get("sort")?.trim() || "";
+    const orderParam = searchParams.get("order")?.trim().toLowerCase() || "";
 
     // Build where clause
     const where: any = {
@@ -77,12 +79,15 @@ export async function GET(request: NextRequest) {
       where.OR = searchConditions;
     }
 
+    const orderBy: Prisma.InventoryListingOrderByWithRelationInput =
+      sortParam === "price"
+        ? { price: orderParam === "asc" ? Prisma.SortOrder.asc : Prisma.SortOrder.desc }
+        : { createdAt: Prisma.SortOrder.desc };
+
     const [inventory, totalCount] = await Promise.all([
       prisma.inventoryListing.findMany({
         where,
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy,
         skip,
         take: limit,
       }),
