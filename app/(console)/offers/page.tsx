@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -70,6 +71,8 @@ type PaginationInfo = {
 };
 
 export default function OffersPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [offersLoading, setOffersLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -180,6 +183,77 @@ export default function OffersPage() {
   useEffect(() => {
     loadBrands();
   }, [loadBrands]);
+
+  useEffect(() => {
+    if (!searchParams) return;
+
+    const pageParam = searchParams.get("page");
+    const limitParam = searchParams.get("limit");
+    const searchParam = searchParams.get("search") || "";
+    const offerTypeParams = searchParams.getAll("offerType");
+    const brandParams = searchParams.getAll("brand");
+    const includeExpiredParam = searchParams.get("includeExpired");
+    const includeUnverifiedParam = searchParams.get("includeUnverified");
+
+    if (pageParam && !Number.isNaN(parseInt(pageParam, 10))) {
+      const pageNum = parseInt(pageParam, 10);
+      setCurrentPage(pageNum);
+      setPageInput(pageNum.toString());
+    }
+    if (limitParam && !Number.isNaN(parseInt(limitParam, 10))) {
+      setItemsPerPage(parseInt(limitParam, 10));
+    }
+    setSearchQuery(searchParam);
+    setOfferTypeFilter(offerTypeParams);
+    setBrandFilter(brandParams);
+    setIncludeExpired(includeExpiredParam === "true");
+    setIncludeUnverified(includeUnverifiedParam === "true");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!searchParams) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", currentPage.toString());
+    params.set("limit", itemsPerPage.toString());
+
+    if (searchQuery) {
+      params.set("search", searchQuery);
+    } else {
+      params.delete("search");
+    }
+
+    params.delete("offerType");
+    offerTypeFilter.forEach((type) => params.append("offerType", type));
+
+    params.delete("brand");
+    brandFilter.forEach((brand) => params.append("brand", brand));
+
+    if (includeExpired) {
+      params.set("includeExpired", "true");
+    } else {
+      params.delete("includeExpired");
+    }
+
+    if (includeUnverified) {
+      params.set("includeUnverified", "true");
+    } else {
+      params.delete("includeUnverified");
+    }
+
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [
+    currentPage,
+    itemsPerPage,
+    searchQuery,
+    offerTypeFilter,
+    brandFilter,
+    includeExpired,
+    includeUnverified,
+    router,
+    searchParams,
+  ]);
 
   const handleBrandDropdownOpenChange = useCallback(
     (open: boolean) => {
