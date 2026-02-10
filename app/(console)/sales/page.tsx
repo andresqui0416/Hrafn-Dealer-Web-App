@@ -18,6 +18,7 @@ import {
   faChevronLeft,
   faChevronRight,
   faX,
+  faRotateRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 
@@ -81,6 +82,8 @@ export default function SalesPage() {
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
   const [selectedSaleData, setSelectedSaleData] = useState<SaleDataFull | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshToken, setRefreshToken] = useState(0);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Load sales data
@@ -121,6 +124,7 @@ export default function SalesPage() {
       } finally {
         if (!abortController.signal.aborted) {
           setSalesLoading(false);
+          setRefreshing(false);
         }
       }
     };
@@ -130,7 +134,7 @@ export default function SalesPage() {
     return () => {
       abortController.abort();
     };
-  }, [currentPage, searchQuery, pageSize]);
+  }, [currentPage, searchQuery, pageSize, refreshToken]);
 
   // Load sale details when row is clicked
   const handleRowClick = async (saleId: string) => {
@@ -195,11 +199,11 @@ export default function SalesPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Sales Data</h1>
-          <p className="text-muted-foreground mt-1">View and analyze your sales records</p>
+          <h1 className="text-2xl font-bold">Sales Data</h1>
+          <p className="text-sm text-muted-foreground">View and analyze your sales records</p>
         </div>
       </div>
 
@@ -223,6 +227,21 @@ export default function SalesPage() {
             className="pl-10"
           />
         </div>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setRefreshing(true);
+            setRefreshToken((prev) => prev + 1);
+          }}
+          disabled={refreshing}
+          className="gap-2 ml-auto"
+        >
+          <FontAwesomeIcon
+            icon={refreshing ? faSpinner : faRotateRight}
+            className={cn("h-4 w-4", refreshing && "animate-spin")}
+          />
+          {refreshing ? "Refreshing..." : "Refresh"}
+        </Button>
       </div>
 
       {/* Error message */}

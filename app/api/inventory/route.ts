@@ -24,6 +24,8 @@ export async function GET(request: NextRequest) {
 
     // Get all status values from query params (can be multiple)
     const statusValues = searchParams.getAll("status");
+    const makeValues = searchParams.getAll("make");
+    const yearValues = searchParams.getAll("year");
     const searchQuery = searchParams.get("search")?.trim() || "";
 
     // Build where clause
@@ -36,6 +38,25 @@ export async function GET(request: NextRequest) {
       where.status = {
         in: statusValues,
       };
+    }
+
+    // Add make filter if provided (support multiple makes)
+    if (makeValues.length > 0) {
+      where.make = {
+        in: makeValues,
+      };
+    }
+
+    // Add year filter if provided (support multiple years)
+    if (yearValues.length > 0) {
+      const years = yearValues
+        .map((value) => parseInt(value, 10))
+        .filter((value) => !isNaN(value));
+      if (years.length > 0) {
+        where.year = {
+          in: years,
+        };
+      }
     }
 
     // Add search filter if provided
