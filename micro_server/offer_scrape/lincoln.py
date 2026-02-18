@@ -380,18 +380,19 @@ class LincolnScraper:
                 parent_div = soup.find('div', class_='fcf-outer-wrapper')
             
             if not parent_div:
-                print("Error: Could not find the main parent div (flexColumnFeature/fcf-outer-wrapper)")
-                return models
+                print("Warning: Could not find the main parent div (flexColumnFeature/fcf-outer-wrapper). Falling back to link discovery.")
+                parent_div = None
             
             # Now find the ul container within the parent div
-            container = parent_div.find('ul', class_='fcf-container')
+            container = parent_div.find('ul', class_='fcf-container') if parent_div else None
             
             if not container:
-                print("Error: Could not find the model container (ul.fcf-container) within parent div")
-                return models
+                if parent_div:
+                    print("Warning: Could not find the model container (ul.fcf-container). Falling back to link discovery.")
+                container = None
             
             # Now find all model tiles (li elements with class "flexTile section") within the container
-            model_tiles = container.find_all('li', class_='flexTile section')
+            model_tiles = container.find_all('li', class_='flexTile section') if container else []
             
             print(f"Found {len(model_tiles)} model tiles in container")
             
@@ -451,6 +452,48 @@ class LincolnScraper:
                 except Exception as e:
                     print(f"  - Error extracting model from tile: {e}")
                     continue
+
+            # Fallback: if the structured container parse found nothing, discover model links by regex.
+            # This is resilient to DOM/class changes on the Lincoln deals page.
+            if len(models) == 0:
+                print("Falling back to discovering model links from <a href> patterns...")
+                discovered: Dict[str, Dict[str, Any]] = {}
+
+                for a in soup.find_all('a', href=True):
+                    href = a.get('href') or ""
+                    # Example: /luxury-suvs/navigator/2025/pricing-and-incentives/
+                    m = re.search(r'/luxury-suvs/([^/]+)/(\d{4})/pricing-and-incentives/?', href)
+                    if not m:
+                        continue
+
+                    model_code = m.group(1)
+                    year = None
+                    try:
+                        year = int(m.group(2))
+                    except Exception:
+                        year = None
+
+                    url_path = href
+                    if url_path.startswith('/'):
+                        url_path = urljoin(self.base_url, url_path)
+
+                    # Prefer any non-empty link text as name; otherwise derive from model_code.
+                    link_text = self.clean_html_text(a.get_text(" ", strip=True))
+                    model_name = link_text if link_text else model_code.replace('-', ' ').title()
+
+                    key = url_path
+                    if key not in discovered:
+                        discovered[key] = {
+                            'name': model_name,
+                            'year': year,
+                            'url': url_path,
+                            'model_code': model_code,
+                            'url_path': url_path
+                        }
+
+                models = list(discovered.values())
+                for m in models:
+                    print(f"  - {m.get('name')} ({m.get('year') or 'N/A'}) - {m.get('url')}")
                     
         except Exception as e:
             print(f"Error parsing HTML: {e}")
@@ -481,12 +524,19 @@ class LincolnScraper:
             
             # Wait for model tiles to appear
             try:
-                WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "li.flexTile.section"))
+                WebDriverWait(self.driver, 15).until(
+                    EC.any_of(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "li.flexTile.section")),
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "ul.fcf-container")),
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "[data-fd-target-component='flexColumnFeature']")),
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "a[href*='pricing-and-incentives']")),
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "a[href*='/luxury-suvs/']")),
+                    )
                 )
             except TimeoutException:
-                print("Timeout waiting for model tiles to load")
-                return models
+                # Don't fail fast: Lincoln often loads content progressively or changes DOM.
+                # We'll still parse whatever HTML we have.
+                print("Timeout waiting for model tiles to load; continuing with HTML parsing fallback.")
             
             # Get page source and extract models
             html_content = self.driver.page_source
