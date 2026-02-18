@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
 
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
@@ -225,7 +223,6 @@ const fetChOfferData = async (modelInfo: any) => {
 
 export async function scrapeOffersFromChrysler() {
   try {
-    await prisma.$connect();
     const modelInfos = await fetchModelInfos();
     if (!modelInfos) {
       console.error("Failed to fetch model infos");
@@ -236,76 +233,17 @@ export async function scrapeOffersFromChrysler() {
       const offerData = await fetChOfferData(modelInfo);
       offers.push(...offerData);
     }
-    if (offers.length > 0) {
-      await prisma.offers.deleteMany({
-        where: {
-          brand: "Chrysler",
-        },
-      });
-      console.log("Deleted all existing Chrysler offers");
-      const BATCH_SIZE = 10;
-      for (let i = 0; i < offers.length; i += BATCH_SIZE) {
-        const batch = offers.slice(i, i + BATCH_SIZE);
-        try {
-          await prisma.$transaction(async (tx) => {
-            await tx.offers.createMany({
-              data: batch.map((offer) => ({
-                brand: offer.brand,
-                year: offer.year ? parseInt(offer.year) : null,
-                make: offer.make,
-                model: offer.model,
-                modelCode: offer.modelCode,
-                trim: offer.trim,
-                offerType: offer.offerType,
-                offerAmount: offer.offerAmount,
-                aprRate:
-                  offer.aprRate !== null && offer.aprRate !== undefined ? offer.aprRate : null,
-                aprTermMonths:
-                  offer.aprTermMonths !== null && offer.aprTermMonths !== undefined
-                    ? offer.aprTermMonths
-                    : null,
-                leaseTermMonths:
-                  offer.leaseTermMonths !== null && offer.leaseTermMonths !== undefined
-                    ? offer.leaseTermMonths
-                    : null,
-                cashValue:
-                  offer.cashValue !== null && offer.cashValue !== undefined
-                    ? offer.cashValue
-                    : null,
-                tradeDiscount: offer.tradeDiscount,
-                leaseDueAtSigning:
-                  offer.leaseDueAtSigning !== null && offer.leaseDueAtSigning !== undefined
-                    ? offer.leaseDueAtSigning
-                    : null,
-                leaseMonthlyPayment:
-                  offer.leaseMonthlyPayment !== null && offer.leaseMonthlyPayment !== undefined
-                    ? offer.leaseMonthlyPayment
-                    : null,
-                milesPerYear:
-                  offer.milesPerYear !== null && offer.milesPerYear !== undefined
-                    ? offer.milesPerYear
-                    : null,
-                terms: offer.terms,
-                finePrint: offer.finePrint,
-                expirationDate: offer.expirationDate ? new Date(offer.expirationDate) : null,
-                scrapedAt: new Date(),
-                sourceUrl: offer.sourceUrl ?? null,
-                loyaltyBonus: offer.loyaltyBonus ?? null,
-                conquestBonus: offer.conquestBonus ?? null,
-                militaryDiscount: offer.militaryDiscount ?? null,
-                collegeGrad: offer.collegeGrad ?? null,
-                firstResponder: offer.firstResponder ?? null,
-              })),
-              skipDuplicates: true,
-            });
-          });
-        } catch (err: any) {
-          console.error("Error storing Chrysler offer batch:", err?.message || err);
-        }
-      }
+    console.log("Chrysler incentives found:", offers.length);
+
+    const result = await storeScrapedIncentives({
+      brand: "Chrysler",
+      offers: offers as NormalizedIncentiveOffer[],
+      source: "chrysler",
+    });
+    if (!result.success) {
+      return { success: false, totalOffers: 0, error: result.error };
     }
-    console.log("Chrysler Offers found:", offers.length);
-    return { success: true, totalOffers: offers.length };
+    return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Chrysler offers:", error?.message || error);
     return { success: false, error: error?.message || "Failed to scrape Chrysler offers" };

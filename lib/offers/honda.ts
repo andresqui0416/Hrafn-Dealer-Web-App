@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
 
 // Public-facing URL for Honda offers (stored in DB)
 const HONDA_SOURCE_URL = "https://automobiles.honda.com/tools/current-offers";
@@ -254,76 +253,17 @@ export async function scrapeOffersFromHonda(zipCode: string = "95556") {
       return { success: false, error: "No offers found" };
     }
 
-    console.log(`Fetched ${offers.length} Honda offers`);
+    console.log("Honda incentives found:", offers.length);
 
-    // Delete existing Honda offers
-    await prisma.offers.deleteMany({
-      where: {
-        brand: "Honda",
-      },
+    const result = await storeScrapedIncentives({
+      brand: "Honda",
+      offers: offers as NormalizedIncentiveOffer[],
+      source: "honda",
     });
-    console.log("Deleted all existing Honda offers");
-
-    // Insert new offers in batches
-    const BATCH_SIZE = 10;
-    for (let i = 0; i < offers.length; i += BATCH_SIZE) {
-      const batch = offers.slice(i, i + BATCH_SIZE);
-      try {
-        await prisma.$transaction(async (tx) => {
-            await tx.offers.createMany({
-            data: batch.map((offer: any) => ({
-              brand: offer.brand,
-              year: offer.year,
-              make: offer.make,
-              model: offer.model,
-              modelCode: offer.modelCode,
-              trim: offer.trim,
-              offerType: offer.offerType,
-              offerAmount: offer.offerAmount,
-              aprRate: offer.aprRate !== null && offer.aprRate !== undefined ? offer.aprRate : null,
-              aprTermMonths:
-                offer.aprTermMonths !== null && offer.aprTermMonths !== undefined
-                  ? offer.aprTermMonths
-                  : null,
-              leaseTermMonths:
-                offer.leaseTermMonths !== null && offer.leaseTermMonths !== undefined
-                  ? offer.leaseTermMonths
-                  : null,
-              cashValue:
-                offer.cashValue !== null && offer.cashValue !== undefined ? offer.cashValue : null,
-              tradeDiscount: offer.tradeDiscount,
-              leaseDueAtSigning:
-                offer.leaseDueAtSigning !== null && offer.leaseDueAtSigning !== undefined
-                  ? offer.leaseDueAtSigning
-                  : null,
-              leaseMonthlyPayment:
-                offer.leaseMonthlyPayment !== null && offer.leaseMonthlyPayment !== undefined
-                  ? offer.leaseMonthlyPayment
-                  : null,
-              milesPerYear:
-                offer.milesPerYear !== null && offer.milesPerYear !== undefined
-                  ? offer.milesPerYear
-                  : null,
-              terms: offer.terms,
-              finePrint: offer.finePrint,
-              expirationDate: offer.expirationDate ? new Date(offer.expirationDate) : null,
-              scrapedAt: new Date(),
-              sourceUrl: offer.sourceUrl ?? null,
-              loyaltyBonus: offer.loyaltyBonus ?? null,
-              conquestBonus: offer.conquestBonus ?? null,
-              militaryDiscount: offer.militaryDiscount ?? null,
-              collegeGrad: offer.collegeGrad ?? null,
-              firstResponder: offer.firstResponder ?? null,
-            })),
-            skipDuplicates: true,
-          });
-        });
-      } catch (err: any) {
-        console.error("Error storing Honda offer batch:", err?.message || err);
-      }
+    if (!result.success) {
+      return { success: false, totalOffers: 0, error: result.error };
     }
-
-    return { success: true, totalOffers: offers.length };
+    return { success: true, totalOffers: result.stored };
   } catch (err: any) {
     console.error("Error scraping Honda offers:", err?.message || err);
     return { success: false, error: err?.message || err };

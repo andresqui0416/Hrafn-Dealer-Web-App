@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
 
 // Public-facing URL for Porsche offers (stored in DB)
 const PORSCHE_SOURCE_URL =
@@ -273,7 +271,6 @@ const fetchOfferData = async () => {
 
 export async function scrapeOffersFromPorsche() {
   try {
-    await prisma.$connect();
     const offers = await fetchOfferData();
 
     if (offers.length === 0) {
@@ -281,58 +278,19 @@ export async function scrapeOffersFromPorsche() {
       return { success: false, error: "No offers found" };
     }
 
-    console.log(`Fetched ${offers.length} Porsche offers`);
+    console.log("Porsche incentives found:", offers.length);
 
-    // Delete existing Porsche offers
-    await prisma.offers.deleteMany({
-      where: {
-        brand: "Porsche",
-      },
+    const result = await storeScrapedIncentives({
+      brand: "Porsche",
+      offers: offers as NormalizedIncentiveOffer[],
+      source: "porsche",
     });
-    console.log("Deleted all existing Porsche offers");
-
-    // Insert new offers in batches
-    const BATCH_SIZE = 10;
-    for (let i = 0; i < offers.length; i += BATCH_SIZE) {
-      const batch = offers.slice(i, i + BATCH_SIZE);
-      try {
-        await prisma.$transaction(async (tx) => {
-          await tx.offers.createMany({
-            data: batch.map((offer) => ({
-              brand: offer.brand,
-              year: offer.year,
-              make: offer.make,
-              model: offer.model,
-              modelCode: offer.modelCode,
-              trim: offer.trim,
-              offerType: offer.offerType,
-              offerAmount: offer.offerAmount,
-              aprRate: offer.aprRate,
-              aprTermMonths: offer.aprTermMonths,
-              leaseTermMonths: offer.leaseTermMonths,
-              cashValue: offer.cashValue,
-              leaseDueAtSigning: offer.leaseDueAtSigning,
-              leaseMonthlyPayment: offer.leaseMonthlyPayment,
-              milesPerYear: offer.milesPerYear,
-              terms: offer.terms,
-              finePrint: offer.finePrint,
-              expirationDate: offer.expirationDate ? new Date(offer.expirationDate) : null,
-              scrapedAt: new Date(),
-              sourceUrl: offer.sourceUrl ?? null,
-              })),
-            skipDuplicates: true,
-          });
-        });
-      } catch (err: any) {
-        console.error("Error storing Porsche offer batch:", err?.message || err);
-      }
+    if (!result.success) {
+      return { success: false, totalOffers: 0, error: result.error };
     }
-
-    return { success: true, totalOffers: offers.length };
+    return { success: true, totalOffers: result.stored };
   } catch (err: any) {
     console.error("Error scraping Porsche offers:", err?.message || err);
     return { success: false, error: err?.message || err };
-  } finally {
-    await prisma.$disconnect();
   }
 }
