@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import {
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 const LucidSourceUrl = "https://lucidmotors.com/offers";
 
@@ -90,22 +91,13 @@ function extractDueAtSigning(text: string | null | undefined): number | null {
 }
 
 // Extract dollar amount near a keyword (e.g. "$500 military" or "loyalty bonus $500") for schema bonus/discount fields
-function extractAmountNearKeyword(
-  text: string | null | undefined,
-  keyword: RegExp,
-): number | null {
+function extractAmountNearKeyword(text: string | null | undefined, keyword: RegExp): number | null {
   if (!text) return null;
   try {
-    const afterKeyword = new RegExp(
-      `${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`,
-      "i",
-    );
+    const afterKeyword = new RegExp(`${keyword.source}[\\s\\S]{0,80}?\\$([\\d,]+)`, "i");
     let match = text.match(afterKeyword);
     if (match && match[1]) return parseNumber(match[1]);
-    const beforeKeyword = new RegExp(
-      `\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`,
-      "i",
-    );
+    const beforeKeyword = new RegExp(`\\$([\\d,]+)[\\s\\S]{0,80}?${keyword.source}`, "i");
     match = text.match(beforeKeyword);
     if (match && match[1]) return parseNumber(match[1]);
     return null;
@@ -134,34 +126,33 @@ export async function scrapeOffersFromLucid() {
 
     const html = await response.text();
 
-    // Find all offer cards - look for the class OffersCard_offersCard__hs3qB
-    // The HTML might be minified or have different structure, so try multiple approaches
+    // Find all offer cards - support both legacy (OffersCard_offersCard) and current (TrimCard_offersContainer) DOM
     const offerCards: string[] = [];
 
-    // First, check if the class exists in the HTML
     const hasOffersCard = html.includes("OffersCard_offersCard");
+    const hasTrimCard = html.includes("TrimCard_offersContainer");
+    const hasDynamicCardList = html.includes("DynamicCardList_container");
 
-    if (!hasOffersCard) {
-      // Try alternative class names or patterns
-      const alternativePatterns = [/OffersCard[^"'\s]*/gi, /offersCard/gi, /offer-card/gi];
-
-      let foundAlternative = false;
-      for (const pattern of alternativePatterns) {
-        if (pattern.test(html)) {
-          foundAlternative = true;
-          break;
-        }
-      }
-
+    if (!hasOffersCard && !hasTrimCard && !hasDynamicCardList) {
+      const alternativePatterns = [
+        /OffersCard[^"'\s]*/gi,
+        /offersCard/gi,
+        /offer-card/gi,
+        /TrimCard[^"'\s]*/gi,
+        /DynamicCardList[^"'\s]*/gi,
+        /Spec_specContainer/gi,
+      ];
+      const foundAlternative = alternativePatterns.some((p) => p.test(html));
       if (!foundAlternative) {
         console.error("No offer card class found in HTML");
         return { success: false, error: "No offer card class found in HTML" };
       }
     }
 
-    // Method 1: Find divs by class name and extract the full card structure
-    // Look for the class name and work backwards/forwards to find the complete div
-    const classPattern = /OffersCard_offersCard__\w+/g;
+    // Prefer new structure (TrimCard), fall back to legacy (OffersCard)
+    const classPattern = hasTrimCard || hasDynamicCardList
+      ? /TrimCard_offersContainer__\w+/g
+      : /OffersCard_offersCard__\w+/g;
     const classMatches = Array.from(html.matchAll(classPattern));
 
     for (const classMatch of classMatches) {
@@ -249,95 +240,102 @@ export async function scrapeOffersFromLucid() {
           continue;
         }
 
-        // Extract all offer containers by finding payment type elements
-        // Use the payment type element (class containing OffersCard_paymentType__) as the primary separator
-        const offerContainers: string[] = [];
+        // Extract offer containers: new DOM uses Tabs_content (tabpanel), legacy uses OffersCard_paymentType
+        const offerContainers: { html: string; offerType: "lease" | "financing" | "cash" }[] = [];
+        const isNewDom = /TrimCard_offersContainer|Tabs_content__/.test(cardHtml);
 
-        // Find all payment type elements (Lease, Finance, Cash)
-        // Look for p tag with class containing OffersCard_paymentType__
-        const paymentTypePattern =
-          /<p[^>]*class="[^"]*OffersCard_paymentType__[^"]*"[^>]*>([^<]+)<\/p>/gi;
-        const paymentTypeMatches = Array.from(cardHtml.matchAll(paymentTypePattern));
-
-        for (let i = 0; i < paymentTypeMatches.length; i++) {
-          const paymentMatch = paymentTypeMatches[i];
-          const paymentIndex = paymentMatch.index || 0;
-          const paymentType = paymentMatch[1].trim();
-
-          // Find the start of this offer container - look backwards for the opening div
-          let containerStart = cardHtml.lastIndexOf("<div", paymentIndex);
-          if (containerStart === -1) continue;
-
-          // Find the end of this offer container
-          // It ends either at the next payment type or at a closing div boundary
-          let containerEnd = -1;
-          const nextPaymentIndex =
-            i < paymentTypeMatches.length - 1
-              ? paymentTypeMatches[i + 1].index || cardHtml.length
-              : cardHtml.length;
-
-          // Count div depth from containerStart to find the matching closing div
-          // But stop before we hit the next payment type
-          let depth = 0;
-          let pos = containerStart;
-
-          while (pos < nextPaymentIndex && pos < cardHtml.length) {
-            if (cardHtml.substring(pos, pos + 4) === "<div") {
-              depth++;
-            } else if (cardHtml.substring(pos, pos + 6) === "</div>") {
-              depth--;
-              if (depth === 0) {
-                containerEnd = pos + 6;
-                break;
+        if (isNewDom) {
+          // New structure: find Tabs_content (tabpanel) divs; order = Lease, Finance, Cash
+          const tabPanelPattern = /<div[^>]*class="[^"]*Tabs_content__[^"]*"[^>]*(?:id="tabpanel-(\d+)")?[^>]*>/gi;
+          const tabOrder: ("lease" | "financing" | "cash")[] = ["lease", "financing", "cash"];
+          let tabMatch;
+          const panelStarts: { index: number; id: number }[] = [];
+          while ((tabMatch = tabPanelPattern.exec(cardHtml)) !== null) {
+            const id = tabMatch[1] != null ? parseInt(tabMatch[1], 10) : panelStarts.length;
+            panelStarts.push({ index: tabMatch.index, id });
+          }
+          panelStarts.sort((a, b) => a.index - b.index);
+          for (let i = 0; i < panelStarts.length; i++) {
+            const start = panelStarts[i].index;
+            const divStart = cardHtml.lastIndexOf("<div", start);
+            if (divStart === -1) continue;
+            let depth = 0;
+            let pos = divStart;
+            while (pos < cardHtml.length) {
+              if (cardHtml.substring(pos, pos + 4) === "<div") depth++;
+              else if (cardHtml.substring(pos, pos + 6) === "</div>") {
+                depth--;
+                if (depth === 0) {
+                  const containerHtml = cardHtml.substring(divStart, pos + 6);
+                  const offerType = tabOrder[i] ?? "lease";
+                  offerContainers.push({ html: containerHtml, offerType });
+                  break;
+                }
               }
+              pos++;
             }
-            pos++;
-          }
-
-          // If we didn't find a closing div, use the next payment type as the boundary
-          if (containerEnd === -1) {
-            containerEnd = nextPaymentIndex;
-          }
-
-          if (containerEnd > containerStart) {
-            const containerHtml = cardHtml.substring(containerStart, containerEnd);
-            offerContainers.push(containerHtml);
           }
         }
 
-        // Fallback: If no payment types found, try the old method
         if (offerContainers.length === 0) {
-          console.warn(`No payment types found, trying fallback method for ${model} ${year}`);
+          // Legacy: Find payment type elements (Lease, Finance, Cash)
+          const paymentTypePattern =
+            /<p[^>]*class="[^"]*OffersCard_paymentType__[^"]*"[^>]*>([^<]+)<\/p>/gi;
+          const paymentTypeMatches = Array.from(cardHtml.matchAll(paymentTypePattern));
+
+          for (let i = 0; i < paymentTypeMatches.length; i++) {
+            const paymentMatch = paymentTypeMatches[i];
+            const paymentIndex = paymentMatch.index || 0;
+            const paymentType = paymentMatch[1].trim();
+
+            let containerStart = cardHtml.lastIndexOf("<div", paymentIndex);
+            if (containerStart === -1) continue;
+
+            let containerEnd = -1;
+            const nextPaymentIndex =
+              i < paymentTypeMatches.length - 1
+                ? paymentTypeMatches[i + 1].index || cardHtml.length
+                : cardHtml.length;
+
+            let depth = 0;
+            let pos = containerStart;
+            while (pos < nextPaymentIndex && pos < cardHtml.length) {
+              if (cardHtml.substring(pos, pos + 4) === "<div") depth++;
+              else if (cardHtml.substring(pos, pos + 6) === "</div>") {
+                depth--;
+                if (depth === 0) {
+                  containerEnd = pos + 6;
+                  break;
+                }
+              }
+              pos++;
+            }
+            if (containerEnd === -1) containerEnd = nextPaymentIndex;
+            if (containerEnd > containerStart) {
+              const containerHtml = cardHtml.substring(containerStart, containerEnd);
+              let offerType: "lease" | "financing" | "cash" = "cash";
+              if (paymentType.toLowerCase() === "lease") offerType = "lease";
+              else if (paymentType.toLowerCase() === "finance") offerType = "financing";
+              else if (paymentType.toLowerCase() === "cash") offerType = "cash";
+              offerContainers.push({ html: containerHtml, offerType });
+            }
+          }
+        }
+
+        if (offerContainers.length === 0) {
+          console.warn(`No payment types found, trying fallback for ${model} ${year}`);
           const offerContainerRegex =
             /<div[^>]*class="[^"]*OffersCard_offerContainer__[^"]*"[^>]*>([\s\S]*?)(?=<div[^>]*class="[^"]*OffersCard_offerContainer__|<\/div>\s*<\/div>\s*<\/div>\s*<\/div>)/gi;
           let containerMatch;
+          const order: ("lease" | "financing" | "cash")[] = ["lease", "financing", "cash"];
+          let idx = 0;
           while ((containerMatch = offerContainerRegex.exec(cardHtml)) !== null) {
-            offerContainers.push(containerMatch[0]);
+            offerContainers.push({ html: containerMatch[0], offerType: order[idx % 3] ?? "lease" });
+            idx++;
           }
         }
 
-        for (const containerHtml of offerContainers) {
-          // Extract offer type (Lease, Finance, Cash)
-          // Look for p with OffersCard_paymentType class
-          const typeMatch = containerHtml.match(
-            /<p[^>]*class="[^"]*OffersCard_paymentType__[^"]*"[^>]*>([^<]+)<\/p>/i,
-          );
-          const offerTypeStr = typeMatch ? typeMatch[1].trim().toLowerCase() : "";
-
-          if (!offerTypeStr) {
-            console.warn(`No offer type found in container for ${model} ${year}`);
-            continue;
-          }
-
-          let offerType: "cash" | "financing" | "lease" = "cash";
-          if (offerTypeStr === "lease") {
-            offerType = "lease";
-          } else if (offerTypeStr === "finance") {
-            offerType = "financing";
-          } else if (offerTypeStr === "cash") {
-            offerType = "cash";
-          }
-
+        for (const { html: containerHtml, offerType } of offerContainers) {
           // Extract all spec containers within this offer
           // Look for divs with Spec_specContainer class - use a more flexible approach
           const specContainers: string[] = [];
@@ -585,11 +583,26 @@ export async function scrapeOffersFromLucid() {
 
             // Bonus/discount: extract from terms (and finePrint if present)
             const combinedText = [terms || "", null].filter(Boolean).join("\n");
-            const loyaltyBonus = extractAmountNearKeyword(combinedText, /loyalty\s*(?:bonus|cash|rebate)?/i);
-            const conquestBonus = extractAmountNearKeyword(combinedText, /conquest\s*(?:bonus|cash|rebate)?/i);
-            const militaryDiscount = extractAmountNearKeyword(combinedText, /military\s*(?:discount|bonus|rebate)?/i);
-            const collegeGrad = extractAmountNearKeyword(combinedText, /college\s*(?:grad|graduate|rebate|bonus)?/i);
-            const firstResponder = extractAmountNearKeyword(combinedText, /first\s*responder\s*(?:discount|bonus|rebate)?/i);
+            const loyaltyBonus = extractAmountNearKeyword(
+              combinedText,
+              /loyalty\s*(?:bonus|cash|rebate)?/i,
+            );
+            const conquestBonus = extractAmountNearKeyword(
+              combinedText,
+              /conquest\s*(?:bonus|cash|rebate)?/i,
+            );
+            const militaryDiscount = extractAmountNearKeyword(
+              combinedText,
+              /military\s*(?:discount|bonus|rebate)?/i,
+            );
+            const collegeGrad = extractAmountNearKeyword(
+              combinedText,
+              /college\s*(?:grad|graduate|rebate|bonus)?/i,
+            );
+            const firstResponder = extractAmountNearKeyword(
+              combinedText,
+              /first\s*responder\s*(?:discount|bonus|rebate)?/i,
+            );
 
             offers.push({
               brand: "Lucid",
@@ -627,69 +640,17 @@ export async function scrapeOffersFromLucid() {
       }
     }
 
-    console.log("Lucid offers found:", offers.length);
+    console.log("Lucid incentives found:", offers.length);
 
-    // Delete all existing Lucid offers first
-    await prisma.offers.deleteMany({
-      where: {
-        brand: "Lucid",
-      },
+    const result = await storeScrapedIncentives({
+      brand: "Lucid",
+      offers: offers as NormalizedIncentiveOffer[],
+      source: "lucid",
     });
-    console.log("Deleted all existing Lucid offers");
-
-    // Store offers in database - process in batches to avoid transaction timeout
-    if (offers.length > 0) {
-      const BATCH_SIZE = 10; // Process 10 offers at a time
-      for (let i = 0; i < offers.length; i += BATCH_SIZE) {
-        const batch = offers.slice(i, i + BATCH_SIZE);
-        try {
-          await prisma.$transaction(
-            async (tx) => {
-              // Create new offers (public data, no dealer ownership) using createMany
-              await tx.offers.createMany({
-                data: batch.map((offer) => ({
-                  brand: offer.brand,
-                  year: offer.year,
-                  make: offer.make,
-                  model: offer.model,
-                  modelCode: offer.modelCode,
-                  trim: offer.trim,
-                  offerType: offer.offerType,
-                  offerAmount: offer.offerAmount,
-                  aprRate: offer.aprRate,
-                  aprTermMonths: offer.aprTermMonths,
-                  leaseTermMonths: offer.leaseTermMonths,
-                  cashValue: offer.cashValue,
-                  leaseDueAtSigning: offer.leaseDueAtSigning,
-                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
-                  milesPerYear: offer.milesPerYear,
-                  terms: offer.terms,
-                  finePrint: offer.finePrint,
-                  expirationDate: offer.expirationDate,
-                  scrapedAt: offer.scrapedAt,
-                  sourceUrl: offer.sourceUrl ?? null,
-                  loyaltyBonus: offer.loyaltyBonus ?? null,
-                  conquestBonus: offer.conquestBonus ?? null,
-                  militaryDiscount: offer.militaryDiscount ?? null,
-                  collegeGrad: offer.collegeGrad ?? null,
-                  firstResponder: offer.firstResponder ?? null,
-                })),
-                skipDuplicates: true, // Skip duplicates if any
-              });
-            },
-            {
-              maxWait: 10000, // Maximum time to wait for a transaction slot
-              timeout: 30000, // Maximum time the transaction can run (30 seconds)
-            },
-          );
-        } catch (err: any) {
-          // Log but don't fail on batch errors
-          console.error("Error storing Lucid offer batch:", err?.message || err);
-        }
-      }
+    if (!result.success) {
+      return { success: false, totalOffers: 0, error: result.error };
     }
-
-    return { success: true, totalOffers: offers.length };
+    return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Lucid offers:", error);
     return {
