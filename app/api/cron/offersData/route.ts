@@ -58,56 +58,56 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       toyota: { success: false, totalOffers: 0, error: "" },
     };
 
-    // Scrape Audi offers
-    try {
-      const audiResult = (await scrapeOffersFromAudi()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.audi = {
-        success: audiResult.success,
-        totalOffers: audiResult.totalOffers || 0,
-        error: audiResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Audi offers:", error?.message || error);
-      results.audi.error = error?.message || "Failed to scrape Audi offers";
-    }
+    // // Scrape Audi offers
+    // try {
+    //   const audiResult = (await scrapeOffersFromAudi()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.audi = {
+    //     success: audiResult.success,
+    //     totalOffers: audiResult.totalOffers || 0,
+    //     error: audiResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Audi offers:", error?.message || error);
+    //   results.audi.error = error?.message || "Failed to scrape Audi offers";
+    // }
 
-    // Scrape Mazda offers
-    try {
-      const mazdaResult = (await scrapeOffersFromMazda()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.mazda = {
-        success: mazdaResult.success,
-        totalOffers: mazdaResult.totalOffers || 0,
-        error: mazdaResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Mazda offers:", error?.message || error);
-      results.mazda.error = error?.message || "Failed to scrape Mazda offers";
-    }
+    // // Scrape Mazda offers
+    // try {
+    //   const mazdaResult = (await scrapeOffersFromMazda()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.mazda = {
+    //     success: mazdaResult.success,
+    //     totalOffers: mazdaResult.totalOffers || 0,
+    //     error: mazdaResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Mazda offers:", error?.message || error);
+    //   results.mazda.error = error?.message || "Failed to scrape Mazda offers";
+    // }
 
-    // Scrape Mercedes-Benz offers
-    try {
-      const mbusaResult = (await scrapeOffersFromMBUSA()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.mbusa = {
-        success: mbusaResult.success,
-        totalOffers: mbusaResult.totalOffers || 0,
-        error: mbusaResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Mercedes-Benz offers:", error?.message || error);
-      results.mbusa.error = error?.message || "Failed to scrape Mercedes-Benz offers";
-    }
+    // // Scrape Mercedes-Benz offers
+    // try {
+    //   const mbusaResult = (await scrapeOffersFromMBUSA()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.mbusa = {
+    //     success: mbusaResult.success,
+    //     totalOffers: mbusaResult.totalOffers || 0,
+    //     error: mbusaResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Mercedes-Benz offers:", error?.message || error);
+    //   results.mbusa.error = error?.message || "Failed to scrape Mercedes-Benz offers";
+    // }
 
     // Scrape Lucid offers
     try {
@@ -126,260 +126,260 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       results.lucid.error = error?.message || "Failed to scrape Lucid offers";
     }
 
-    // Scrape Hyundai offers
-    try {
-      const hyundaiResult = (await scrapeOffersFromHyundai()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.hyundai = {
-        success: hyundaiResult.success,
-        totalOffers: hyundaiResult.totalOffers || 0,
-        error: hyundaiResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Hyundai offers:", error?.message || error);
-      results.hyundai.error = error?.message || "Failed to scrape Hyundai offers";
-    }
+    // // Scrape Hyundai offers
+    // try {
+    //   const hyundaiResult = (await scrapeOffersFromHyundai()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.hyundai = {
+    //     success: hyundaiResult.success,
+    //     totalOffers: hyundaiResult.totalOffers || 0,
+    //     error: hyundaiResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Hyundai offers:", error?.message || error);
+    //   results.hyundai.error = error?.message || "Failed to scrape Hyundai offers";
+    // }
 
-    // Scrape Kia offers
-    try {
-      const kiaResult = (await scrapeOffersFromKia()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.kia = {
-        success: kiaResult.success,
-        totalOffers: kiaResult.totalOffers || 0,
-        error: kiaResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Kia offers:", error?.message || error);
-      results.kia.error = error?.message || "Failed to scrape Kia offers";
-    }
+    // // Scrape Kia offers
+    // try {
+    //   const kiaResult = (await scrapeOffersFromKia()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.kia = {
+    //     success: kiaResult.success,
+    //     totalOffers: kiaResult.totalOffers || 0,
+    //     error: kiaResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Kia offers:", error?.message || error);
+    //   results.kia.error = error?.message || "Failed to scrape Kia offers";
+    // }
 
-    // Scrape Cadillac offers
-    try {
-      const cadillacResult = (await scrapeOffersFromCadillac()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.cadillac = {
-        success: cadillacResult.success,
-        totalOffers: cadillacResult.totalOffers || 0,
-        error: cadillacResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Cadillac offers:", error?.message || error);
-      results.cadillac.error = error?.message || "Failed to scrape Cadillac offers";
-    }
+    // // Scrape Cadillac offers
+    // try {
+    //   const cadillacResult = (await scrapeOffersFromCadillac()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.cadillac = {
+    //     success: cadillacResult.success,
+    //     totalOffers: cadillacResult.totalOffers || 0,
+    //     error: cadillacResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Cadillac offers:", error?.message || error);
+    //   results.cadillac.error = error?.message || "Failed to scrape Cadillac offers";
+    // }
 
-    // Scrape GMC offers
-    try {
-      const gmcResult = (await scrapeOffersFromGMC()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.gmc = {
-        success: gmcResult.success,
-        totalOffers: gmcResult.totalOffers || 0,
-        error: gmcResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping GMC offers:", error?.message || error);
-      results.gmc.error = error?.message || "Failed to scrape GMC offers";
-    }
+    // // Scrape GMC offers
+    // try {
+    //   const gmcResult = (await scrapeOffersFromGMC()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.gmc = {
+    //     success: gmcResult.success,
+    //     totalOffers: gmcResult.totalOffers || 0,
+    //     error: gmcResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping GMC offers:", error?.message || error);
+    //   results.gmc.error = error?.message || "Failed to scrape GMC offers";
+    // }
 
-    // Scrap Buick offers
-    try {
-      const buickResult = (await scrapeOffersFromBuick()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.buick = {
-        success: buickResult.success,
-        totalOffers: buickResult.totalOffers || 0,
-        error: buickResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Buick offers:", error?.message || error);
-      results.buick.error = error?.message || "Failed to scrape Buick offers";
-    }
+    // // Scrap Buick offers
+    // try {
+    //   const buickResult = (await scrapeOffersFromBuick()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.buick = {
+    //     success: buickResult.success,
+    //     totalOffers: buickResult.totalOffers || 0,
+    //     error: buickResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Buick offers:", error?.message || error);
+    //   results.buick.error = error?.message || "Failed to scrape Buick offers";
+    // }
 
-    // Scrape Chevrolet offers
-    try {
-      const chevroletResult = (await scrapeOffersFromChevrolet()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.chevrolet = {
-        success: chevroletResult.success,
-        totalOffers: chevroletResult.totalOffers || 0,
-        error: chevroletResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Chevrolet offers:", error?.message || error);
-      results.chevrolet.error = error?.message || "Failed to scrape Chevrolet offers";
-    }
+    // // Scrape Chevrolet offers
+    // try {
+    //   const chevroletResult = (await scrapeOffersFromChevrolet()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.chevrolet = {
+    //     success: chevroletResult.success,
+    //     totalOffers: chevroletResult.totalOffers || 0,
+    //     error: chevroletResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Chevrolet offers:", error?.message || error);
+    //   results.chevrolet.error = error?.message || "Failed to scrape Chevrolet offers";
+    // }
 
-    // Scrape Chrysler offers
-    try {
-      const chryslerResult = (await scrapeOffersFromChrysler()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.chrysler = {
-        success: chryslerResult.success,
-        totalOffers: chryslerResult.totalOffers || 0,
-        error: chryslerResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Chrysler offers:", error?.message || error);
-      results.chrysler.error = error?.message || "Failed to scrape Chrysler offers";
-    }
+    // // Scrape Chrysler offers
+    // try {
+    //   const chryslerResult = (await scrapeOffersFromChrysler()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.chrysler = {
+    //     success: chryslerResult.success,
+    //     totalOffers: chryslerResult.totalOffers || 0,
+    //     error: chryslerResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Chrysler offers:", error?.message || error);
+    //   results.chrysler.error = error?.message || "Failed to scrape Chrysler offers";
+    // }
 
-    // Scrape Jeep offers
-    try {
-      const jeepResult = (await scrapeOffersFromJeep()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.jeep = {
-        success: jeepResult.success,
-        totalOffers: jeepResult.totalOffers || 0,
-        error: jeepResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Jeep offers:", error?.message || error);
-      results.jeep.error = error?.message || "Failed to scrape Jeep offers";
-    }
+    // // Scrape Jeep offers
+    // try {
+    //   const jeepResult = (await scrapeOffersFromJeep()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.jeep = {
+    //     success: jeepResult.success,
+    //     totalOffers: jeepResult.totalOffers || 0,
+    //     error: jeepResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Jeep offers:", error?.message || error);
+    //   results.jeep.error = error?.message || "Failed to scrape Jeep offers";
+    // }
 
-    // Scrape RAM offers
-    try {
-      const ramResult = (await scrapeOffersFromRAM()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.ram = {
-        success: ramResult.success,
-        totalOffers: ramResult.totalOffers || 0,
-        error: ramResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping RAM offers:", error?.message || error);
-      results.ram.error = error?.message || "Failed to scrape RAM offers";
-    }
+    // // Scrape RAM offers
+    // try {
+    //   const ramResult = (await scrapeOffersFromRAM()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.ram = {
+    //     success: ramResult.success,
+    //     totalOffers: ramResult.totalOffers || 0,
+    //     error: ramResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping RAM offers:", error?.message || error);
+    //   results.ram.error = error?.message || "Failed to scrape RAM offers";
+    // }
 
-    // Scrape Dodge offers
-    try {
-      const dodgeResult = (await scrapeOffersFromDodge()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.dodge = {
-        success: dodgeResult.success,
-        totalOffers: dodgeResult.totalOffers || 0,
-        error: dodgeResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Dodge offers:", error?.message || error);
-      results.dodge.error = error?.message || "Failed to scrape Dodge offers";
-    }
+    // // Scrape Dodge offers
+    // try {
+    //   const dodgeResult = (await scrapeOffersFromDodge()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.dodge = {
+    //     success: dodgeResult.success,
+    //     totalOffers: dodgeResult.totalOffers || 0,
+    //     error: dodgeResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Dodge offers:", error?.message || error);
+    //   results.dodge.error = error?.message || "Failed to scrape Dodge offers";
+    // }
 
-    // Scrape Porsche offers
-    try {
-      const porscheResult = (await scrapeOffersFromPorsche()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.porsche = {
-        success: porscheResult.success,
-        totalOffers: porscheResult.totalOffers || 0,
-        error: porscheResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Porsche offers:", error?.message || error);
-      results.porsche.error = error?.message || "Failed to scrape Porsche offers";
-    }
+    // // Scrape Porsche offers
+    // try {
+    //   const porscheResult = (await scrapeOffersFromPorsche()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.porsche = {
+    //     success: porscheResult.success,
+    //     totalOffers: porscheResult.totalOffers || 0,
+    //     error: porscheResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Porsche offers:", error?.message || error);
+    //   results.porsche.error = error?.message || "Failed to scrape Porsche offers";
+    // }
 
-    // Scrape Honda offers
-    try {
-      const hondaResult = (await scrapeOffersFromHonda()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.honda = {
-        success: hondaResult.success,
-        totalOffers: hondaResult.totalOffers || 0,
-        error: hondaResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Honda offers:", error?.message || error);
-      results.honda.error = error?.message || "Failed to scrape Honda offers";
-    }
+    // // Scrape Honda offers
+    // try {
+    //   const hondaResult = (await scrapeOffersFromHonda()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.honda = {
+    //     success: hondaResult.success,
+    //     totalOffers: hondaResult.totalOffers || 0,
+    //     error: hondaResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Honda offers:", error?.message || error);
+    //   results.honda.error = error?.message || "Failed to scrape Honda offers";
+    // }
 
-    // Scrape BMW offers
-    try {
-      const bmwResult = (await scrapeOffersFromBMW()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.bmw = {
-        success: bmwResult.success,
-        totalOffers: bmwResult.totalOffers || 0,
-        error: bmwResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping BMW offers:", error?.message || error);
-      results.bmw.error = error?.message || "Failed to scrape BMW offers";
-    }
+    // // Scrape BMW offers
+    // try {
+    //   const bmwResult = (await scrapeOffersFromBMW()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.bmw = {
+    //     success: bmwResult.success,
+    //     totalOffers: bmwResult.totalOffers || 0,
+    //     error: bmwResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping BMW offers:", error?.message || error);
+    //   results.bmw.error = error?.message || "Failed to scrape BMW offers";
+    // }
 
-    // Scrape Volkswagen offers
-    try {
-      const vwResult = (await scrapeOffersFromVW()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.vw = {
-        success: vwResult.success,
-        totalOffers: vwResult.totalOffers || 0,
-        error: vwResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Volkswagen offers:", error?.message || error);
-      results.vw.error = error?.message || "Failed to scrape Volkswagen offers";
-    }
+    // // Scrape Volkswagen offers
+    // try {
+    //   const vwResult = (await scrapeOffersFromVW()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.vw = {
+    //     success: vwResult.success,
+    //     totalOffers: vwResult.totalOffers || 0,
+    //     error: vwResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Volkswagen offers:", error?.message || error);
+    //   results.vw.error = error?.message || "Failed to scrape Volkswagen offers";
+    // }
 
-    // Scrape Toyota offers
-    try {
-      const toyotaResult = (await scrapeOffersFromToyota()) as {
-        success: boolean;
-        totalOffers?: number;
-        error?: string;
-      };
-      results.toyota = {
-        success: toyotaResult.success,
-        totalOffers: toyotaResult.totalOffers || 0,
-        error: toyotaResult.error || "",
-      };
-    } catch (error: any) {
-      console.error("Error scraping Toyota offers:", error?.message || error);
-      results.toyota.error = error?.message || "Failed to scrape Toyota offers";
-    }
+    // // Scrape Toyota offers
+    // try {
+    //   const toyotaResult = (await scrapeOffersFromToyota()) as {
+    //     success: boolean;
+    //     totalOffers?: number;
+    //     error?: string;
+    //   };
+    //   results.toyota = {
+    //     success: toyotaResult.success,
+    //     totalOffers: toyotaResult.totalOffers || 0,
+    //     error: toyotaResult.error || "",
+    //   };
+    // } catch (error: any) {
+    //   console.error("Error scraping Toyota offers:", error?.message || error);
+    //   results.toyota.error = error?.message || "Failed to scrape Toyota offers";
+    // }
 
     const totalOffers =
       results.audi.totalOffers +

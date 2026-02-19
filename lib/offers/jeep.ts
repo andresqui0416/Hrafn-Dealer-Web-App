@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
 
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
@@ -295,7 +294,6 @@ const fetchOfferData = async (modelInfo: any) => {
 
 export async function scrapeOffersFromJeep() {
   try {
-    await prisma.$connect();
     const modelInfos = await fetchModelInfos();
     if (!modelInfos) {
       console.error("Failed to fetch model infos");
@@ -316,78 +314,17 @@ export async function scrapeOffersFromJeep() {
       }
     }
 
-    // Delete all existing Jeepo ffers first
-    await prisma.offers.deleteMany({
-      where: {
-        brand: "Jeep",
-      },
-    });
-    console.log("Deleted all existing Jeep offers");
+    console.log("Jeep incentives found:", offers.length);
 
-    if (offers.length > 0) {
-      const BATCH_SIZE = 10;
-      for (let i = 0; i < offers.length; i += BATCH_SIZE) {
-        const batch = offers.slice(i, i + BATCH_SIZE);
-        try {
-          await prisma.$transaction(async (tx) => {
-            await tx.offers.createMany({
-              data: batch.map((offer) => ({
-                brand: offer.brand,
-                year: offer.year ? parseInt(offer.year) : null,
-                make: offer.make,
-                model: offer.model,
-                modelCode: offer.modelCode,
-                trim: offer.trim,
-                offerType: offer.offerType,
-                offerAmount: offer.offerAmount,
-                aprRate:
-                  offer.aprRate !== null && offer.aprRate !== undefined ? offer.aprRate : null,
-                aprTermMonths:
-                  offer.aprTermMonths !== null && offer.aprTermMonths !== undefined
-                    ? offer.aprTermMonths
-                    : null,
-                leaseTermMonths:
-                  offer.leaseTermMonths !== null && offer.leaseTermMonths !== undefined
-                    ? offer.leaseTermMonths
-                    : null,
-                cashValue:
-                  offer.cashValue !== null && offer.cashValue !== undefined
-                    ? offer.cashValue
-                    : null,
-                tradeDiscount: offer.tradeDiscount,
-                leaseDueAtSigning:
-                  offer.leaseDueAtSigning !== null && offer.leaseDueAtSigning !== undefined
-                    ? offer.leaseDueAtSigning
-                    : null,
-                leaseMonthlyPayment:
-                  offer.leaseMonthlyPayment !== null && offer.leaseMonthlyPayment !== undefined
-                    ? offer.leaseMonthlyPayment
-                    : null,
-                milesPerYear:
-                  offer.milesPerYear !== null && offer.milesPerYear !== undefined
-                    ? offer.milesPerYear
-                    : null,
-                terms: offer.terms,
-                finePrint: offer.finePrint,
-                expirationDate: offer.expirationDate ? new Date(offer.expirationDate) : null,
-                scrapedAt: new Date(),
-                sourceUrl: offer.sourceUrl ?? null,
-                loyaltyBonus: offer.loyaltyBonus ?? null,
-                conquestBonus: offer.conquestBonus ?? null,
-                militaryDiscount: offer.militaryDiscount ?? null,
-                collegeGrad: offer.collegeGrad ?? null,
-                firstResponder: offer.firstResponder ?? null,
-              })),
-              skipDuplicates: true,
-            });
-          });
-        } catch (err: any) {
-          console.error("Error storing Jeep offer batch:", err?.message || err);
-        }
-      }
+    const result = await storeScrapedIncentives({
+      brand: "Jeep",
+      offers: offers as NormalizedIncentiveOffer[],
+      source: "jeep",
+    });
+    if (!result.success) {
+      return { success: false, totalOffers: 0, error: result.error };
     }
-    console.log("Offers fetched successfully:", offers.length);
-    return { success: true, totalOffers: offers.length };
+    return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Jeep offers:", error?.message || error);
     return { success: false, error: error?.message || "Failed to scrape Jeep offers" };

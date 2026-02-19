@@ -162,7 +162,6 @@ async def run_scrapers():
         
         # Run Land Rover scraper (runs independently, even if Lincoln failed)
         landrover_success, landrover_count = run_landrover_scraper(api_url=api_url)
-        
         # Calculate duration
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds()

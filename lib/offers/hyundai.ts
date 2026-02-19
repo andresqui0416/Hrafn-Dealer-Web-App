@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
 
 // Public-facing URL for Hyundai offers (stored in DB)
 const HYUNDAI_SOURCE_URL = "https://www.hyundaiusa.com/us/en/offers";
@@ -331,70 +329,17 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
       }
     }
 
-    console.log("Hyundai offers found:", offers.length);
+    console.log("Hyundai incentives found:", offers.length);
 
-    // Delete all existing Hyundai offers first
-    await prisma.offers.deleteMany({
-      where: {
-        brand: "Hyundai",
-      },
+    const result = await storeScrapedIncentives({
+      brand: "Hyundai",
+      offers: offers as NormalizedIncentiveOffer[],
+      source: "hyundai",
     });
-    console.log("Deleted all existing Hyundai offers");
-
-    // Store offers in database - process in batches to avoid transaction timeout
-    if (offers.length > 0) {
-      const BATCH_SIZE = 10; // Process 10 offers at a time
-      for (let i = 0; i < offers.length; i += BATCH_SIZE) {
-        const batch = offers.slice(i, i + BATCH_SIZE);
-        try {
-          await prisma.$transaction(
-            async (tx) => {
-              // Create new offers (public data, no dealer ownership) using createMany
-              await tx.offers.createMany({
-                data: batch.map((offer) => ({
-                  brand: offer.brand,
-                  year: offer.year,
-                  make: offer.make,
-                  model: offer.model,
-                  modelCode: offer.modelCode,
-                  trim: offer.trim,
-                  offerType: offer.offerType,
-                  offerAmount: offer.offerAmount,
-                  aprRate: offer.aprRate,
-                  aprTermMonths: offer.aprTermMonths,
-                  leaseTermMonths: offer.leaseTermMonths,
-                  cashValue: offer.cashValue,
-                  tradeDiscount: offer.tradeDiscount,
-                  leaseDueAtSigning: offer.leaseDueAtSigning,
-                  leaseMonthlyPayment: offer.leaseMonthlyPayment,
-                  milesPerYear: offer.milesPerYear,
-                  terms: offer.terms,
-                  finePrint: offer.finePrint,
-                  expirationDate: offer.expirationDate,
-                  scrapedAt: offer.scrapedAt,
-                  sourceUrl: offer.sourceUrl ?? null,
-                  loyaltyBonus: offer.loyaltyBonus ?? null,
-                  conquestBonus: offer.conquestBonus ?? null,
-                  militaryDiscount: offer.militaryDiscount ?? null,
-                  collegeGrad: offer.collegeGrad ?? null,
-                  firstResponder: offer.firstResponder ?? null,
-                })),
-                skipDuplicates: true, // Skip duplicates if any
-              });
-            },
-            {
-              maxWait: 10000, // Maximum time to wait for a transaction slot
-              timeout: 30000, // Maximum time the transaction can run (30 seconds)
-            },
-          );
-        } catch (err: any) {
-          // Log but don't fail on batch errors
-          console.error("Error storing Hyundai offer batch:", err?.message || err);
-        }
-      }
+    if (!result.success) {
+      return { success: false, totalOffers: 0, error: result.error };
     }
-
-    return { success: true, totalOffers: offers.length };
+    return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Hyundai offers:", error);
     return {

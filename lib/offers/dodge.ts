@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
 
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
@@ -218,7 +216,6 @@ const fetchOfferData = async (modelInfo: any) => {
 
 export async function scrapeOffersFromDodge() {
   try {
-    await prisma.$connect();
     const modelInfos = await fetchModelInfos();
     if (!modelInfos) {
       return { success: false, error: "Failed to fetch model infos" };
@@ -229,62 +226,19 @@ export async function scrapeOffersFromDodge() {
       const offerData = await fetchOfferData(modelInfo);
       offers.push(...offerData);
     }
-    console.log("Offers fetched successfully:", offers.length);
-    if (offers.length > 0) {
-      await prisma.offers.deleteMany({
-        where: {
-          brand: "dodge",
-        },
-      });
-      console.log("Deleted all existing Dodge offers");
-      const BATCH_SIZE = 10;
-      for (let i = 0; i < offers.length; i += BATCH_SIZE) {
-        const batch = offers.slice(i, i + BATCH_SIZE);
-        try {
-          await prisma.$transaction(async (tx) => {
-            await tx.offers.createMany({
-              data: batch.map((offer) => ({
-                brand: offer.brand,
-                year: offer.year ? parseInt(offer.year) : null,
-                make: offer.make,
-                model: offer.model,
-                modelCode: offer.modelCode,
-                trim: offer.trim || null,
-                offerType: offer.offerType,
-                offerAmount: offer.offerAmount,
-                aprRate: offer.aprRate,
-                aprTermMonths: offer.aprTermMonths,
-                leaseTermMonths: offer.leaseTermMonths,
-                cashValue: offer.cashValue,
-                tradeDiscount: offer.tradeDiscount,
-                leaseDueAtSigning: offer.leaseDueAtSigning,
-                leaseMonthlyPayment: offer.leaseMonthlyPayment,
-                milesPerYear: offer.milesPerYear,
-                terms: offer.terms,
-                finePrint: offer.finePrint,
-                expirationDate: offer.expirationDate ? new Date(offer.expirationDate) : null,
-                scrapedAt: new Date(),
-                sourceUrl: offer.sourceUrl ?? null,
-                loyaltyBonus: offer.loyaltyBonus ?? null,
-                conquestBonus: offer.conquestBonus ?? null,
-                militaryDiscount: offer.militaryDiscount ?? null,
-                collegeGrad: offer.collegeGrad ?? null,
-                firstResponder: offer.firstResponder ?? null,
-              })),
-              skipDuplicates: true,
-            });
-          });
-        } catch (err: any) {
-          console.error("Error storing Dodge offer batch:", err?.message || err);
-        }
-      }
+    console.log("Dodge incentives found:", offers.length);
+
+    const result = await storeScrapedIncentives({
+      brand: offers.length > 0 ? offers[0].brand : "Dodge",
+      offers: offers as NormalizedIncentiveOffer[],
+      source: "dodge",
+    });
+    if (!result.success) {
+      return { success: false, totalOffers: 0, error: result.error };
     }
-    console.log("Offers fetched successfully:", offers.length);
-    return { success: true, totalOffers: offers.length };
+    return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Dodge offers:", error?.message || error);
     return { success: false, error: error?.message || "Failed to scrape Dodge offers" };
-  } finally {
-    await prisma.$disconnect();
   }
 }
