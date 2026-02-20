@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Trim leading/trailing whitespace and collapse internal runs of whitespace (spaces, newlines, tabs) to a single space
 function normalizeDescriptionText(str: string | null | undefined): string {
@@ -157,6 +162,10 @@ function extractAmountNearKeyword(
 }
 
 export async function scrapeOffersFromCadillac() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Cadillac",
+    source: "cadillac",
+  });
   try {
     const myHeaders = new Headers();
     const requestOptions = {
@@ -335,6 +344,7 @@ export async function scrapeOffersFromCadillac() {
       brand: "Cadillac",
       offers: offers as NormalizedIncentiveOffer[],
       source: "cadillac",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -342,9 +352,11 @@ export async function scrapeOffersFromCadillac() {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Cadillac offers:", error);
-    return {
-      success: false,
-      error: error?.message || "Internal server error while scraping Cadillac offers",
-    };
+    const message = error?.message || "Internal server error while scraping Cadillac offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Cadillac",
+      source: "cadillac",
+    });
+    return { success: false, error: message };
   }
 }

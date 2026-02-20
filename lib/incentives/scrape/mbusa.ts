@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Public-facing URL for Mercedes-Benz offers (stored in DB)
 const MBUSA_SOURCE_URL = "https://www.mbusa.com/en/special-offers";
@@ -197,6 +202,10 @@ function extractAmountNearKeyword(
 }
 
 export async function scrapeOffersFromMBUSA() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Mercedes-Benz",
+    source: "mbusa",
+  });
   try {
     const mbusaApiUrl =
       "https://www.mbusa.com/en/special-offers/jcr:content.filter-offer-json.html";
@@ -384,6 +393,7 @@ export async function scrapeOffersFromMBUSA() {
       brand: "Mercedes-Benz",
       offers: offers as NormalizedIncentiveOffer[],
       source: "mbusa",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -391,9 +401,11 @@ export async function scrapeOffersFromMBUSA() {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Mercedes-Benz offers:", error);
-    return {
-      success: false,
-      error: error?.message || "Internal server error while scraping Mercedes-Benz offers",
-    };
+    const message = error?.message || "Internal server error while scraping Mercedes-Benz offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Mercedes-Benz",
+      source: "mbusa",
+    });
+    return { success: false, error: message };
   }
 }

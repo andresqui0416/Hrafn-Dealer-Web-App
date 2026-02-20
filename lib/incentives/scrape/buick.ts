@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
@@ -542,6 +547,10 @@ async function fetchFeaturedOfferHTML(featuredOfferUrl: string): Promise<string 
 }
 
 export async function scrapeOffersFromBuick() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Buick",
+    source: "buick",
+  });
   try {
     const myHeaders = new Headers();
     const requestOptions = {
@@ -927,6 +936,7 @@ export async function scrapeOffersFromBuick() {
       brand: "Buick",
       offers: offers as NormalizedIncentiveOffer[],
       source: "buick",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -934,9 +944,11 @@ export async function scrapeOffersFromBuick() {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Buick offers:", error);
-    return {
-      success: false,
-      error: error?.message || "Internal server error while scraping Buick offers",
-    };
+    const message = error?.message || "Internal server error while scraping Buick offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Buick",
+      source: "buick",
+    });
+    return { success: false, error: message };
   }
 }

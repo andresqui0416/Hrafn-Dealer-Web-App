@@ -214,11 +214,29 @@ model ScrapeEvent {
   errorMessage      String?  @db.Text @map("error_message")
   snapshots         ScrapeSnapshot[]
   offerVersions     OfferVersion[]
+  failureLogs       ScrapeFailureLog[]
 
   @@index([startedAt], map: "idx_scrape_event_started_at")
   @@index([brand, startedAt], map: "idx_scrape_event_brand_started")
   @@index([status], map: "idx_scrape_event_status")
   @@map("scrape_events")
+}
+
+/// Log entry when a scrape failure is detected (for admin status page and future alerting).
+model ScrapeFailureLog {
+  id             String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  scrapeEventId  String?      @map("scrape_event_id") @db.Uuid
+  brand          String?      // OEM e.g. Lincoln, Land Rover
+  source         String?      // e.g. lincoln, landroverusa
+  failureType    String       @map("failure_type") // e.g. scrape_failure, partial_page, total_failure
+  message        String       @db.Text
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  scrapeEvent    ScrapeEvent? @relation(fields: [scrapeEventId], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "fk_failure_log_event")
+
+  @@index([createdAt], map: "idx_scrape_failure_log_created_at")
+  @@index([brand, createdAt], map: "idx_scrape_failure_log_brand_created")
+  @@index([scrapeEventId], map: "idx_scrape_failure_log_event")
+  @@map("scrape_failure_log")
 }
 
 /// Raw source snapshot per scrape (immutable). Retention: indefinite.

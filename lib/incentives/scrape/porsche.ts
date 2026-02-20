@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Public-facing URL for Porsche offers (stored in DB)
 const PORSCHE_SOURCE_URL =
@@ -270,6 +275,10 @@ const fetchOfferData = async () => {
 };
 
 export async function scrapeOffersFromPorsche() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Porsche",
+    source: "porsche",
+  });
   try {
     const offers = await fetchOfferData();
 
@@ -284,6 +293,7 @@ export async function scrapeOffersFromPorsche() {
       brand: "Porsche",
       offers: offers as NormalizedIncentiveOffer[],
       source: "porsche",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -291,6 +301,11 @@ export async function scrapeOffersFromPorsche() {
     return { success: true, totalOffers: result.stored };
   } catch (err: any) {
     console.error("Error scraping Porsche offers:", err?.message || err);
-    return { success: false, error: err?.message || err };
+    const message = err?.message || String(err);
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Porsche",
+      source: "porsche",
+    });
+    return { success: false, error: message };
   }
 }

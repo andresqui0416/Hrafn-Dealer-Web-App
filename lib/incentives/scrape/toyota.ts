@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Public-facing URL for Toyota offers (stored in DB)
 const TOYOTA_SOURCE_URL = "https://www.toyota.com/norcal/deals-incentives/";
@@ -297,6 +302,10 @@ function extractJSONFromScript(html: string): any {
 }
 
 export async function scrapeOffersFromToyota() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Toyota",
+    source: "toyota",
+  });
   try {
     const response = await fetch(TOYOTA_SOURCE_URL, {
       method: "GET",
@@ -578,6 +587,7 @@ export async function scrapeOffersFromToyota() {
       brand: "Toyota",
       offers: processedOffers as NormalizedIncentiveOffer[],
       source: "toyota",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -585,9 +595,11 @@ export async function scrapeOffersFromToyota() {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Toyota offers:", error);
-    return {
-      success: false,
-      error: error?.message || "Internal server error while scraping Toyota offers",
-    };
+    const message = error?.message || "Internal server error while scraping Toyota offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Toyota",
+      source: "toyota",
+    });
+    return { success: false, error: message };
   }
 }

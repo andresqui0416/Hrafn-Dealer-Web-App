@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
@@ -40,7 +45,7 @@ function extractAmountNearKeyword(
 
 const fetchModelInfos = async () => {
   const response = await fetch(
-    "https://www.ramtrucks.com/xfragments/ramtrucks-vsp-isilo-master/incentives.dataprops.ISiloVehicleSelector.isilovehicleselector.par.V1769726152065.json",
+    "https://www.chrysler.com/xfragments/chrysler-vsp-isilo-master/incentives.dataprops.ISiloVehicleSelector.isilovehicleselector.par.V1765779863779.json",
     {
       method: "GET",
       redirect: "follow" as RequestRedirect,
@@ -53,34 +58,36 @@ const fetchModelInfos = async () => {
   }
 
   const data = await response.json();
-  const modelInfos = data.vehicleSelector.vehicleSelectorGrids[0].vehicleSelectorCards.flatMap((item: any) => {
-    return item.modelYearData.map((yearData: any) => {
-      return {
-        url: yearData.authoring.url,
-        year: yearData.modelData.year,
-        brand: yearData.modelData.brand,
-        vehicle: yearData.modelData.vehicle,
-        modelYearCode: yearData.modelData.modelYearCode,
-        displayName: yearData.modelData.display,
-        msrp: yearData.modelData.msrp,
-        ccode: yearData.modelData.ccode,
-      };
-    });
-  });
+  const modelInfos = data.vehicleSelector.vehicleSelectorGrids[0].vehicleSelectorCards.flatMap(
+    (card: any) => {
+      return card.modelYearData.map((yearData: any) => {
+        return {
+          key: yearData.authoring.url,
+          year: yearData.modelData.year,
+          brand: yearData.modelData.brand,
+          vehicle: yearData.modelData.vehicle,
+          modelYearCode: yearData.modelData.modelYearCode,
+          displayName: yearData.modelData.display,
+          msrp: yearData.modelData.msrp,
+          ccode: yearData.modelData.ccode,
+        };
+      });
+    },
+  );
   return modelInfos;
 };
 
-const fetchOfferData = async (modelInfo: any) => {
-  const sourceUrl = `https://www.ramtrucks.com${modelInfo.url}`;
-  const url = `https://www.ramtrucks.com/hostd/api/incentives/offers/targetMedium/iSilo-Inline/zip/95556/vehicle/${modelInfo.modelYearCode}`;
+const fetChOfferData = async (modelInfo: any) => {
+  const url = `https://www.chrysler.com/hostd/api/incentives/offers/targetMedium/iSilo-Inline/zip/95556/vehicle/${modelInfo.modelYearCode}`;
+  const sourceUrl = `https://www.chrysler.com${modelInfo.key}`;
   const requestOptions = {
     method: "GET",
     redirect: "follow" as RequestRedirect,
   };
   const response = await fetch(url, requestOptions);
   if (!response.ok) {
-    console.error("Failed to fetch offer data:", response.status);
-    return [];
+    console.error("Failed to fetch model info:", response.status);
+    throw new Error(`Failed to fetch model info: ${await response.text()}`);
   }
   const responseData = await response.json();
   const data = responseData?.data;
@@ -101,21 +108,6 @@ const fetchOfferData = async (modelInfo: any) => {
     }
     return item.offerOrder
       .map((offer: any) => {
-        // Determine offer type
-        let offerType: string | null = null;
-        switch (offer.label) {
-          case "Lease":
-            offerType = "lease";
-            break;
-          case "Finance":
-            offerType = "financing";
-            break;
-          case "Cash":
-            offerType = "cash";
-            break;
-          default:
-            return null;
-        }
         const offerInfo = data.offers.find((info: any) => info.id === offer.id);
         if (!offerInfo) {
           console.error("Offer info not found:", offer.id);
@@ -125,12 +117,16 @@ const fetchOfferData = async (modelInfo: any) => {
         // Extract trim from representativeCcode
         const trim = offer.representativeCcode?.description || null;
 
+        // Determine offer type
+        const offerType =
+          offerInfo.type === "UserPlus" ? "lease" : offerInfo.type === "APR" ? "financing" : "cash";
+
         // Extract APR and term for financing offers
         let aprRate: number | null = null;
         let aprTermMonths: number | null = null;
-        if (offerType === "financing") {
+        if (offerInfo.type === "APR") {
           const aprProgram = offerInfo.programValues?.find(
-            (pv: any) => pv.displayType === "apr" && typeof pv.apr === "number",
+            (pv: any) => pv.displayType === "apr" && pv.apr,
           );
           if (aprProgram) {
             aprRate = aprProgram.apr / 100;
@@ -140,7 +136,7 @@ const fetchOfferData = async (modelInfo: any) => {
 
         // Extract cash back for cash offers
         let cashValue: number | null = null;
-        if (offerType === "cash") {
+        if (offerInfo.type === "CASH") {
           const cashPrograms = offerInfo.programValues?.filter(
             (pv: any) => pv.displayType === "cash" && pv.value,
           );
@@ -154,7 +150,7 @@ const fetchOfferData = async (modelInfo: any) => {
         let leaseDueAtSigning: number | null = null;
         let milesPerYear: number | null = null;
         let leaseTermMonths: number | null = null;
-        if (offerType === "lease") {
+        if (offerInfo.type === "UserPlus") {
           const leaseGroup = offerInfo.groupData?.find((gd: any) => gd.type === "LEASE");
           if (leaseGroup) {
             leaseMonthlyPayment = leaseGroup.monthlyPmnt
@@ -194,10 +190,10 @@ const fetchOfferData = async (modelInfo: any) => {
         const firstResponder = extractAmountNearKeyword(combinedText, /first\s*responder\s*(?:discount|bonus|rebate)?/i);
 
         return {
-          brand: "RAM",
+          brand: "Chrysler",
           year: modelInfo.year,
-          make: "RAM",
-          model: modelInfo.modelDesc,
+          make: "Chrysler",
+          model: modelInfo.vehicle,
           modelCode: modelInfo.modelYearCode,
           trim: trim,
           offerType: offerType,
@@ -217,7 +213,7 @@ const fetchOfferData = async (modelInfo: any) => {
                 .replace(/<br\s*\/?>/gi, "\n")
             : null,
           expirationDate: expirationDate,
-          sourceUrl: sourceUrl,
+          sourceUrl,
           loyaltyBonus: loyaltyBonus ?? null,
           conquestBonus: conquestBonus ?? null,
           militaryDiscount: militaryDiscount ?? null,
@@ -230,33 +226,41 @@ const fetchOfferData = async (modelInfo: any) => {
   return offers;
 };
 
-export async function scrapeOffersFromRAM() {
+export async function scrapeOffersFromChrysler() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Chrysler",
+    source: "chrysler",
+  });
   try {
     const modelInfos = await fetchModelInfos();
     if (!modelInfos) {
       console.error("Failed to fetch model infos");
       return { success: false, error: "Failed to fetch model infos" };
     }
-    console.log("Model infos fetched successfully:", modelInfos.length);
-
     const offers = [];
     for (const modelInfo of modelInfos) {
-      const offerData = await fetchOfferData(modelInfo);
+      const offerData = await fetChOfferData(modelInfo);
       offers.push(...offerData);
     }
-    console.log("RAM incentives found:", offers.length);
+    console.log("Chrysler incentives found:", offers.length);
 
     const result = await storeScrapedIncentives({
-      brand: "RAM",
+      brand: "Chrysler",
       offers: offers as NormalizedIncentiveOffer[],
-      source: "ram",
+      source: "chrysler",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
     }
     return { success: true, totalOffers: result.stored };
-  } catch (err: any) {
-    console.error("Error scraping RAM offers:", err?.message || err);
-    return { success: false, error: err?.message || err };
+  } catch (error: any) {
+    console.error("Error scraping Chrysler offers:", error?.message || error);
+    const message = error?.message || "Failed to scrape Chrysler offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Chrysler",
+      source: "chrysler",
+    });
+    return { success: false, error: message };
   }
 }

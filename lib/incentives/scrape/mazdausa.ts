@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 const MAZDA_SOURCE_URL =
   "https://www.mazdausa.com/shopping-tools/special-offers-and-incentives";
@@ -92,7 +97,14 @@ function extractMazdaBonuses(text: string | null | undefined) {
   };
 }
 
+const MAZDA_BRAND = "Mazda";
+const MAZDA_SOURCE = "mazda";
+
 export async function scrapeOffersFromMazda() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: MAZDA_BRAND,
+    source: MAZDA_SOURCE,
+  });
   try {
     const mazdaApiUrl =
       "https://www.mazdausa.com/api/incentives/v3/95556?blockid=824742";
@@ -289,11 +301,12 @@ export async function scrapeOffersFromMazda() {
 
     console.log("Mazda incentives found:", offers.length);
 
-    const brand = offers.length > 0 ? offers[0].brand : "Mazda";
+    const brand = offers.length > 0 ? offers[0].brand : MAZDA_BRAND;
     const result = await storeScrapedIncentives({
       brand,
       offers: offers as NormalizedIncentiveOffer[],
-      source: "mazda",
+      source: MAZDA_SOURCE,
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -301,9 +314,11 @@ export async function scrapeOffersFromMazda() {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Mazda offers:", error);
-    return {
-      success: false,
-      error: error?.message || "Internal server error while scraping Mazda offers",
-    };
+    const message = error?.message || "Internal server error while scraping Mazda offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: MAZDA_BRAND,
+      source: MAZDA_SOURCE,
+    });
+    return { success: false, error: message };
   }
 }

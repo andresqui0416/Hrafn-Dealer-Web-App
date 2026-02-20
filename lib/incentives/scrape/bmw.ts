@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Public-facing URL for BMW offers (stored in DB)
 const BMW_SOURCE_URL = "https://www.bmwusa.com/special-offers-new.html#/";
@@ -38,6 +43,10 @@ function extractAmountNearKeyword(
 }
 
 export async function scrapeOffersFromBMW() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "BMW",
+    source: "bmw",
+  });
   try {
     // Create AbortController for timeout handling
     const controller = new AbortController();
@@ -332,6 +341,7 @@ export async function scrapeOffersFromBMW() {
         brand: "BMW",
         offers: offers as NormalizedIncentiveOffer[],
         source: "bmw",
+        scrapeEventId,
       });
       if (!result.success) {
         return { success: false, totalOffers: 0, error: result.error };
@@ -349,9 +359,11 @@ export async function scrapeOffersFromBMW() {
     }
   } catch (error: any) {
     console.error("Error scraping BMW offers:", error);
-    return {
-      success: false,
-      error: error?.message || "Internal server error while scraping BMW offers",
-    };
+    const message = error?.message || "Internal server error while scraping BMW offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "BMW",
+      source: "bmw",
+    });
+    return { success: false, error: message };
   }
 }

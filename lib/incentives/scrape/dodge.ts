@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
@@ -215,6 +220,10 @@ const fetchOfferData = async (modelInfo: any) => {
 };
 
 export async function scrapeOffersFromDodge() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Dodge",
+    source: "dodge",
+  });
   try {
     const modelInfos = await fetchModelInfos();
     if (!modelInfos) {
@@ -232,6 +241,7 @@ export async function scrapeOffersFromDodge() {
       brand: offers.length > 0 ? offers[0].brand : "Dodge",
       offers: offers as NormalizedIncentiveOffer[],
       source: "dodge",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -239,6 +249,11 @@ export async function scrapeOffersFromDodge() {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Dodge offers:", error?.message || error);
-    return { success: false, error: error?.message || "Failed to scrape Dodge offers" };
+    const message = error?.message || "Failed to scrape Dodge offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Dodge",
+      source: "dodge",
+    });
+    return { success: false, error: message };
   }
 }
