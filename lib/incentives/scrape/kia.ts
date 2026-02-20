@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
@@ -194,6 +199,10 @@ const KIA_BROWSER_HEADERS = {
 } as const;
 
 export async function scrapeOffersFromKia(zipCode: string = "95556") {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Kia",
+    source: "kia",
+  });
   try {
     const url = `https://www.kia.com/us/services/en/offers/${zipCode}`;
 
@@ -523,6 +532,7 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
       brand: "Kia",
       offers: offers as NormalizedIncentiveOffer[],
       source: "kia",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -530,9 +540,11 @@ export async function scrapeOffersFromKia(zipCode: string = "95556") {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Kia offers:", error);
-    return {
-      success: false,
-      error: error?.message || "Internal server error while scraping Kia offers",
-    };
+    const message = error?.message || "Internal server error while scraping Kia offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Kia",
+      source: "kia",
+    });
+    return { success: false, error: message };
   }
 }

@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
@@ -326,6 +331,10 @@ async function fetchFeaturedOfferHTML(featuredOfferUrl: string): Promise<string 
 }
 
 export async function scrapeOffersFromGMC() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "GMC",
+    source: "gmc",
+  });
   try {
     const myHeaders = new Headers();
     const requestOptions = {
@@ -664,6 +673,7 @@ export async function scrapeOffersFromGMC() {
       brand: "GMC",
       offers: offers as NormalizedIncentiveOffer[],
       source: "gmc",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -671,9 +681,11 @@ export async function scrapeOffersFromGMC() {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping GMC offers:", error);
-    return {
-      success: false,
-      error: error?.message || "Internal server error while scraping GMC offers",
-    };
+    const message = error?.message || "Internal server error while scraping GMC offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "GMC",
+      source: "gmc",
+    });
+    return { success: false, error: message };
   }
 }

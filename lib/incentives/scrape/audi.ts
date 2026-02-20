@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Public-facing URL for Audi offers (stored in DB)
 const AUDI_SOURCE_URL = "https://www.audiusa.com/en/offers/";
@@ -65,7 +70,15 @@ function extractMilesPerYearFromDisclaimer(
   }
 }
 
+const AUDI_BRAND = "Audi";
+const AUDI_SOURCE = "audi";
+
 export async function scrapeOffersFromAudi() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: AUDI_BRAND,
+    source: AUDI_SOURCE,
+  });
+
   try {
     const headers = new Headers();
     headers.append("apollographql-client-name", "fa-vlp-list-page");
@@ -232,11 +245,12 @@ export async function scrapeOffersFromAudi() {
 
     console.log("Audi incentives found:", offers.length);
 
-    const brand = offers.length > 0 ? offers[0].brand : "Audi";
+    const brand = offers.length > 0 ? offers[0].brand : AUDI_BRAND;
     const result = await storeScrapedIncentives({
       brand,
       offers: offers as NormalizedIncentiveOffer[],
-      source: "audi",
+      source: AUDI_SOURCE,
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -244,9 +258,14 @@ export async function scrapeOffersFromAudi() {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Audi offers:", error);
+    const message = error?.message || "Internal server error while scraping Audi offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: AUDI_BRAND,
+      source: AUDI_SOURCE,
+    });
     return {
       success: false,
-      error: error?.message || "Internal server error while scraping Audi offers",
+      error: message,
     };
   }
 }

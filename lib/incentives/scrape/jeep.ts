@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Parse number from string, removing commas, dollar signs, and other formatting
 function parseNumber(str: string | null | undefined): number | null {
@@ -293,6 +298,10 @@ const fetchOfferData = async (modelInfo: any) => {
 };
 
 export async function scrapeOffersFromJeep() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Jeep",
+    source: "jeep",
+  });
   try {
     const modelInfos = await fetchModelInfos();
     if (!modelInfos) {
@@ -320,6 +329,7 @@ export async function scrapeOffersFromJeep() {
       brand: "Jeep",
       offers: offers as NormalizedIncentiveOffer[],
       source: "jeep",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -327,6 +337,11 @@ export async function scrapeOffersFromJeep() {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Jeep offers:", error?.message || error);
-    return { success: false, error: error?.message || "Failed to scrape Jeep offers" };
+    const message = error?.message || "Failed to scrape Jeep offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Jeep",
+      source: "jeep",
+    });
+    return { success: false, error: message };
   }
 }

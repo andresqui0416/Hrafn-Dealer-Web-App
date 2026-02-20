@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Public-facing URL for Honda offers (stored in DB)
 const HONDA_SOURCE_URL = "https://automobiles.honda.com/tools/current-offers";
@@ -245,6 +250,10 @@ const fetchOfferData = async (zipCode: string = "95556") => {
 };
 
 export async function scrapeOffersFromHonda(zipCode: string = "95556") {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Honda",
+    source: "honda",
+  });
   try {
     const offers = await fetchOfferData(zipCode);
 
@@ -259,6 +268,7 @@ export async function scrapeOffersFromHonda(zipCode: string = "95556") {
       brand: "Honda",
       offers: offers as NormalizedIncentiveOffer[],
       source: "honda",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -266,6 +276,11 @@ export async function scrapeOffersFromHonda(zipCode: string = "95556") {
     return { success: true, totalOffers: result.stored };
   } catch (err: any) {
     console.error("Error scraping Honda offers:", err?.message || err);
-    return { success: false, error: err?.message || err };
+    const message = err?.message || String(err);
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Honda",
+      source: "honda",
+    });
+    return { success: false, error: message };
   }
 }

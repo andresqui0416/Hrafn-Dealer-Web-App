@@ -1,4 +1,6 @@
 import {
+  createScrapeEvent,
+  markScrapeEventFailed,
   storeScrapedIncentives,
   type NormalizedIncentiveOffer,
 } from "@/lib/incentives/storeScrapedIncentives";
@@ -107,6 +109,10 @@ function extractAmountNearKeyword(text: string | null | undefined, keyword: RegE
 }
 
 export async function scrapeOffersFromLucid() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Lucid",
+    source: "lucid",
+  });
   try {
     const lucidOffersUrl = "https://lucidmotors.com/offers";
     const response = await fetch(lucidOffersUrl, {
@@ -646,6 +652,7 @@ export async function scrapeOffersFromLucid() {
       brand: "Lucid",
       offers: offers as NormalizedIncentiveOffer[],
       source: "lucid",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -653,9 +660,11 @@ export async function scrapeOffersFromLucid() {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Lucid offers:", error);
-    return {
-      success: false,
-      error: error?.message || "Internal server error while scraping Lucid offers",
-    };
+    const message = error?.message || "Internal server error while scraping Lucid offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Lucid",
+      source: "lucid",
+    });
+    return { success: false, error: message };
   }
 }

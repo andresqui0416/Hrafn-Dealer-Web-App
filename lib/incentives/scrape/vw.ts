@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Public-facing URL for Volkswagen offers (stored in DB)
 const VW_SOURCE_URL = "https://www.vw.com/en/offers.html";
@@ -108,6 +113,10 @@ function extractAmountNearKeyword(
 }
 
 export async function scrapeOffersFromVW() {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Volkswagen",
+    source: "vw",
+  });
   try {
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
@@ -373,6 +382,7 @@ export async function scrapeOffersFromVW() {
       brand: "Volkswagen",
       offers: offers as NormalizedIncentiveOffer[],
       source: "vw",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -380,9 +390,11 @@ export async function scrapeOffersFromVW() {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Volkswagen offers:", error);
-    return {
-      success: false,
-      error: error?.message || "Internal server error while scraping Volkswagen offers",
-    };
+    const message = error?.message || "Internal server error while scraping Volkswagen offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Volkswagen",
+      source: "vw",
+    });
+    return { success: false, error: message };
   }
 }

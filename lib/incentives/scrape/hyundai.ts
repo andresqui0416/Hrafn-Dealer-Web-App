@@ -1,4 +1,9 @@
-import { storeScrapedIncentives, type NormalizedIncentiveOffer } from "@/lib/incentives/storeScrapedIncentives";
+import {
+  createScrapeEvent,
+  markScrapeEventFailed,
+  storeScrapedIncentives,
+  type NormalizedIncentiveOffer,
+} from "@/lib/incentives/storeScrapedIncentives";
 
 // Public-facing URL for Hyundai offers (stored in DB)
 const HYUNDAI_SOURCE_URL = "https://www.hyundaiusa.com/us/en/offers";
@@ -103,6 +108,10 @@ interface HyundaiOffer {
 }
 
 export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
+  const { scrapeEventId } = await createScrapeEvent({
+    brand: "Hyundai",
+    source: "hyundai",
+  });
   try {
     const url = `https://www.hyundaiusa.com/var/hyundai/services/incentiveAws.featuredOfferByZip.service?brand=hyundai&zip=${zipCode}`;
 
@@ -335,6 +344,7 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
       brand: "Hyundai",
       offers: offers as NormalizedIncentiveOffer[],
       source: "hyundai",
+      scrapeEventId,
     });
     if (!result.success) {
       return { success: false, totalOffers: 0, error: result.error };
@@ -342,9 +352,11 @@ export async function scrapeOffersFromHyundai(zipCode: string = "95556") {
     return { success: true, totalOffers: result.stored };
   } catch (error: any) {
     console.error("Error scraping Hyundai offers:", error);
-    return {
-      success: false,
-      error: error?.message || "Internal server error while scraping Hyundai offers",
-    };
+    const message = error?.message || "Internal server error while scraping Hyundai offers";
+    await markScrapeEventFailed(scrapeEventId, message, {
+      brand: "Hyundai",
+      source: "hyundai",
+    });
+    return { success: false, error: message };
   }
 }
