@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
         email: true,
         name: true,
         avatar: true,
+        subscriptionExpiresAt: true,
       },
     });
 
