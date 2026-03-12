@@ -101,30 +101,104 @@ export type StoreScrapedIncentivesResult = {
 };
 
 /**
+ * Create a ScrapeEvent when scraping starts for a platform. Call this at the beginning of each
+ * scraper (e.g. scrapeOffersFromAudi) so the event reflects "scrape started" time.
+ * Then pass the returned scrapeEventId to storeScrapedIncentives when storing results.
+ */
+export async function createScrapeEvent(params: {
+  brand: string;
+  source?: string | null;
+}): Promise<{ scrapeEventId: string }> {
+  await prisma.$connect();
+  const event = await prisma.scrapeEvent.create({
+    data: {
+      source: params.source ?? null,
+      brand: params.brand,
+      status: "running",
+    },
+  });
+  await prisma.$disconnect();
+  return { scrapeEventId: event.id };
+}
+
+/**
+ * Mark an existing ScrapeEvent as failed and write a failure log. Call from scrapers when
+ * scraping or processing fails after createScrapeEvent was called.
+ */
+export async function markScrapeEventFailed(
+  scrapeEventId: string,
+  errorMessage: string,
+  options?: { brand?: string | null; source?: string | null },
+): Promise<void> {
+  try {
+    await prisma.$connect();
+    await prisma.scrapeEvent.update({
+      where: { id: scrapeEventId },
+      data: {
+        completedAt: new Date(),
+        status: "failure",
+        errorMessage,
+      },
+    });
+    await prisma.scrapeFailureLog.create({
+      data: {
+        scrapeEventId,
+        brand: options?.brand ?? null,
+        source: options?.source ?? null,
+        failureType: "scrape_failure",
+        message: errorMessage,
+      },
+    });
+  } catch (err) {
+    console.error("[markScrapeEventFailed]", err);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
  * Store scraped incentives with full auditability: ScrapeEvent, raw Snapshot, version lineage.
  * Call from cron (lib/offers) or from POST /api/incentives/scrape.
+ * If scrapeEventId is provided (from createScrapeEvent at scrape start), that event is updated
+ * instead of creating a new one.
  */
 export async function storeScrapedIncentives(params: {
   brand: string;
   offers: NormalizedIncentiveOffer[];
   source?: string | null;
   rawPayload?: object; // optional override for snapshot (defaults to { offers, source, brand })
+  scrapeEventId?: string | null; // optional: use event created at scrape start
 }): Promise<StoreScrapedIncentivesResult> {
-  const { brand, offers, source = null, rawPayload } = params;
+  const { brand, offers, source = null, rawPayload, scrapeEventId: existingEventId } = params;
   const scrapedAtDate = new Date();
   let scrapeEventId: string | null = null;
 
   try {
     await prisma.$connect();
 
-    const event = await prisma.scrapeEvent.create({
-      data: {
-        source,
-        brand,
-        status: "running",
-      },
-    });
-    scrapeEventId = event.id;
+    let event: { id: string };
+    if (existingEventId) {
+      const existing = await prisma.scrapeEvent.findUnique({
+        where: { id: existingEventId },
+      });
+      if (!existing || existing.status !== "running") {
+        throw new Error(
+          `ScrapeEvent ${existingEventId} not found or not running (status: ${existing?.status ?? "n/a"})`,
+        );
+      }
+      event = { id: existing.id };
+      scrapeEventId = existing.id;
+    } else {
+      const created = await prisma.scrapeEvent.create({
+        data: {
+          source,
+          brand,
+          status: "running",
+        },
+      });
+      event = created;
+      scrapeEventId = created.id;
+    }
 
     await prisma.scrapeSnapshot.create({
       data: {
@@ -246,6 +320,7 @@ export async function storeScrapedIncentives(params: {
     };
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
+    // Mark event as failure if we created one (any failure from start through complete storing).
     if (scrapeEventId) {
       try {
         await prisma.scrapeEvent.update({
@@ -256,7 +331,23 @@ export async function storeScrapedIncentives(params: {
             errorMessage: errorMessage,
           },
         });
-      } catch (_) {}
+      } catch (updateErr) {
+        console.error("[storeScrapedIncentives] Failed to update ScrapeEvent to failure:", updateErr);
+      }
+    }
+    // Always record failure log for any failed step (connect, event create, snapshot, offers, etc.).
+    try {
+      await prisma.scrapeFailureLog.create({
+        data: {
+          scrapeEventId: scrapeEventId ?? undefined,
+          brand: brand ?? null,
+          source: source ?? null,
+          failureType: "scrape_failure",
+          message: errorMessage,
+        },
+      });
+    } catch (logErr) {
+      console.error("[storeScrapedIncentives] Failed to write ScrapeFailureLog:", logErr);
     }
     return {
       success: false,

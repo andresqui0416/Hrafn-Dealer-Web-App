@@ -62,7 +62,7 @@
   {
     "type": "NLQ",
     "question": "For financing offers, what is the average APR?",
-    "answer": "SELECT offer_type, AVG(apr) AS avg_apr FROM \"Offers\" WHERE offer_type = 'financing' AND apr IS NOT NULL GROUP BY offer_type;"
+    "answer": "SELECT offer_type, AVG(apr_rate) AS avg_apr FROM \"Offers\" WHERE offer_type = 'financing' AND apr_rate IS NOT NULL GROUP BY offer_type;"
   },
   {
     "type": "NLQ",

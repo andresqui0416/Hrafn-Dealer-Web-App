@@ -15,6 +15,7 @@ import {
   faX,
   faInbox,
   faDollarSign,
+  faCreditCard,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/contexts/theme-context";
@@ -29,6 +30,7 @@ export default function ConsoleLayout({ children }: Readonly<{ children: ReactNo
     { href: "/inventory", label: "Inventory", icon: faCar },
     { href: "/offers", label: "Offers", icon: faChartGantt },
     { href: "/sales", label: "Sales", icon: faDollarSign },
+    { href: "/payments", label: "Payments", icon: faCreditCard },
     { href: "/chat", label: "AI Agent", icon: faComments },
     { href: "/inbox", label: "Inbox", icon: faInbox },
     { href: "/settings", label: "Settings", icon: faGear },
