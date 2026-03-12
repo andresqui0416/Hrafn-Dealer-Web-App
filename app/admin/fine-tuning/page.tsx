@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -521,7 +522,7 @@ export default function FineTuningPage() {
           <div className="text-xs text-muted-foreground">
             Showing {showingFrom}-{showingTo} of {totalCount}
           </div>
-          <select
+          <Select
             value={pageSize}
             onChange={(e) => {
               const nextSize = Number(e.target.value);
@@ -530,12 +531,12 @@ export default function FineTuningPage() {
               setPage(1);
               loadSamples({ nextPageSize: nextSize, nextPage: 1 });
             }}
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-          >
-            <option value={10}>10 / page</option>
-            <option value={20}>20 / page</option>
-            <option value={50}>50 / page</option>
-          </select>
+            options={[
+              { value: 10, label: "10 / page" },
+              { value: 20, label: "20 / page" },
+              { value: 50, label: "50 / page" },
+            ]}
+          />
           <div className="flex items-center gap-1">
             <Button
               variant="outline"
