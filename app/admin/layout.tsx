@@ -13,6 +13,8 @@ import {
   faServer,
   faInbox,
   faBrain,
+  faChartLine,
+  faCreditCard,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
@@ -35,6 +37,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         return "Inbox";
       case "/admin/fine-tuning":
         return "Fine-Tuning Samples";
+      case "/admin/scraping-status":
+        return "Scraping Status";
       default:
         return null;
     }
@@ -55,6 +59,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { href: "/admin/services", label: "Service Management", icon: faServer },
     { href: "/admin/inbox", label: "Inbox", icon: faInbox },
     { href: "/admin/fine-tuning", label: "Fine-Tuning", icon: faBrain },
+    { href: "/admin/scraping-status", label: "Scraping Status", icon: faChartLine },
+    { href: "/admin/payments", label: "Payments", icon: faCreditCard },
   ];
 
   // If on login page, render children directly without layout
@@ -68,7 +74,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-x-hidden">
       {/* Sidebar */}
       <aside
         className={cn(
@@ -133,7 +139,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       )}
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col lg:ml-64">
+      <div className="flex-1 flex flex-col lg:ml-64 min-w-0">
         <header className="sticky h-14 top-0 z-30 border-b border-white/10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex items-center justify-between lg:px-6 px-2 h-full">
             <Button
@@ -148,7 +154,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <div className="flex-1" />
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 min-w-0">{children}</main>
       </div>
     </div>
   );
