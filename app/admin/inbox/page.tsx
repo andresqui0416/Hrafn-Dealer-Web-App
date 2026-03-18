@@ -299,10 +299,7 @@ export default function AdminInboxPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold">Inbox</h2>
-        <p className="text-sm text-muted-foreground">Manage support conversations</p>
-      </div>
+      <p className="text-sm text-muted-foreground">Manage support conversations</p>
 
       {error && (
         <div className="rounded-md bg-red-500/15 p-3 text-sm text-destructive flex items-center justify-between gap-2">
@@ -403,7 +400,7 @@ export default function AdminInboxPage() {
           </div>
 
           {/* Search Box */}
-          <div className="w-full sm:w-auto sm:min-w-[300px]">
+          <div className="w-full sm:w-auto sm:min-w-[300px] sm:max-w-lg">
             <Input
               id="search"
               name="search"

@@ -82,6 +82,7 @@ export default function LoginPage() {
                 required
                 disabled={loading}
                 autoComplete="email"
+                className="w-full"
               />
             </div>
             <div className="space-y-2">
@@ -98,6 +99,7 @@ export default function LoginPage() {
                 required
                 disabled={loading}
                 autoComplete="current-password"
+                className="w-full"
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>

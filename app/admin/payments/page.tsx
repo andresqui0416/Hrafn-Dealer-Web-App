@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AdminPagination } from "@/components/admin-pagination";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSpinner,
@@ -74,7 +75,7 @@ export default function AdminPaymentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const pageSize = 20;
+  const [pageSize, setPageSize] = useState(20);
 
   const loadData = async () => {
     try {
@@ -232,6 +233,9 @@ export default function AdminPaymentsPage() {
 
   return (
     <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Manage payments and subscriptions
+      </p>
       {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -267,15 +271,15 @@ export default function AdminPaymentsPage() {
       </div>
 
       {/* Weekly charts (4 weeks, two separate cards side by side) */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-2 md:auto-rows-fr">
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle className="text-sm font-medium">
               Weekly revenue (last 4 weeks)
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative h-64">
+            <div className="relative h-64 w-full">
               {loading && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60">
                   <FontAwesomeIcon icon={faSpinner} className="h-5 w-5 animate-spin" />
@@ -286,14 +290,14 @@ export default function AdminPaymentsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle className="text-sm font-medium">
               Weekly new subscribers (last 4 weeks)
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative h-64">
+            <div className="relative h-64 w-full">
               {loading && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60">
                   <FontAwesomeIcon icon={faSpinner} className="h-5 w-5 animate-spin" />
@@ -310,7 +314,7 @@ export default function AdminPaymentsPage() {
           placeholder="Search by dealer, user, email, or plan…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="max-w-md flex-1"
+          className="w-full max-w-lg flex-1"
         />
         <Button
           variant="outline"
@@ -331,9 +335,31 @@ export default function AdminPaymentsPage() {
       )}
 
       {/* History table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
+      <div className="space-y-2">
+        {!loading && filteredRows.length > 0 && (
+          <AdminPagination
+            total={filteredRows.length}
+            page={page}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            loading={loading}
+            pageInput={String(page)}
+            setPageInput={(value) => {
+              const parsed = Number(value || "1");
+              const clamped = Math.min(totalPages || 1, Math.max(1, parsed || 1));
+              setPage(clamped);
+            }}
+            onPageChange={(nextPage) => setPage(nextPage)}
+            onPageSizeChange={(nextSize) => {
+              setPageSize(nextSize);
+              setPage(1);
+            }}
+          />
+        )}
+
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="border-b border-white/10 text-xs text-muted-foreground">
                 <tr>
@@ -397,45 +423,10 @@ export default function AdminPaymentsPage() {
                 )}
               </tbody>
             </table>
-          </div>
-          {!loading && filteredRows.length > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-white/5 text-xs text-muted-foreground">
-              <div>
-                Showing{" "}
-                <span className="font-medium">
-                  {(page - 1) * pageSize + 1}-
-                  {Math.min(page * pageSize, filteredRows.length)}
-                </span>{" "}
-                of <span className="font-medium">{filteredRows.length}</span> payments
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="h-7 w-7 cursor-pointer disabled:cursor-not-allowed"
-                >
-                  <FontAwesomeIcon icon={faChevronLeft} className="h-3 w-3" />
-                </Button>
-                <span>
-                  Page <span className="font-medium">{page}</span> of{" "}
-                  <span className="font-medium">{totalPages}</span>
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="h-7 w-7 cursor-pointer disabled:cursor-not-allowed"
-                >
-                  <FontAwesomeIcon icon={faChevronRight} className="h-3 w-3" />
-                </Button>
-              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
