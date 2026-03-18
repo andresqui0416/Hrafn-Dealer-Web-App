@@ -1,4 +1,5 @@
 import { generateUniqueRequestId, getFortellisAccessToken } from "./index";
+import { logFortellisApiCall } from "./fortellisLogger";
 
 async function getQueryResult(
   resultUrl: string,
@@ -9,12 +10,14 @@ async function getQueryResult(
   try {
     console.log(`Fetching query result from: ${resultUrl}`);
 
+    const requestId = generateUniqueRequestId();
+
     const resultResponse = await fetch(resultUrl, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Subscription-Id": subscriptionId,
-        "Request-Id": generateUniqueRequestId(),
+        "Request-Id": requestId,
         Accept: "application/json",
       },
     });
@@ -27,14 +30,33 @@ async function getQueryResult(
       return getQueryResult(resultUrl, newAccessToken, subscriptionId, false);
     }
 
+    const resultClone = resultResponse.clone();
+    const responseText = await resultClone.text().catch(() => null);
+
+    await logFortellisApiCall({
+      requestId,
+      method: "GET",
+      url: resultUrl,
+      requestHeaders: {
+        Authorization: `Bearer ${accessToken}`,
+        "Subscription-Id": subscriptionId,
+        "Request-Id": requestId,
+        Accept: "application/json",
+      },
+      requestBody: null,
+      responseStatus: resultResponse.status,
+      responseHeaders: resultResponse.headers,
+      responseBody: responseText,
+    });
+
     if (!resultResponse.ok) {
-      const errorText = await resultResponse.text();
+      const errorText = responseText ?? (await resultResponse.text().catch(() => ""));
       throw new Error(
         `Result fetch failed: ${resultResponse.status} ${resultResponse.statusText} - ${errorText}`,
       );
     }
 
-    const resultData = await resultResponse.json();
+    const resultData = responseText ? JSON.parse(responseText) : await resultResponse.json();
     console.log(`Successfully fetched result data`);
 
     // CDK FI Sales response structure: { data: [...] }
@@ -77,12 +99,14 @@ async function pollOperationStatus(
       // Refresh token before each status check to prevent expiration during long operations
       currentAccessToken = await getFortellisAccessToken();
 
+      const requestId = generateUniqueRequestId();
+
       const statusResponse = await fetch(statusUrl, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${currentAccessToken}`,
           "Subscription-Id": subscriptionId,
-          "Request-Id": generateUniqueRequestId(),
+          "Request-Id": requestId,
           Accept: "application/json",
         },
       });
@@ -95,14 +119,33 @@ async function pollOperationStatus(
         continue;
       }
 
+      const statusClone = statusResponse.clone();
+      const statusText = await statusClone.text().catch(() => null);
+
+      await logFortellisApiCall({
+        requestId,
+        method: "GET",
+        url: statusUrl,
+        requestHeaders: {
+          Authorization: `Bearer ${currentAccessToken}`,
+          "Subscription-Id": subscriptionId,
+          "Request-Id": requestId,
+          Accept: "application/json",
+        },
+        requestBody: null,
+        responseStatus: statusResponse.status,
+        responseHeaders: statusResponse.headers,
+        responseBody: statusText,
+      });
+
       if (!statusResponse.ok) {
-        const errorText = await statusResponse.text();
+        const errorText = statusText ?? (await statusResponse.text().catch(() => ""));
         throw new Error(
           `Status check failed: ${statusResponse.status} ${statusResponse.statusText} - ${errorText}`,
         );
       }
 
-      const statusData = await statusResponse.json();
+      const statusData = statusText ? JSON.parse(statusText) : await statusResponse.json();
 
       // Check if operation is completed
       if (statusData.status === "complete") {
@@ -150,9 +193,7 @@ export async function getFISalesData(
   console.log("End date:", endDate);
   console.log("Fetching fresh access token...");
   let accessToken = await getFortellisAccessToken();
-  console.log(
-    `Got access token (length: ${accessToken.length}, first 20 chars: ${accessToken.substring(0, 20)}...)`,
-  );
+  console.log(`Got access token (length: ${accessToken.length})`);
 
   let deptId = departmentId;
 
@@ -181,13 +222,15 @@ export async function getFISalesData(
     }
     const url = queryParams.toString() ? `${endpoint}?${queryParams.toString()}` : endpoint;
 
+    const requestId = generateUniqueRequestId();
+
     let response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Subscription-Id": subscriptionId,
         "Department-Id": deptId,
-        "Request-Id": generateUniqueRequestId(),
+        "Request-Id": requestId,
         Accept: "application/json",
       },
     });
@@ -207,12 +250,34 @@ export async function getFISalesData(
       );
     }
 
+    const responseClone = response.clone();
+    const responseText = await responseClone.text().catch(() => null);
+
+    await logFortellisApiCall({
+      requestId,
+      method: "GET",
+      url,
+      requestHeaders: {
+        Authorization: `Bearer ${accessToken}`,
+        "Subscription-Id": subscriptionId,
+        "Department-Id": deptId,
+        "Request-Id": requestId,
+        Accept: "application/json",
+      },
+      requestBody: null,
+      responseStatus: response.status,
+      responseHeaders: response.headers,
+      responseBody: responseText,
+    });
+
     if (!response.ok) {
-      const errorText = await response.text();
+      const errorText = responseText ?? (await response.text().catch(() => ""));
       throw new Error(`CDK API returned ${response.status}: ${response.statusText} - ${errorText}`);
     }
 
-    const operationResponse = await response.json();
+    const operationResponse = responseText
+      ? JSON.parse(responseText)
+      : await response.json();
 
     if (operationResponse.operationId && operationResponse._links?.status?.href) {
       console.log(
@@ -285,13 +350,15 @@ export async function getFISalesHistoryData(
     queryParams.append("endDate", endDate);
     const url = `${endpoint}?${queryParams.toString()}`;
 
+    const requestId = generateUniqueRequestId();
+
     let response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Subscription-Id": subscriptionId,
         "Department-Id": deptId,
-        "Request-Id": generateUniqueRequestId(), // Generate unique request ID
+        "Request-Id": requestId, // Generate unique request ID
         Accept: "application/json",
       },
     });
@@ -310,12 +377,34 @@ export async function getFISalesHistoryData(
       );
     }
 
+    const responseClone = response.clone();
+    const responseText = await responseClone.text().catch(() => null);
+
+    await logFortellisApiCall({
+      requestId,
+      method: "GET",
+      url,
+      requestHeaders: {
+        Authorization: `Bearer ${accessToken}`,
+        "Subscription-Id": subscriptionId,
+        "Department-Id": deptId,
+        "Request-Id": requestId,
+        Accept: "application/json",
+      },
+      requestBody: null,
+      responseStatus: response.status,
+      responseHeaders: response.headers,
+      responseBody: responseText,
+    });
+
     if (!response.ok) {
-      const errorText = await response.text();
+      const errorText = responseText ?? (await response.text().catch(() => ""));
       throw new Error(`CDK API returned ${response.status}: ${response.statusText} - ${errorText}`);
     }
 
-    const operationResponse = await response.json();
+    const operationResponse = responseText
+      ? JSON.parse(responseText)
+      : await response.json();
 
     // Check if this is an async operation response
     if (operationResponse.operationId && operationResponse._links?.status?.href) {

@@ -292,13 +292,10 @@ export default function ServicesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-semibold">Service Management</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage dealer service requests and verify API access
-          </p>
-        </div>
+      <p className="text-sm text-muted-foreground">
+        Manage dealer service requests and verify API access
+      </p>
+      <div className="space-y-4 flex flex-row items-center gap-2 justify-end">
         <Button
           variant="outline"
           onClick={loadServices}
