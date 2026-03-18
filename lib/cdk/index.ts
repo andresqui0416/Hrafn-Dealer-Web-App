@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { logFortellisApiCall } from "./fortellisLogger";
 
 const prisma = new PrismaClient();
 
@@ -143,7 +144,9 @@ export async function getFortellisSubscriptionInfo(
   dealerId?: string,
 ): Promise<{ subscriptionId: string; departmentId: string }> {
   try {
-    const response = await fetch("https://subscriptions.fortellis.io/v1/solution/subscriptions", {
+    const url = "https://subscriptions.fortellis.io/v1/solution/subscriptions";
+
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -151,14 +154,32 @@ export async function getFortellisSubscriptionInfo(
       },
     });
 
+    const requestId: string | undefined = undefined;
+    const responseClone = response.clone();
+    const responseText = await responseClone.text().catch(() => null);
+
+    await logFortellisApiCall({
+      requestId,
+      method: "GET",
+      url,
+      requestHeaders: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+      requestBody: null,
+      responseStatus: response.status,
+      responseHeaders: response.headers,
+      responseBody: responseText,
+    });
+
     if (!response.ok) {
-      const errorText = await response.text();
+      const errorText = responseText ?? (await response.text().catch(() => ""));
       throw new Error(
         `Subscriptions API returned ${response.status}: ${response.statusText} - ${errorText}`,
       );
     }
 
-    const data = await response.json();
+    const data = responseText ? JSON.parse(responseText) : await response.json();
 
     if (
       !data.subscriptions ||

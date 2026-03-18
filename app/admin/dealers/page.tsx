@@ -208,6 +208,12 @@ export default function DealersPage() {
 
   return (
     <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Manage dealers and their information
+      </p>
+      {error && (
+        <div className="rounded-md bg-destructive/15 py-3 text-sm text-destructive">{error}</div>
+      )}
       <div className="flex justify-end gap-2">
         {!showForm && (
           <>
@@ -233,10 +239,6 @@ export default function DealersPage() {
           </>
         )}
       </div>
-      {error && (
-        <div className="rounded-md bg-destructive/15 py-3 text-sm text-destructive">{error}</div>
-      )}
-
       {showForm ? (
         <Card>
           <CardHeader>
