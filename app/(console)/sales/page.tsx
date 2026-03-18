@@ -21,6 +21,7 @@ import {
   faRotateRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
+import { ConsoleDataTable, ConsoleTableColumn } from "@/components/console-data-table";
 
 type SaleDataTable = {
   id: string;
@@ -76,7 +77,8 @@ export default function SalesPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
+  const [pageInput, setPageInput] = useState("1");
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
@@ -198,6 +200,66 @@ export default function SalesPage() {
     );
   };
 
+  const salesColumns: ConsoleTableColumn<SaleDataTable>[] = [
+    {
+      id: "dealNo",
+      header: "Deal No",
+      render: (sale) => sale.dealNo || "N/A",
+      className: "text-sm",
+    },
+    {
+      id: "vin",
+      header: "VIN",
+      render: (sale) => sale.vehicle?.vin || "N/A",
+      className: "text-sm font-mono text-muted-foreground",
+    },
+    {
+      id: "vehicle",
+      header: "Vehicle",
+      render: (sale) => {
+        const make = sale.vehicle?.makeName || sale.vehicle?.make || "N/A";
+        const model = sale.vehicle?.modelName || sale.vehicle?.model || "";
+        return (
+          <span>
+            {make} {model}
+          </span>
+        );
+      },
+      className: "text-sm",
+    },
+    {
+      id: "year",
+      header: "Year",
+      render: (sale) => sale.vehicle?.year || "N/A",
+      className: "text-sm",
+    },
+    {
+      id: "status",
+      header: "Status",
+      render: (sale) => getStatusBadge(sale.status),
+      className: "text-sm",
+    },
+    {
+      id: "saleDate",
+      header: "Sale Date",
+      render: (sale) =>
+        formatDate(sale.deal?.salesDate || sale.deal?.contractDate || null),
+      className: "text-sm",
+    },
+    {
+      id: "cashPrice",
+      header: "Cash Price",
+      render: (sale) => formatCurrency(sale.deal?.cashPrice ?? null),
+      className: "text-sm",
+    },
+    {
+      id: "grossProfit",
+      header: "Gross Profit",
+      render: (sale) => formatCurrency(sale.deal?.grossProfit ?? null),
+      className: "text-sm",
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -223,8 +285,9 @@ export default function SalesPage() {
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setCurrentPage(1); // Reset to first page on search
+              setPageInput("1");
             }}
-            className="pl-10"
+            className="pl-10 w-full"
           />
         </div>
         <Button
@@ -264,110 +327,32 @@ export default function SalesPage() {
       )}
 
       {/* Table */}
-      <div className="rounded-lg border border-white/10 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-white/5 border-b border-white/10">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Deal No</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">VIN</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Vehicle</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Year</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Sale Date</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Cash Price</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Gross Profit</th>
-              </tr>
-            </thead>
-            {!salesLoading && salesData.length !== 0 && (
-              <tbody className="divide-y divide-white/10">
-                {salesData.map((sale) => (
-                  <tr
-                    key={sale.id}
-                    onClick={() => handleRowClick(sale.id)}
-                    className="hover:bg-white/5 cursor-pointer transition-colors"
-                  >
-                    <td className="px-4 py-3 text-sm">{sale.dealNo || "N/A"}</td>
-                    <td className="px-4 py-3 text-sm font-mono text-muted-foreground">
-                      {sale.vehicle?.vin || "N/A"}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {sale.vehicle?.makeName || sale.vehicle?.make || "N/A"}{" "}
-                      {sale.vehicle?.modelName || sale.vehicle?.model || ""}
-                    </td>
-                    <td className="px-4 py-3 text-sm">{sale.vehicle?.year || "N/A"}</td>
-                    <td className="px-4 py-3">{getStatusBadge(sale.status)}</td>
-                    <td className="px-4 py-3 text-sm">
-                      {formatDate(sale.deal?.salesDate || sale.deal?.contractDate || null)}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {formatCurrency(sale.deal?.cashPrice ?? null)}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {formatCurrency(sale.deal?.grossProfit ?? null)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            )}
-          </table>
-          {salesLoading ? (
-            <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
-              <FontAwesomeIcon icon={faSpinner} className="fa-lg animate-spin" />
-              <span>Loading sales data...</span>
-            </div>
-          ) : (
-            salesData.length === 0 &&
-            !salesLoading && (
-              <div className="p-4 text-center text-sm text-muted-foreground">
-                <span>No sales data found</span>
-              </div>
-            )
-          )}
-        </div>
-        <div className="px-4 py-3 bg-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm text-muted-foreground">
-          <div>
-            {totalCount > 0 ? (
-              <>
-                Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                {Math.min(currentPage * pageSize, totalCount)} of {totalCount} sale
-                {totalCount !== 1 ? "s" : ""}
-              </>
-            ) : (
-              <>
-                Showing {salesData.length} sale{salesData.length !== 1 ? "s" : ""}
-              </>
-            )}
-          </div>
-          {totalPages > 1 && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                disabled={currentPage === 1 || salesLoading}
-                className={cn(currentPage === 1 ? "cursor-not-allowed" : "cursor-pointer")}
-              >
-                <FontAwesomeIcon icon={faChevronLeft} className="h-4 w-4 mr-1" />
-                Previous
-              </Button>
-              <div className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages || salesLoading}
-                className={cn(currentPage === totalPages ? "cursor-not-allowed" : "cursor-pointer")}
-              >
-                Next
-                <FontAwesomeIcon icon={faChevronRight} className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+      <ConsoleDataTable
+        columns={salesColumns}
+        rows={salesData}
+        loading={salesLoading}
+        getRowKey={(row) => row.id}
+        onRowClick={(row) => handleRowClick(row.id)}
+        pagination={{
+          page: currentPage,
+          pageSize,
+          totalCount,
+          totalPages,
+        }}
+        pageInput={pageInput}
+        setPageInput={setPageInput}
+        onPageChange={(pageNum) => {
+          setCurrentPage(pageNum);
+          setPageInput(pageNum.toString());
+        }}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+          setPageInput("1");
+        }}
+        pageSizeOptions={[10, 25, 50, 100]}
+        itemsLabel="sales"
+      />
 
       {/* Details Modal */}
       <Dialog

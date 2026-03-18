@@ -925,6 +925,29 @@ model CrmApiAccessToken {
   @@map("CrmApiAccessToken")
 }
 
+model FortellisApiLog {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+
+  /// Correlation ID we send in the Fortellis `Request-Id` header
+  requestId      String?
+
+  /// HTTP request info
+  method         String
+  url            String
+  requestHeaders Json
+  requestBody    String?  @db.Text
+
+  /// HTTP response info
+  responseStatus Int
+  responseHeaders Json
+  responseBody   String?  @db.Text
+
+  @@index([requestId], map: "idx_fortellis_log_request_id")
+  @@index([createdAt], map: "idx_fortellis_log_created_at")
+  @@map("fortellis_api_logs")
+}
+
 model PaymentHistory {
   id                   String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   userId               String   @db.Uuid

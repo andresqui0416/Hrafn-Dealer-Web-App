@@ -16,11 +16,11 @@ export interface SelectProps extends Omit<React.ComponentProps<"select">, "child
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, options, placeholder, ...props }, ref) => {
     return (
-      <div className="relative inline-block">
+      <div className="relative inline-block w-full">
         <select
           ref={ref}
           className={cn(
-            "h-9 rounded-md border border-input bg-background pl-3 pr-9 text-sm appearance-none cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+            "h-9 w-full rounded-md border border-input bg-background pl-3 pr-9 text-sm appearance-none cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
             className,
           )}
           {...props}
