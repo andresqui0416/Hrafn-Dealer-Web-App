@@ -319,6 +319,7 @@ export default function InboxPage() {
                 onChange={(e) => setSubject(e.target.value)}
                 required
                 disabled={creating}
+                className="w-full"
               />
             </div>
             <div className="space-y-2">

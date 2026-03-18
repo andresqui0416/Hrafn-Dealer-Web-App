@@ -15,6 +15,7 @@ import {
   faBrain,
   faChartLine,
   faCreditCard,
+  faFileLines,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
@@ -39,6 +40,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         return "Fine-Tuning Samples";
       case "/admin/scraping-status":
         return "Scraping Status";
+      case "/admin/fortellis-logs":
+        return "Fortellis Logs";
+      case "/admin/payments":
+        return "Payments";
       default:
         return null;
     }
@@ -61,6 +66,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { href: "/admin/fine-tuning", label: "Fine-Tuning", icon: faBrain },
     { href: "/admin/scraping-status", label: "Scraping Status", icon: faChartLine },
     { href: "/admin/payments", label: "Payments", icon: faCreditCard },
+    { href: "/admin/fortellis-logs", label: "Fortellis Logs", icon: faFileLines },
   ];
 
   // If on login page, render children directly without layout

@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ConsoleDataTable, ConsoleTableColumn } from "@/components/console-data-table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBoxOpen,
@@ -60,10 +61,12 @@ export default function InventoryPage() {
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
+
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const loadInventory = useCallback(
     async (signal?: AbortSignal) => {
+      let aborted = false;
       try {
         setInventoryLoading(true);
         setIsRefreshing(true);
@@ -91,14 +94,17 @@ export default function InventoryPage() {
           }
         }
       } catch (error) {
-        // Ignore abort errors
+        // Ignore abort errors — do not clear loading so the next request shows loading correctly
         if (error instanceof Error && error.name === "AbortError") {
+          aborted = true;
           return;
         }
         console.error("Error loading inventory:", error);
       } finally {
-        setInventoryLoading(false);
-        setIsRefreshing(false);
+        if (!aborted) {
+          setInventoryLoading(false);
+          setIsRefreshing(false);
+        }
       }
     },
     [currentPage, itemsPerPage, statusFilter, makeFilter, yearFilter, priceSort, searchQuery],
@@ -300,11 +306,303 @@ export default function InventoryPage() {
     setPageInput("1");
   };
 
+  
+  const inventoryColumns: ConsoleTableColumn<InventoryItem>[] = [
+    {
+      id: "vin",
+      header: "VIN",
+      accessor: (row) => row.vin,
+      className: "text-sm",
+    },
+    {
+      id: "year",
+      header: (
+        <div className="flex items-center gap-2 justify-between">
+          <span>Year</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="h-4 w-4 flex items-center justify-center cursor-pointer hover:text-foreground transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FontAwesomeIcon
+                  icon={faFilter}
+                  className={cn(
+                    "h-3 w-3 text-muted-foreground hover:text-foreground",
+                    yearFilter.length > 0 && "text-primary",
+                  )}
+                  title="Filter by year"
+                />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-48 bg-background text-foreground"
+            >
+              <DropdownMenuLabel>Filter by Year</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="max-h-48 overflow-y-auto">
+                {filtersLoading ? (
+                  <div className="py-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                    Loading...
+                  </div>
+                ) : availableYears.length === 0 ? (
+                  <div className="py-4 text-center text-sm text-muted-foreground">
+                    No years found
+                  </div>
+                ) : (
+                  availableYears.map((year) => (
+                    <label
+                      key={year}
+                      className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-white/10 focus-within:bg-white/10"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={yearFilter.includes(year)}
+                        onChange={() => handleYearToggle(year)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20 cursor-pointer shrink-0"
+                      />
+                      <span className="truncate">{year}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+              {yearFilter.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <div className="px-2 py-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setYearFilter([]);
+                        setCurrentPage(1);
+                        setPageInput("1");
+                      }}
+                      className="text-muted-foreground hover:underline cursor-pointer"
+                    >
+                      Clear selection
+                    </button>
+                  </div>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ),
+      accessor: (row) => row.year,
+      className: "text-sm",
+    },
+    {
+      id: "make",
+      header: (
+        <div className="flex items-center gap-2 justify-between">
+          <span>Make</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="h-4 w-4 flex items-center justify-center cursor-pointer hover:text-foreground transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FontAwesomeIcon
+                  icon={faFilter}
+                  className={cn(
+                    "h-3 w-3 text-muted-foreground hover:text-foreground",
+                    makeFilter.length > 0 && "text-primary",
+                  )}
+                  title="Filter by make"
+                />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-48 bg-background text-foreground"
+            >
+              <DropdownMenuLabel>Filter by Make</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="max-h-48 overflow-y-auto">
+                {filtersLoading ? (
+                  <div className="py-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                    Loading...
+                  </div>
+                ) : availableMakes.length === 0 ? (
+                  <div className="py-4 text-center text-sm text-muted-foreground">
+                    No makes found
+                  </div>
+                ) : (
+                  availableMakes.map((make) => (
+                    <label
+                      key={make}
+                      className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-white/10 focus-within:bg-white/10"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={makeFilter.includes(make)}
+                        onChange={() => handleMakeToggle(make)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20 cursor-pointer shrink-0"
+                      />
+                      <span className="truncate">{make}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+              {makeFilter.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <div className="px-2 py-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMakeFilter([]);
+                        setCurrentPage(1);
+                        setPageInput("1");
+                      }}
+                      className="text-muted-foreground hover:underline cursor-pointer"
+                    >
+                      Clear selection
+                    </button>
+                  </div>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ),
+      accessor: (row) => row.make,
+      className: "text-sm",
+    },
+    {
+      id: "model",
+      header: "Model",
+      accessor: (row) => row.model,
+      className: "text-sm",
+    },
+    {
+      id: "trim",
+      header: "Trim",
+      accessor: (row) => row.trim || "-",
+      className: "text-sm",
+    },
+    {
+      id: "price",
+      header: (
+        <button
+          type="button"
+          onClick={togglePriceSort}
+          className="flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors"
+          title="Sort by price"
+        >
+          <span>Price</span>
+          <span className="text-xs text-muted-foreground">
+            {priceSort === "asc" ? "↑" : priceSort === "desc" ? "↓" : ""}
+          </span>
+        </button>
+      ),
+      accessor: (row) =>
+        row.price ? `$${Number(row.price).toLocaleString()}` : "-",
+      className: "text-sm",
+    },
+    {
+      id: "mileage",
+      header: "Mileage",
+      accessor: (row) => `${row.mileage.toLocaleString()} mi`,
+      className: "text-sm",
+    },
+    {
+      id: "status",
+      header: (
+        <div className="flex items-center gap-2 justify-between">
+          <span>Status</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="h-4 w-4 flex items-center justify-center cursor-pointer hover:text-foreground transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FontAwesomeIcon
+                  icon={faFilter}
+                  className={cn(
+                    "h-3 w-3 text-muted-foreground hover:text-foreground",
+                    statusFilter.length > 0 && "text-primary",
+                  )}
+                  title="Filter by status"
+                />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-48 bg-background text-foreground"
+            >
+              <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="max-h-48 overflow-y-auto">
+                {statusOptions.map((option) => (
+                  <label
+                    key={option.value}
+                    className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-white/10 focus-within:bg-white/10"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={statusFilter.includes(option.value)}
+                      onChange={() => handleStatusToggle(option.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20 cursor-pointer shrink-0"
+                    />
+                    <span className="truncate">{option.label}</span>
+                  </label>
+                ))}
+              </div>
+              {statusFilter.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <div className="px-2 py-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatusFilter([]);
+                        setCurrentPage(1);
+                        setPageInput("1");
+                      }}
+                      className="text-muted-foreground hover:underline cursor-pointer"
+                    >
+                      Clear selection
+                    </button>
+                  </div>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ),
+      render: (row) => (
+        <span
+          className={cn(
+            "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium",
+            row.status === "available"
+              ? "bg-green-500/20 text-green-400"
+              : row.status === "sold"
+              ? "bg-red-500/20 text-red-400"
+              : row.status === "pending"
+              ? "bg-yellow-500/20 text-yellow-400"
+              : "bg-gray-500/20 text-gray-400",
+          )}
+        >
+          {row.status}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold">Inventory</h2>
           <p className="text-sm text-muted-foreground">Manage your inventory</p>
         </div>
       </div>
@@ -320,7 +618,7 @@ export default function InventoryPage() {
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             disabled={inventoryLoading}
-            className="pl-10"
+            className="pl-10 w-full"
           />
         </div>
         <Button
@@ -337,404 +635,34 @@ export default function InventoryPage() {
         </Button>
       </div>
 
-      <div className="rounded-lg border border-white/10 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-white/5 border-b border-white/10">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold">VIN</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">
-                  <div className="flex items-center gap-2 justify-between">
-                    <span>Year</span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          className="h-4 w-4 flex items-center justify-center cursor-pointer hover:text-foreground transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <FontAwesomeIcon
-                            icon={faFilter}
-                            className={cn(
-                              "h-3 w-3 text-muted-foreground hover:text-foreground",
-                              yearFilter.length > 0 && "text-primary",
-                            )}
-                            title="Filter by year"
-                          />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-48 bg-background text-foreground"
-                      >
-                        <DropdownMenuLabel>Filter by Year</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <div className="max-h-48 overflow-y-auto">
-                          {filtersLoading ? (
-                            <div className="py-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                              <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-                              Loading...
-                            </div>
-                          ) : availableYears.length === 0 ? (
-                            <div className="py-4 text-center text-sm text-muted-foreground">
-                              No years found
-                            </div>
-                          ) : (
-                            availableYears.map((year) => (
-                              <label
-                                key={year}
-                                className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-white/10 focus-within:bg-white/10"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={yearFilter.includes(year)}
-                                  onChange={() => handleYearToggle(year)}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20 cursor-pointer shrink-0"
-                                />
-                                <span className="truncate">{year}</span>
-                              </label>
-                            ))
-                          )}
-                        </div>
-                        {yearFilter.length > 0 && (
-                          <>
-                            <DropdownMenuSeparator />
-                            <div className="px-2 py-1 text-xs">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setYearFilter([]);
-                                  setCurrentPage(1);
-                                  setPageInput("1");
-                                }}
-                                className="text-muted-foreground hover:underline cursor-pointer"
-                              >
-                                Clear selection
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">
-                  <div className="flex items-center gap-2 justify-between">
-                    <span>Make</span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          className="h-4 w-4 flex items-center justify-center cursor-pointer hover:text-foreground transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <FontAwesomeIcon
-                            icon={faFilter}
-                            className={cn(
-                              "h-3 w-3 text-muted-foreground hover:text-foreground",
-                              makeFilter.length > 0 && "text-primary",
-                            )}
-                            title="Filter by make"
-                          />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-48 bg-background text-foreground"
-                      >
-                        <DropdownMenuLabel>Filter by Make</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <div className="max-h-48 overflow-y-auto">
-                          {filtersLoading ? (
-                            <div className="py-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                              <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-                              Loading...
-                            </div>
-                          ) : availableMakes.length === 0 ? (
-                            <div className="py-4 text-center text-sm text-muted-foreground">
-                              No makes found
-                            </div>
-                          ) : (
-                            availableMakes.map((make) => (
-                              <label
-                                key={make}
-                                className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-white/10 focus-within:bg-white/10"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={makeFilter.includes(make)}
-                                  onChange={() => handleMakeToggle(make)}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20 cursor-pointer shrink-0"
-                                />
-                                <span className="truncate">{make}</span>
-                              </label>
-                            ))
-                          )}
-                        </div>
-                        {makeFilter.length > 0 && (
-                          <>
-                            <DropdownMenuSeparator />
-                            <div className="px-2 py-1 text-xs">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setMakeFilter([]);
-                                  setCurrentPage(1);
-                                  setPageInput("1");
-                                }}
-                                className="text-muted-foreground hover:underline cursor-pointer"
-                              >
-                                Clear selection
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Model</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Trim</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">
-                  <button
-                    type="button"
-                    onClick={togglePriceSort}
-                    className="flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors"
-                    title="Sort by price"
-                  >
-                    <span>Price</span>
-                    <span className="text-xs text-muted-foreground">
-                      {priceSort === "asc" ? "↑" : priceSort === "desc" ? "↓" : ""}
-                    </span>
-                  </button>
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Mileage</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">
-                  <div className="flex items-center gap-2 justify-between">
-                    <span>Status</span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          className="h-4 w-4 flex items-center justify-center cursor-pointer hover:text-foreground transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <FontAwesomeIcon
-                            icon={faFilter}
-                            className="h-3 w-3 text-muted-foreground hover:text-foreground"
-                            title="Filter by status"
-                          />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-48 bg-background text-foreground"
-                      >
-                        <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <div className="max-h-48 overflow-y-auto">
-                          {statusOptions.map((option) => (
-                            <label
-                              key={option.value}
-                              className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-white/10 focus-within:bg-white/10"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={statusFilter.includes(option.value)}
-                                onChange={() => handleStatusToggle(option.value)}
-                                onClick={(e) => e.stopPropagation()}
-                                className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20 cursor-pointer shrink-0"
-                              />
-                              <span className="truncate">{option.label}</span>
-                            </label>
-                          ))}
-                        </div>
-                        {statusFilter.length > 0 && (
-                          <>
-                            <DropdownMenuSeparator />
-                            <div className="px-2 py-1 text-xs">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setStatusFilter([]);
-                                  setCurrentPage(1);
-                                  setPageInput("1");
-                                }}
-                                className="text-muted-foreground hover:underline cursor-pointer"
-                              >
-                                Clear selection
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            {!inventoryLoading && inventory.length !== 0 && (
-              <tbody className="divide-y divide-white/10">
-                {inventory.map((item) => (
-                  <tr key={item.id} className="hover:bg-white/5">
-                    <td className="px-4 py-3 text-sm">{item.vin}</td>
-                    <td className="px-4 py-3 text-sm">{item.year}</td>
-                    <td className="px-4 py-3 text-sm">{item.make}</td>
-                    <td className="px-4 py-3 text-sm">{item.model}</td>
-                    <td className="px-4 py-3 text-sm">{item.trim || "-"}</td>
-                    <td className="px-4 py-3 text-sm">
-                      {item.price ? `$${Number(item.price).toLocaleString()}` : "-"}
-                    </td>
-                    <td className="px-4 py-3 text-sm">{item.mileage.toLocaleString()} mi</td>
-                    <td className="px-4 py-3 text-sm">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${item.status === "available"
-                            ? "bg-green-500/20 text-green-400"
-                            : item.status === "sold"
-                              ? "bg-red-500/20 text-red-400"
-                              : item.status === "pending"
-                                ? "bg-yellow-500/20 text-yellow-400"
-                                : "bg-gray-500/20 text-gray-400"
-                          }`}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            )}
-          </table>
-          {inventoryLoading ? (
-            <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
-              <FontAwesomeIcon icon={faSpinner} className="fa-lg animate-spin" />
-              <span>Loading inventory...</span>
-            </div>
-          ) : (
-            inventory.length === 0 &&
-            !inventoryLoading && (
-              <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
-                <FontAwesomeIcon icon={faBoxOpen} className="fa-lg" />
-                <span>No inventory items found.</span>
-              </div>
-            )
-          )}
-        </div>
-        <div className="px-4 py-3 bg-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-4">
-            <div>
-              {pagination ? (
-                <>
-                  Showing {(pagination.page - 1) * pagination.limit + 1}-
-                  {Math.min(pagination.page * pagination.limit, pagination.totalCount)} of{" "}
-                  {pagination.totalCount} item{pagination.totalCount !== 1 ? "s" : ""}
-                </>
-              ) : (
-                <>
-                  Showing {inventory.length} item{inventory.length !== 1 ? "s" : ""}
-                </>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <label htmlFor="page-size" className="text-xs">
-                Items per page:
-              </label>
-              <select
-                id="page-size"
-                name="page-size"
-                value={itemsPerPage}
-                onChange={(e) => {
-                  const newSize = parseInt(e.target.value, 10);
-                  setItemsPerPage(newSize);
-                  setCurrentPage(1);
-                  setPageInput("1");
-                }}
-                disabled={inventoryLoading}
-                className="px-2 py-1 rounded-md border border-white/10 bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  colorScheme: "dark",
-                }}
-              >
-                <option value="25" className="bg-background text-foreground">
-                  25
-                </option>
-                <option value="50" className="bg-background text-foreground">
-                  50
-                </option>
-                <option value="100" className="bg-background text-foreground">
-                  100
-                </option>
-                <option value="200" className="bg-background text-foreground">
-                  200
-                </option>
-              </select>
-            </div>
-          </div>
-          {pagination && pagination.totalPages > 1 && (
-            <div className="flex items-center gap-2 w-max">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const newPage = Math.max(1, currentPage - 1);
-                  setCurrentPage(newPage);
-                  setPageInput(newPage.toString());
-                }}
-                disabled={!pagination.hasPreviousPage || inventoryLoading}
-              >
-                Previous
-              </Button>
-              <div className="flex flex-row items-center gap-2">
-                <span className="text-xs">Page</span>
-                <Input
-                  id="pageNumber"
-                  name="pageNumber"
-                  type="number"
-                  min="1"
-                  max={pagination.totalPages}
-                  value={pageInput}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setPageInput(value);
-                  }}
-                  onBlur={(e) => {
-                    const pageNum = parseInt(e.target.value, 10);
-                    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= pagination.totalPages) {
-                      setCurrentPage(pageNum);
-                    } else {
-                      setPageInput(currentPage.toString());
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      const pageNum = parseInt(pageInput, 10);
-                      if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= pagination.totalPages) {
-                        setCurrentPage(pageNum);
-                      } else {
-                        setPageInput(currentPage.toString());
-                      }
-                    }
-                  }}
-                  disabled={inventoryLoading}
-                  className="w-8 h-8 text-center text-xs"
-                />
-                <div className="text-xs w-16">{`of ${pagination.totalPages}`}</div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const newPage = Math.min(pagination.totalPages, currentPage + 1);
-                  setCurrentPage(newPage);
-                  setPageInput(newPage.toString());
-                }}
-                disabled={!pagination.hasNextPage || inventoryLoading}
-              >
-                Next
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+      <ConsoleDataTable
+        columns={inventoryColumns}
+        rows={inventory}
+        loading={inventoryLoading}
+        getRowKey={(row) => row.id}
+        pagination={
+          pagination
+            ? {
+                page: pagination.page,
+                pageSize: pagination.limit,
+                totalCount: pagination.totalCount,
+                totalPages: pagination.totalPages,
+              }
+            : undefined
+        }
+        pageInput={pageInput}
+        setPageInput={setPageInput}
+        onPageChange={(pageNum) => {
+          setCurrentPage(pageNum);
+        }}
+        onPageSizeChange={(size) => {
+          setItemsPerPage(size);
+          setCurrentPage(1);
+          setPageInput("1");
+        }}
+        pageSizeOptions={[25, 50, 100, 200]}
+        itemsLabel="items"
+      />
     </div>
   );
 }
