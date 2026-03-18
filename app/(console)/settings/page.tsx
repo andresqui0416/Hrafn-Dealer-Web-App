@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
+import { Select } from "@/components/ui/select";
 type DealerData = {
   id: string;
   name: string;
@@ -492,6 +492,7 @@ export default function SettingsPage() {
                   required
                   disabled={loading}
                   autoComplete="organization"
+                  className="w-full"
                 />
                 <p className="text-xs text-muted-foreground">
                   This name must be unique across all dealers
@@ -512,6 +513,7 @@ export default function SettingsPage() {
                   required
                   disabled={loading}
                   autoComplete="street-address"
+                  className="w-full"
                 />
               </div>
 
@@ -542,21 +544,23 @@ export default function SettingsPage() {
                   <label htmlFor="serviceKind" className="text-sm font-medium">
                     Service <span className="text-destructive">*</span>
                   </label>
-                  <select
-                    id="serviceKind"
-                    value={selectedServiceKind}
-                    onChange={(e) => setSelectedServiceKind(e.target.value)}
-                    disabled={submittingService || servicesLoading}
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    required
-                  >
-                    <option value="">Select a service</option>
-                    {serviceKinds.map((kind) => (
-                      <option key={kind.id} value={kind.id}>
-                        {kind.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="w-full">
+                    <Select
+                      id="serviceKind"
+                      value={selectedServiceKind}
+                      onChange={(e) => setSelectedServiceKind(e.target.value)}
+                      disabled={submittingService || servicesLoading}
+                      className="h-9 w-full text-sm"
+                      required
+                      options={[
+                        { value: "", label: "Select a service" },
+                        ...serviceKinds.map((kind) => ({
+                          value: kind.id,
+                          label: kind.name,
+                        })),
+                      ]}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -572,6 +576,7 @@ export default function SettingsPage() {
                     onChange={(e) => setOrgName(e.target.value)}
                     required
                     disabled={submittingService}
+                    className="w-full"
                   />
                   <p className="text-xs text-muted-foreground">
                     This should match the organization name registered in the CRM system
@@ -702,6 +707,7 @@ export default function SettingsPage() {
                     handleUpdateService();
                   }
                 }}
+                className="w-full"
               />
               <p className="text-xs text-muted-foreground">
                 This should match the organization name registered in the CRM system

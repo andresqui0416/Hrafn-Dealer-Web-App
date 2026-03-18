@@ -5,6 +5,7 @@ import type { MouseEvent as ReactMouseEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { AdminPagination } from "@/components/admin-pagination";
 import {
   Dialog,
   DialogContent,
@@ -434,13 +435,10 @@ export default function FineTuningPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold">Fine-Tuning Samples</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage sample questions and answers for model fine-tuning
-          </p>
-        </div>
+      <p className="text-sm text-muted-foreground">
+        Manage sample questions and answers for model fine-tuning
+      </p>
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-2">
           <Button
             onClick={() => setShowImportDialog(true)}
@@ -484,9 +482,10 @@ export default function FineTuningPage() {
               setPage(1);
               loadSamples({ nextQuery: next, nextPage: 1 });
             }}
+            className="w-full max-w-lg"
           />
         </div>
-        <div className="flex items-center gap-2 justify-between sm:justify-end">
+        <div className="flex items-center gap-2 justify-between sm:justify-end flex-wrap">
           {selectedCount > 0 && (
             <div className="flex items-center gap-2">
               <div className="text-xs text-muted-foreground">Selected {selectedCount}</div>
@@ -519,58 +518,36 @@ export default function FineTuningPage() {
               </Button>
             </div>
           )}
-          <div className="text-xs text-muted-foreground">
-            Showing {showingFrom}-{showingTo} of {totalCount}
-          </div>
-          <Select
-            value={pageSize}
-            onChange={(e) => {
-              const nextSize = Number(e.target.value);
-              setPageSize(nextSize);
-              setExpandedSampleId(null);
-              setPage(1);
-              loadSamples({ nextPageSize: nextSize, nextPage: 1 });
-            }}
-            options={[
-              { value: 10, label: "10 / page" },
-              { value: 20, label: "20 / page" },
-              { value: 50, label: "50 / page" },
-            ]}
-          />
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={loading || page <= 1}
-              onClick={() => {
-                const nextPage = Math.max(1, page - 1);
-                setPage(nextPage);
-                setExpandedSampleId(null);
-                loadSamples({ nextPage });
-              }}
-              className={cn(loading || page <= 1 ? "cursor-not-allowed" : "cursor-pointer")}
-            >
-              <FontAwesomeIcon icon={faChevronLeft} className="h-4 w-4" />
-            </Button>
-            <div className="text-xs text-muted-foreground w-[72px] text-center">
-              Page {page} / {totalPages}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
+            <div className="text-xs text-muted-foreground">
+              Showing {showingFrom}-{showingTo} of {totalCount}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={loading || page >= totalPages}
-              onClick={() => {
-                const nextPage = Math.min(totalPages, page + 1);
+            <AdminPagination
+              total={totalCount}
+              page={page}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              loading={loading}
+              pageInput={String(page)}
+              setPageInput={(value) => {
+                const parsed = Number(value || "1");
+                const clamped = Math.min(totalPages || 1, Math.max(1, parsed || 1));
+                setPage(clamped);
+                setExpandedSampleId(null);
+                loadSamples({ nextPage: clamped });
+              }}
+              onPageChange={(nextPage) => {
                 setPage(nextPage);
                 setExpandedSampleId(null);
                 loadSamples({ nextPage });
               }}
-              className={cn(
-                loading || page >= totalPages ? "cursor-not-allowed" : "cursor-pointer",
-              )}
-            >
-              <FontAwesomeIcon icon={faChevronRight} className="h-4 w-4" />
-            </Button>
+              onPageSizeChange={(nextSize) => {
+                setPageSize(nextSize);
+                setExpandedSampleId(null);
+                setPage(1);
+                loadSamples({ nextPageSize: nextSize, nextPage: 1 });
+              }}
+            />
           </div>
         </div>
       </div>

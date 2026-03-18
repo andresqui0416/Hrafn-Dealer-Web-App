@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
+import { AdminPagination } from "@/components/admin-pagination";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSpinner,
@@ -56,7 +56,7 @@ export default function ScrapingStatusPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("scrape-events");
   const [eventsPage, setEventsPage] = useState(1);
-  const [eventsPageSize, setEventsPageSize] = useState(10);
+  const [eventsPageSize, setEventsPageSize] = useState(20);
   const [eventsPagination, setEventsPagination] = useState<PaginationState>({
     page: 1,
     pageSize: 10,
@@ -134,13 +134,10 @@ export default function ScrapingStatusPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold">Scraping Status</h2>
-          <p className="text-sm text-muted-foreground">
-            Recent scrape events and failure log. Alerts are not implemented yet.
-          </p>
-        </div>
+      <p className="text-sm text-muted-foreground">
+        Recent scrape events and failure log. Alerts are not implemented yet.
+      </p>
+      <div className="flex items-center justify-end">
         <Button
           onClick={() => load()}
           variant="outline"
@@ -190,64 +187,27 @@ export default function ScrapingStatusPage() {
       {/* Tab panels */}
       {activeTab === "scrape-events" && (
         <div className="space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <p className="text-sm text-muted-foreground">Latest scrape runs by OEM/source</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                Showing{" "}
-                {eventsPagination.totalCount === 0
-                  ? 0
-                  : (eventsPagination.page - 1) * eventsPagination.pageSize + 1}
-                –
-                {Math.min(
-                  eventsPagination.page * eventsPagination.pageSize,
-                  eventsPagination.totalCount,
-                )}{" "}
-                of {eventsPagination.totalCount}
-              </span>
-              <Select
-                value={eventsPageSize}
-                onChange={(e) => {
-                  setEventsPageSize(Number(e.target.value));
-                  setEventsPage(1);
-                }}
-                options={[
-                  { value: 10, label: "10 / page" },
-                  { value: 20, label: "20 / page" },
-                  { value: 50, label: "50 / page" },
-                ]}
-              />
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={loading || eventsPagination.page <= 1}
-                  onClick={() => setEventsPage((p) => Math.max(1, p - 1))}
-                  className={cn(loading || eventsPagination.page <= 1 ? "cursor-not-allowed" : "cursor-pointer")}
-                >
-                  <FontAwesomeIcon icon={faChevronLeft} className="h-4 w-4" />
-                </Button>
-                <span className="text-sm text-muted-foreground w-[72px] text-center">
-                  Page {eventsPagination.page} / {eventsPagination.totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={loading || eventsPagination.page >= eventsPagination.totalPages}
-                  onClick={() =>
-                    setEventsPage((p) => Math.min(eventsPagination.totalPages, p + 1))
-                  }
-                  className={cn(
-                    loading || eventsPagination.page >= eventsPagination.totalPages
-                      ? "cursor-not-allowed"
-                      : "cursor-pointer",
-                  )}
-                >
-                  <FontAwesomeIcon icon={faChevronRight} className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+          <AdminPagination
+            total={eventsPagination.totalCount}
+            page={eventsPagination.page}
+            totalPages={eventsPagination.totalPages}
+            pageSize={eventsPagination.pageSize}
+            loading={loading}
+            pageInput={String(eventsPagination.page)}
+            setPageInput={(value) => {
+              const parsed = Number(value || "1");
+              const clamped = Math.min(
+                eventsPagination.totalPages || 1,
+                Math.max(1, parsed || 1),
+              );
+              setEventsPage(clamped);
+            }}
+            onPageChange={(nextPage) => setEventsPage(nextPage)}
+            onPageSizeChange={(nextSize) => {
+              setEventsPageSize(nextSize);
+              setEventsPage(1);
+            }}
+          />
           <div className="overflow-x-auto rounded-md border border-white/10">
             {loading ? (
               <div className="flex justify-center items-center py-10">
@@ -313,62 +273,27 @@ export default function ScrapingStatusPage() {
       {activeTab === "failure-log" && (
         <div className="space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <p className="text-sm text-muted-foreground">Logged scrape failures (for future alerting)</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                Showing{" "}
-                {failuresPagination.totalCount === 0
-                  ? 0
-                  : (failuresPagination.page - 1) * failuresPagination.pageSize + 1}
-                –
-                {Math.min(
-                  failuresPagination.page * failuresPagination.pageSize,
-                  failuresPagination.totalCount,
-                )}{" "}
-                of {failuresPagination.totalCount}
-              </span>
-              <Select
-                value={failuresPageSize}
-                onChange={(e) => {
-                  setFailuresPageSize(Number(e.target.value));
-                  setFailuresPage(1);
-                }}
-                options={[
-                  { value: 10, label: "10 / page" },
-                  { value: 20, label: "20 / page" },
-                  { value: 50, label: "50 / page" },
-                ]}
-              />
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={loading || failuresPagination.page <= 1}
-                  onClick={() => setFailuresPage((p) => Math.max(1, p - 1))}
-                  className={cn(loading || failuresPagination.page <= 1 ? "cursor-not-allowed" : "cursor-pointer")}
-                >
-                  <FontAwesomeIcon icon={faChevronLeft} className="h-4 w-4" />
-                </Button>
-                <span className="text-sm text-muted-foreground w-[72px] text-center">
-                  Page {failuresPagination.page} / {failuresPagination.totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={loading || failuresPagination.page >= failuresPagination.totalPages}
-                  onClick={() =>
-                    setFailuresPage((p) => Math.min(failuresPagination.totalPages, p + 1))
-                  }
-                  className={cn(
-                    loading || failuresPagination.page >= failuresPagination.totalPages
-                      ? "cursor-not-allowed"
-                      : "cursor-pointer",
-                  )}
-                >
-                  <FontAwesomeIcon icon={faChevronRight} className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <AdminPagination
+              total={failuresPagination.totalCount}
+              page={failuresPagination.page}
+              totalPages={failuresPagination.totalPages}
+              pageSize={failuresPagination.pageSize}
+              loading={loading}
+              pageInput={String(failuresPagination.page)}
+              setPageInput={(value) => {
+                const parsed = Number(value || "1");
+                const clamped = Math.min(
+                  failuresPagination.totalPages || 1,
+                  Math.max(1, parsed || 1),
+                );
+                setFailuresPage(clamped);
+              }}
+              onPageChange={(nextPage) => setFailuresPage(nextPage)}
+              onPageSizeChange={(nextSize) => {
+                setFailuresPageSize(nextSize);
+                setFailuresPage(1);
+              }}
+            />
           </div>
           <div className="overflow-x-auto rounded-md border border-white/10">
             {loading ? (
