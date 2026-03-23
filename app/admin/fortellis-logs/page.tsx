@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,8 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSpinner,
   faRotateRight,
-  faChevronLeft,
-  faChevronRight,
+  faArrowLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 
@@ -111,158 +110,23 @@ export default function AdminFortellisLogsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Filters and summary */}
-      <div className="space-y-4">
-        <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">
-            View Fortellis request/response logs for certification and support using Request-Id.
-          </p>
-        </div>
-
-        <div className="flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
-          <div className="flex-1 space-y-1 max-w-full md:max-w-xl">
-            <label className="text-xs font-medium text-muted-foreground mb-1">
-              Request-Id (exact match)
-            </label>
-            <Input
-              placeholder="Paste Fortellis Request-Id to look up a single transaction…"
-              value={requestIdFilter}
-              onChange={(e) => setRequestIdFilter(e.target.value)}
-              className="w-full md:max-w-xl"
-            />
-          </div>
-          <div className="flex flex-row items-center gap-2 pt-1 md:pt-6 self-end md:self-auto">
-            <Button
-              variant="outline"
-              onClick={() => loadData({ page: 1 })}
-              disabled={loading}
-              className={cn(loading ? "cursor-not-allowed" : "cursor-pointer")}
-            >
-              <FontAwesomeIcon
-                icon={loading ? faSpinner : faRotateRight}
-                className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
-              />
-              Search / Refresh
-            </Button>
+      {selectedRow ? (
+        <div className="space-y-6">
+          <div className="space-y-4">
             <Button
               variant="ghost"
-              onClick={() => {
-                setRequestIdFilter("");
-                loadData({ page: 1 });
-              }}
-              disabled={loading}
-              className="cursor-pointer whitespace-nowrap hover:bg-white/10 transition-colors duration-200"
+              size="sm"
+              className="w-fit cursor-pointer border-0 shadow-none hover:bg-white/10 transition-colors duration-200"
+              onClick={() => setSelectedRow(null)}
             >
-              Clear
+              <FontAwesomeIcon icon={faArrowLeft} className="h-3.5 w-3.5 mr-2" />
+              Back
             </Button>
-          </div>
-        </div>
-
-        {error && (
-          <div className="rounded-md bg-destructive/15 py-3 px-4 text-sm text-destructive">
-            {error}
-          </div>
-        )}
-
-        <AdminPagination
-          total={total}
-          page={page}
-          totalPages={totalPages}
-          pageSize={pageSize}
-          loading={loading}
-          pageInput={pageInput}
-          setPageInput={setPageInput}
-          onPageChange={(nextPage) => loadData({ page: nextPage })}
-          onPageSizeChange={(nextSize) => {
-            setPageSize(nextSize);
-            loadData({ page: 1 });
-          }}
-        />
-      </div>
-
-      {/* Table of logs */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b border-white/10 text-xs text-muted-foreground">
-                <tr>
-                  <th className="py-2 px-4 text-left">Time</th>
-                  <th className="py-2 px-4 text-left">Request-Id</th>
-                  <th className="py-2 px-4 text-left">Method</th>
-                  <th className="py-2 px-4 text-left">URL</th>
-                  <th className="py-2 px-4 text-left">Status</th>
-                  <th className="py-2 px-4 text-left">Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={6} className="py-6 text-center text-muted-foreground">
-                      <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 mr-2 animate-spin" />
-                      Loading logs…
-                    </td>
-                  </tr>
-                ) : rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-6 text-center text-muted-foreground">
-                      No logs found.
-                    </td>
-                  </tr>
-                ) : (
-                  rows.map((row) => (
-                    <tr key={row.id} className="border-b border-white/5 last:border-0">
-                      <td className="py-2 px-4 whitespace-nowrap">
-                        {formatDateTime(row.createdAt)}
-                      </td>
-                      <td className="py-2 px-4 font-mono text-xs max-w-[220px] truncate">
-                        {row.requestId || "—"}
-                      </td>
-                      <td className="py-2 px-4">{row.method}</td>
-                      <td className="py-2 px-4 max-w-[260px] truncate" title={row.url}>
-                        {row.url}
-                      </td>
-                      <td className="py-2 px-4">
-                        <span
-                          className={
-                            row.responseStatus >= 200 && row.responseStatus < 300
-                              ? "text-emerald-400"
-                              : row.responseStatus >= 400
-                                ? "text-red-400"
-                                : "text-amber-300"
-                          }
-                        >
-                          {row.responseStatus}
-                        </span>
-                      </td>
-                      <td className="py-2 px-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 px-3 text-xs cursor-pointer"
-                          onClick={() => setSelectedRow(row)}
-                        >
-                          View
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Detail view */}
-      {selectedRow && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
+            <h2 className="text-sm font-medium break-words text-foreground">
               Log details – {selectedRow.method} {selectedRow.url}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h2>
+          </div>
+          <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <div className="text-xs text-muted-foreground">Request</div>
@@ -333,13 +197,153 @@ export default function AdminFortellisLogsPage() {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end">
-              <Button variant="ghost" size="sm" onClick={() => setSelectedRow(null)}>
-                Close
-              </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Filters and summary */}
+          <div className="space-y-4">
+            <div className="flex flex-col gap-1">
+              <p className="text-sm text-muted-foreground">
+                View Fortellis request/response logs for certification and support using Request-Id.
+              </p>
             </div>
-          </CardContent>
-        </Card>
+
+            <div className="flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
+              <div className="flex-1 space-y-1 max-w-full md:max-w-xl">
+                <label className="text-xs font-medium text-muted-foreground mb-1">
+                  Request-Id (exact match)
+                </label>
+                <Input
+                  placeholder="Paste Fortellis Request-Id to look up a single transaction…"
+                  value={requestIdFilter}
+                  onChange={(e) => setRequestIdFilter(e.target.value)}
+                  className="w-full md:max-w-xl"
+                />
+              </div>
+              <div className="flex flex-row items-center gap-2 pt-1 md:pt-6 self-end md:self-auto">
+                <Button
+                  variant="outline"
+                  onClick={() => loadData({ page: 1 })}
+                  disabled={loading}
+                  className={cn(loading ? "cursor-not-allowed" : "cursor-pointer")}
+                >
+                  <FontAwesomeIcon
+                    icon={loading ? faSpinner : faRotateRight}
+                    className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
+                  />
+                  Search / Refresh
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setRequestIdFilter("");
+                    loadData({ page: 1 });
+                  }}
+                  disabled={loading}
+                  className="cursor-pointer whitespace-nowrap hover:bg-white/10 transition-colors duration-200"
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="rounded-md bg-destructive/15 py-3 px-4 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+
+            <AdminPagination
+              total={total}
+              page={page}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              loading={loading}
+              pageInput={pageInput}
+              setPageInput={setPageInput}
+              onPageChange={(nextPage) => loadData({ page: nextPage })}
+              onPageSizeChange={(nextSize) => {
+                setPageSize(nextSize);
+                loadData({ page: 1 });
+              }}
+            />
+          </div>
+
+          {/* Table of logs */}
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="border-b border-white/10 text-xs text-muted-foreground">
+                    <tr>
+                      <th className="py-2 px-4 text-left">Time</th>
+                      <th className="py-2 px-4 text-left">Request-Id</th>
+                      <th className="py-2 px-4 text-left">Method</th>
+                      <th className="py-2 px-4 text-left">URL</th>
+                      <th className="py-2 px-4 text-left">Status</th>
+                      <th className="py-2 px-4 text-left">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan={6} className="py-6 text-center text-muted-foreground">
+                          <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 mr-2 animate-spin" />
+                          Loading logs…
+                        </td>
+                      </tr>
+                    ) : rows.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-6 text-center text-muted-foreground">
+                          No logs found.
+                        </td>
+                      </tr>
+                    ) : (
+                      rows.map((row) => (
+                        <tr key={row.id} className="border-b border-white/5 last:border-0">
+                          <td className="py-2 px-4 whitespace-nowrap">
+                            {formatDateTime(row.createdAt)}
+                          </td>
+                          <td className="py-2 px-4 font-mono text-xs max-w-[220px] truncate">
+                            {row.requestId || "—"}
+                          </td>
+                          <td className="py-2 px-4">{row.method}</td>
+                          <td className="py-2 px-4 max-w-[260px] truncate" title={row.url}>
+                            {row.url}
+                          </td>
+                          <td className="py-2 px-4">
+                            <span
+                              className={
+                                row.responseStatus >= 200 && row.responseStatus < 300
+                                  ? "text-emerald-400"
+                                  : row.responseStatus >= 400
+                                    ? "text-red-400"
+                                    : "text-amber-300"
+                              }
+                            >
+                              {row.responseStatus}
+                            </span>
+                          </td>
+                          <td className="py-2 px-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 px-3 text-xs cursor-pointer"
+                              onClick={() => setSelectedRow(row)}
+                            >
+                              View
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
     </div>
   );
