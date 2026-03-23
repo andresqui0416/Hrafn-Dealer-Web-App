@@ -21,6 +21,7 @@ import {
   faX,
   faRotateRight,
 } from "@fortawesome/free-solid-svg-icons";
+import { cn } from "@/lib/utils";
 
 type Dealer = {
   id: string;
@@ -221,11 +222,11 @@ export default function DealersPage() {
               variant="outline"
               onClick={loadDealers}
               disabled={dealersLoading}
-              className="cursor-pointer transition-colors duration-200 disabled:cursor-not-allowed"
+              className={cn(dealersLoading ? "cursor-not-allowed" : "cursor-pointer")}
             >
               <FontAwesomeIcon
-                icon={faRotateRight}
-                className={`h-4 w-4 mr-2 ${dealersLoading ? "animate-spin" : ""}`}
+                icon={dealersLoading ? faSpinner : faRotateRight}
+                className={cn("h-4 w-4 mr-2", dealersLoading && "animate-spin")}
               />
               Refresh
             </Button>
