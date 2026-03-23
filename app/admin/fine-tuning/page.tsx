@@ -459,7 +459,10 @@ export default function FineTuningPage() {
             disabled={loading}
             className={cn(loading ? "cursor-not-allowed" : "cursor-pointer")}
           >
-            <FontAwesomeIcon icon={faRotateRight} className="h-4 w-4 mr-2" />
+            <FontAwesomeIcon
+              icon={loading ? faSpinner : faRotateRight}
+              className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
+            />
             Refresh
           </Button>
           <Button onClick={() => setShowCreateDialog(true)} className="cursor-pointer">

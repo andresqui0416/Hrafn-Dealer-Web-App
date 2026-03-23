@@ -13,6 +13,7 @@ import {
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
+import { cn } from "@/lib/utils";
 
 type FortellisApiLogRow = {
   id: string;
@@ -135,11 +136,11 @@ export default function AdminFortellisLogsPage() {
               variant="outline"
               onClick={() => loadData({ page: 1 })}
               disabled={loading}
-              className="cursor-pointer transition-colors duration-200 disabled:cursor-not-allowed whitespace-nowrap hover:bg-white/10"
+              className={cn(loading ? "cursor-not-allowed" : "cursor-pointer")}
             >
               <FontAwesomeIcon
-                icon={faRotateRight}
-                className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+                icon={loading ? faSpinner : faRotateRight}
+                className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
               />
               Search / Refresh
             </Button>
