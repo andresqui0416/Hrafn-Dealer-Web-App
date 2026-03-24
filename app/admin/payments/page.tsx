@@ -9,9 +9,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSpinner,
   faRotateRight,
-  faChevronLeft,
-  faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
+import { cn } from "@/lib/utils";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -320,11 +319,11 @@ export default function AdminPaymentsPage() {
           variant="outline"
           onClick={loadData}
           disabled={loading}
-          className="cursor-pointer transition-colors duration-200 disabled:cursor-not-allowed"
+          className={cn(loading ? "cursor-not-allowed" : "cursor-pointer")}
         >
           <FontAwesomeIcon
-            icon={faRotateRight}
-            className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            icon={loading ? faSpinner : faRotateRight}
+            className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
           />
           Refresh
         </Button>
