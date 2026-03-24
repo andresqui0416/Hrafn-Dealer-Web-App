@@ -272,29 +272,27 @@ export default function ScrapingStatusPage() {
 
       {activeTab === "failure-log" && (
         <div className="space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <AdminPagination
-              total={failuresPagination.totalCount}
-              page={failuresPagination.page}
-              totalPages={failuresPagination.totalPages}
-              pageSize={failuresPagination.pageSize}
-              loading={loading}
-              pageInput={String(failuresPagination.page)}
-              setPageInput={(value) => {
-                const parsed = Number(value || "1");
-                const clamped = Math.min(
-                  failuresPagination.totalPages || 1,
-                  Math.max(1, parsed || 1),
-                );
-                setFailuresPage(clamped);
-              }}
-              onPageChange={(nextPage) => setFailuresPage(nextPage)}
-              onPageSizeChange={(nextSize) => {
-                setFailuresPageSize(nextSize);
-                setFailuresPage(1);
-              }}
-            />
-          </div>
+          <AdminPagination
+            total={failuresPagination.totalCount}
+            page={failuresPagination.page}
+            totalPages={failuresPagination.totalPages}
+            pageSize={failuresPagination.pageSize}
+            loading={loading}
+            pageInput={String(failuresPagination.page)}
+            setPageInput={(value) => {
+              const parsed = Number(value || "1");
+              const clamped = Math.min(
+                failuresPagination.totalPages || 1,
+                Math.max(1, parsed || 1),
+              );
+              setFailuresPage(clamped);
+            }}
+            onPageChange={(nextPage) => setFailuresPage(nextPage)}
+            onPageSizeChange={(nextSize) => {
+              setFailuresPageSize(nextSize);
+              setFailuresPage(1);
+            }}
+          />
           <div className="overflow-x-auto rounded-md border border-white/10">
             {loading ? (
               <div className="flex justify-center items-center py-10">
