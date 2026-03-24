@@ -358,8 +358,9 @@ export default function SalesPage() {
       <Dialog
         open={selectedSaleId !== null}
         onOpenChange={(open) => !open && setSelectedSaleId(null)}
+        className="w-full !max-w-[90vw] sm:!max-w-2xl"
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Sale Details - {selectedSaleData?.dealNo || "Loading..."}</DialogTitle>
             <DialogDescription>Complete sale information</DialogDescription>
