@@ -48,7 +48,7 @@ export default function FineTuningPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -459,7 +459,10 @@ export default function FineTuningPage() {
             disabled={loading}
             className={cn(loading ? "cursor-not-allowed" : "cursor-pointer")}
           >
-            <FontAwesomeIcon icon={faRotateRight} className="h-4 w-4 mr-2" />
+            <FontAwesomeIcon
+              icon={loading ? faSpinner : faRotateRight}
+              className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
+            />
             Refresh
           </Button>
           <Button onClick={() => setShowCreateDialog(true)} className="cursor-pointer">
@@ -519,9 +522,6 @@ export default function FineTuningPage() {
             </div>
           )}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
-            <div className="text-xs text-muted-foreground">
-              Showing {showingFrom}-{showingTo} of {totalCount}
-            </div>
             <AdminPagination
               total={totalCount}
               page={page}
