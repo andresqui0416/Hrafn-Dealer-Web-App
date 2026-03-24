@@ -49,8 +49,12 @@ export default function AdminFortellisLogsPage() {
   const [selectedRow, setSelectedRow] = useState<FortellisApiLogRow | null>(null);
   const [pageInput, setPageInput] = useState("1");
 
-  const loadData = async (opts?: { page?: number }) => {
+  const loadData = async (opts?: { page?: number; requestId?: string }) => {
     const targetPage = opts?.page ?? page;
+    const requestIdForQuery =
+      opts && "requestId" in opts
+        ? (opts.requestId ?? "").trim()
+        : requestIdFilter.trim();
     try {
       setLoading(true);
       setError(null);
@@ -58,8 +62,8 @@ export default function AdminFortellisLogsPage() {
       const params = new URLSearchParams();
       params.set("page", String(targetPage));
       params.set("pageSize", String(pageSize));
-      if (requestIdFilter.trim()) {
-        params.set("requestId", requestIdFilter.trim());
+      if (requestIdForQuery) {
+        params.set("requestId", requestIdForQuery);
       }
 
       const res = await fetch(`/api/admin/fortellis-logs?${params.toString()}`);
@@ -218,6 +222,12 @@ export default function AdminFortellisLogsPage() {
                   placeholder="Paste Fortellis Request-Id to look up a single transaction…"
                   value={requestIdFilter}
                   onChange={(e) => setRequestIdFilter(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      loadData({ page: 1 });
+                    }
+                  }}
                   className="w-full md:max-w-xl"
                 />
               </div>
@@ -238,7 +248,7 @@ export default function AdminFortellisLogsPage() {
                   variant="ghost"
                   onClick={() => {
                     setRequestIdFilter("");
-                    loadData({ page: 1 });
+                    loadData({ page: 1, requestId: "" });
                   }}
                   disabled={loading}
                   className="cursor-pointer whitespace-nowrap hover:bg-white/10 transition-colors duration-200"
