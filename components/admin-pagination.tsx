@@ -43,6 +43,7 @@ export function AdminPagination({
           <Select
             className="h-7 w-[72px] px-2 py-1 text-xs"
             value={String(pageSize)}
+            disabled={loading}
             onChange={(e) => {
               const nextSize = Number(e.target.value) || pageSize;
               onPageSizeChange(nextSize);
