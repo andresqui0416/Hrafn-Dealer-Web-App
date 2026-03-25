@@ -41,6 +41,8 @@ type ConsoleDataTableProps<T> = {
   header?: React.ReactNode;
   /** Optional custom footer below the table; overrides default pagination footer */
   footer?: React.ReactNode;
+  /** Optional empty state message shown when `rows` is empty */
+  emptyMessage?: React.ReactNode;
   className?: string;
   loading?: boolean;
   /** Current sort state, if any */
@@ -67,6 +69,7 @@ export function ConsoleDataTable<T>({
   rows,
   header,
   footer,
+  emptyMessage,
   className,
   loading = false,
   sort,
@@ -151,7 +154,7 @@ export function ConsoleDataTable<T>({
                   colSpan={columns.length}
                   className="px-4 py-6 text-center text-sm text-muted-foreground"
                 >
-                  No records found.
+                  {emptyMessage ?? "No records found."}
                 </td>
               </tr>
             ) : (
