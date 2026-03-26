@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDollarSign, faSpinner, faCheckCircle, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
+import { ConsoleDataTable, ConsoleTableColumn } from "@/components/console-data-table";
 
 type PaymentHistoryItem = {
   id: string;
@@ -34,6 +35,71 @@ export default function PaymentsPage() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+
+  const formatHistoryDate = (value: string | null) => {
+    if (!value) return "-";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "-";
+    return d.toLocaleDateString();
+  };
+
+  const formatHistoryAmount = (rawAmount: number | string | null, currency: string | null) => {
+    const amountNumber =
+      typeof rawAmount === "number"
+        ? rawAmount
+        : rawAmount != null
+          ? parseFloat(rawAmount as string)
+          : null;
+    if (amountNumber == null || Number.isNaN(amountNumber)) return "-";
+    return `${currency?.toUpperCase() || "USD"} ${amountNumber.toFixed(2)}`;
+  };
+
+  const historyColumns: ConsoleTableColumn<PaymentHistoryItem>[] = [
+    {
+      id: "date",
+      header: "Date",
+      render: (item) => formatHistoryDate(item.issueDate || item.createdAt),
+    },
+    {
+      id: "plan",
+      header: "Plan",
+      render: (item) =>
+        item.plan ||
+        (item.interval === "year"
+          ? "Annual"
+          : item.interval === "month"
+            ? "Monthly"
+            : "Subscription"),
+    },
+    {
+      id: "amount",
+      header: "Amount",
+      render: (item) => formatHistoryAmount(item.amount, item.currency),
+    },
+    {
+      id: "paymentMethod",
+      header: "Payment method",
+      render: (item) => item.paymentMethod || "-",
+    },
+    {
+      id: "invoice",
+      header: "Invoice",
+      render: (item) =>
+        item.stripeInvoiceUrl ? (
+          <a
+            href={item.stripeInvoiceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Download
+          </a>
+        ) : (
+          "-"
+        ),
+    },
+  ];
 
   useEffect(() => {
     const status = searchParams.get("subscription");
@@ -277,8 +343,7 @@ export default function PaymentsPage() {
 
       {/* History Tab */}
       {activeTab === "history" && (
-        <Card>
-          <CardContent className="space-y-4">
+        <div className="space-y-4">
             {historyError && (
               <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive flex items-center gap-2">
                 <FontAwesomeIcon icon={faTriangleExclamation} className="h-4 w-4" />
@@ -286,88 +351,14 @@ export default function PaymentsPage() {
               </div>
             )}
 
-            {historyLoading ? (
-              <div className="flex items-center justify-center py-6 text-sm text-muted-foreground gap-2">
-                <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin" />
-                <span>Loading history...</span>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="border-b border-white/10 text-xs text-muted-foreground">
-                    <tr>
-                      <th className="py-2 pr-4 text-left">Date</th>
-                      <th className="py-2 pr-4 text-left">Plan</th>
-                      <th className="py-2 pr-4 text-left">Amount</th>
-                      <th className="py-2 pr-4 text-left">Payment method</th>
-                      <th className="py-2 pr-4 text-left">Invoice</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {history.length === 0 ? (
-                      <tr>
-                        <td
-                          className="py-3 px-4 text-sm text-muted-foreground text-center"
-                          colSpan={5}
-                        >
-                          No payments recorded yet.
-                        </td>
-                      </tr>
-                    ) : (
-                      history.map((item) => {
-                        const createdSource = item.issueDate || item.createdAt;
-                        const created = new Date(createdSource).toLocaleDateString();
-                        const rawAmount = item.amount;
-                        const amountNumber =
-                          typeof rawAmount === "number"
-                            ? rawAmount
-                            : rawAmount != null
-                              ? parseFloat(rawAmount as string)
-                              : null;
-                        const amount =
-                          amountNumber != null && !Number.isNaN(amountNumber)
-                            ? `${item.currency?.toUpperCase() || "USD"} ${amountNumber.toFixed(2)}`
-                            : "-";
-                        const planLabel =
-                          item.plan ||
-                          (item.interval === "year"
-                            ? "Annual"
-                            : item.interval === "month"
-                              ? "Monthly"
-                              : "Subscription");
-
-                        return (
-                          <tr key={item.id} className="border-b border-white/5 last:border-0">
-                            <td className="py-2 pr-4">{created}</td>
-                            <td className="py-2 pr-4">{planLabel}</td>
-                            <td className="py-2 pr-4">{amount}</td>
-                            <td className="py-2 pr-4">
-                              {item.paymentMethod || "-"}
-                            </td>
-                            <td className="py-2 pr-4">
-                              {item.stripeInvoiceUrl ? (
-                                <a
-                                  href={item.stripeInvoiceUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary underline"
-                                >
-                                  Download
-                                </a>
-                              ) : (
-                                "-"
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            <ConsoleDataTable
+              columns={historyColumns}
+              rows={history}
+              loading={historyLoading}
+              getRowKey={(row) => row.id}
+              emptyMessage="No payments recorded yet."
+            />
+        </div>
       )}
     </div>
   );

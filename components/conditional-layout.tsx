@@ -16,8 +16,11 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
-      <div className="min-h-[calc(100vh-65px)]">
-        <main className="mx-auto w-full">{children}</main>
+      {/* flex-1 fills space below header; overflow-hidden keeps scroll inside page content (e.g. chat) */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <main className="mx-auto flex w-full min-h-0 flex-1 flex-col overflow-hidden">
+          {children}
+        </main>
       </div>
       <Footer />
     </>
