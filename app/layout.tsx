@@ -39,7 +39,7 @@ export default function RootLayout({
         <AuthProvider>
           <AppProvider>
             <ThemeProvider>
-              <div className="min-h-screen bg-background font-sans text-foreground">
+              <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-background font-sans text-foreground">
                 <ConditionalLayout>{children}</ConditionalLayout>
               </div>
             </ThemeProvider>
