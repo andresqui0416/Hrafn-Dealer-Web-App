@@ -36,8 +36,10 @@ export default function ConsoleLayout({ children }: Readonly<{ children: ReactNo
     { href: "/settings", label: "Settings", icon: faGear },
   ];
 
+  const isChatPage = pathname === "/chat";
+
   return (
-    <div className="bg-background">
+    <div className="flex min-h-0 flex-1 flex-col bg-background">
       {/* Sidebar */}
       <aside
         className={cn(
@@ -90,9 +92,24 @@ export default function ConsoleLayout({ children }: Readonly<{ children: ReactNo
       )}
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col lg:ml-64">
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-6xl mx-auto">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col lg:ml-64">
+        <main
+          id={isChatPage ? "console-main-scroll" : undefined}
+          className={cn(
+            "flex min-h-0 flex-1 flex-col p-6",
+            isChatPage
+              ? "overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth"
+              : "overflow-y-auto",
+          )}
+        >
+          <div
+            className={cn(
+              "mx-auto w-full max-w-6xl",
+              isChatPage && "flex min-h-full min-w-0 flex-1 flex-col",
+            )}
+          >
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -55,3 +55,52 @@ body {
 [data-radix-popper-content-wrapper] [role="menu"]::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
+
+/* Chat composer scroll port: slim track + thumb; Windows Chrome/Edge — no arrow buttons. */
+.chat-composer-scroll {
+  color-scheme: dark;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.chat-composer-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chat-composer-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-composer-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.chat-composer-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.32);
+}
+
+.chat-composer-scroll::-webkit-scrollbar-button,
+.chat-composer-scroll::-webkit-scrollbar-button:vertical:start:decrement,
+.chat-composer-scroll::-webkit-scrollbar-button:vertical:end:increment,
+.chat-composer-scroll::-webkit-scrollbar-button:horizontal:start:decrement,
+.chat-composer-scroll::-webkit-scrollbar-button:horizontal:end:increment,
+.chat-composer-scroll::-webkit-scrollbar-button:single-button:vertical:decrement,
+.chat-composer-scroll::-webkit-scrollbar-button:single-button:vertical:increment,
+.chat-composer-scroll::-webkit-scrollbar-button:single-button:horizontal:decrement,
+.chat-composer-scroll::-webkit-scrollbar-button:single-button:horizontal:increment {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  display: block !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  overflow: hidden !important;
+}
