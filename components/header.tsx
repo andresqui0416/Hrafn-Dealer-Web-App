@@ -16,7 +16,7 @@ export function Header() {
   const pathname = usePathname();
   return (
     <header
-      className="static lg:sticky lg:top-0 z-10 border-b border-white/15 backdrop-blur"
+      className="static shrink-0 lg:sticky lg:top-0 z-10 border-b border-white/15 backdrop-blur"
       style={{ background: "color-mix(in oklab, var(--background) 50%, #ffffff21)" }}
     >
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
