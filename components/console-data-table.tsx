@@ -102,7 +102,7 @@ export function ConsoleDataTable<T>({
         </div>
       )}
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto relative">
         <table className="w-full text-sm">
           <thead className="bg-white/5 border-b border-white/10">
             <tr>
@@ -140,12 +140,10 @@ export function ConsoleDataTable<T>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-6 text-center text-sm text-muted-foreground"
+                  className="px-4 py-10 text-sm text-muted-foreground"
                 >
-                  <span className="inline-flex items-center gap-2">
-                    <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin" />
-                    Loading...
-                  </span>
+                  {/* Spacer row keeps table height stable while overlay centers loader in viewport */}
+                  <span className="sr-only">Loading...</span>
                 </td>
               </tr>
             ) : rows.length === 0 ? (
@@ -181,6 +179,15 @@ export function ConsoleDataTable<T>({
             )}
           </tbody>
         </table>
+
+        {loading && (
+          <div className="absolute left-1/2 top-2/3 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+            <div className="inline-flex items-center gap-2 rounded-md bg-background/70 px-3 py-2 text-sm text-muted-foreground backdrop-blur">
+              <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin" />
+              Loading...
+            </div>
+          </div>
+        )}
       </div>
 
       {footer ? (
