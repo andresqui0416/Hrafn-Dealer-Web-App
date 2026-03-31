@@ -62,11 +62,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const navItems = [
     { href: "/admin/dealers", label: "Dealer Management", icon: faBuilding },
     { href: "/admin/services", label: "Service Management", icon: faServer },
-    { href: "/admin/inbox", label: "Inbox", icon: faInbox },
     { href: "/admin/fine-tuning", label: "Fine-Tuning", icon: faBrain },
     { href: "/admin/scraping-status", label: "Scraping Status", icon: faChartLine },
     { href: "/admin/payments", label: "Payments", icon: faCreditCard },
     { href: "/admin/fortellis-logs", label: "Fortellis Logs", icon: faFileLines },
+    { href: "/admin/inbox", label: "Inbox", icon: faInbox },
   ];
 
   // If on login page, render children directly without layout
