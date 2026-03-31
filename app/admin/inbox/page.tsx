@@ -21,10 +21,10 @@ import {
   faClock,
   faCheckCircle,
   faUser,
-  faChevronLeft,
-  faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
+import { patchChatListAfterMessage } from "@/lib/inbox/chat-list-patch";
+import { InboxPagination } from "@/components/inbox-pagination";
 
 type Chat = {
   id: string;
@@ -50,6 +50,7 @@ type Chat = {
   _count: {
     messages: number;
   };
+  unreadCount: number;
 };
 
 type Message = {
@@ -74,32 +75,59 @@ export default function AdminInboxPage() {
   const [showChatDialog, setShowChatDialog] = useState(false);
   const [messageInput, setMessageInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [accepting, setAccepting] = useState(false);
+  /** Which chat is currently being accepted (spinner only on that row / modal). */
+  const [acceptingChatId, setAcceptingChatId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const messagesScrollRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  /** Primary list fetch; silent background refreshes use a separate controller so they do not abort the visible load. */
+  const loadChatsAbortRef = useRef<AbortController | null>(null);
+  const silentLoadChatsAbortRef = useRef<AbortController | null>(null);
+  const selectedChatIdRef = useRef<string | null>(null);
+  /** True after mark-read succeeded for the open chat; skip duplicate POSTs until new messages from the user. */
+  const readAllAckRef = useRef(false);
+  const lastSentMessageIdRef = useRef<string | null>(null);
+
+  const markReadIfNeeded = useCallback(async (chatId: string) => {
+    if (readAllAckRef.current) return;
+    try {
+      const res = await fetch(`/api/admin/inbox/${chatId}/mark-read`, { method: "POST" });
+      const data = (await res.json().catch(() => ({}))) as { skipped?: boolean };
+      if (res.ok && !data.skipped) readAllAckRef.current = true;
+    } catch {
+      // best-effort
+    }
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1); // Reset to first page when filters change
   }, [activeTab, statusFilter, searchQuery]);
 
-  const loadChats = useCallback(async () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+  const loadChats = useCallback(async (options?: { silent?: boolean; page?: number }) => {
+    const silent = options?.silent === true;
+    const pageForFetch = options?.page ?? currentPage;
+    let controller: AbortController;
+    if (silent) {
+      silentLoadChatsAbortRef.current?.abort();
+      controller = new AbortController();
+      silentLoadChatsAbortRef.current = controller;
+    } else {
+      loadChatsAbortRef.current?.abort();
+      silentLoadChatsAbortRef.current?.abort();
+      controller = new AbortController();
+      loadChatsAbortRef.current = controller;
     }
-
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
+    const signal = controller.signal;
 
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       // Use separate routes for new and my chats
       const baseRoute = activeTab === "new" ? "/api/admin/inbox/new" : "/api/admin/inbox/my";
 
@@ -111,7 +139,7 @@ export default function AdminInboxPage() {
       if (searchQuery.trim()) {
         params.append("search", searchQuery.trim());
       }
-      params.append("page", currentPage.toString());
+      params.append("page", pageForFetch.toString());
       params.append("pageSize", pageSize.toString());
 
       const route = `${baseRoute}?${params.toString()}`;
@@ -123,49 +151,36 @@ export default function AdminInboxPage() {
         if (data.pagination) {
           setTotalPages(data.pagination.totalPages || 1);
           setTotalCount(data.pagination.totalCount || 0);
+          if (typeof data.pagination.page === "number") {
+            setCurrentPage(data.pagination.page);
+          }
         }
       } else {
-        if (!signal.aborted) {
+        if (!signal.aborted && !silent) {
           setError("Failed to load chats");
         }
       }
     } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") {
+      const isAbort =
+        (err instanceof DOMException && err.name === "AbortError") ||
+        (err instanceof Error && err.name === "AbortError");
+      if (isAbort) {
         return;
       }
-      if (!signal.aborted) {
+      if (!signal.aborted && !silent) {
         setError("Failed to load chats");
       }
     } finally {
-      if (!signal.aborted) {
+      if (!signal.aborted && !silent) {
         setLoading(false);
       }
     }
   }, [activeTab, statusFilter, searchQuery, currentPage, pageSize]);
 
-  useEffect(() => {
-    loadChats();
-
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, [loadChats]);
-
-  useEffect(() => {
-    if (showChatDialog && selectedChat) {
-      loadMessages(selectedChat.id);
-    }
-  }, [showChatDialog, selectedChat]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
-
-  const loadMessages = async (chatId: string) => {
+  const loadMessages = useCallback(async (chatId: string, options?: { silent?: boolean }) => {
+    const silent = options?.silent === true;
     try {
-      setGetMessagesLoading(true);
+      if (!silent) setGetMessagesLoading(true);
       const response = await fetch(`/api/admin/inbox/${chatId}/messages`);
       if (response.ok) {
         const data = await response.json();
@@ -174,34 +189,153 @@ export default function AdminInboxPage() {
     } catch (err) {
       console.error("Failed to load messages:", err);
     } finally {
-      setGetMessagesLoading(false);
+      if (!silent) setGetMessagesLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadChats();
+
+    return () => {
+      loadChatsAbortRef.current?.abort();
+      silentLoadChatsAbortRef.current?.abort();
+    };
+  }, [loadChats]);
+
+  useEffect(() => {
+    if (showChatDialog && selectedChat) {
+      selectedChatIdRef.current = selectedChat.id;
+      loadMessages(selectedChat.id);
+    } else if (!showChatDialog) {
+      selectedChatIdRef.current = null;
+      readAllAckRef.current = false;
+    }
+  }, [showChatDialog, selectedChat?.id, loadMessages]);
+
+  useEffect(() => {
+    if (showChatDialog && selectedChat?.admin) {
+      void markReadIfNeeded(selectedChat.id);
+    }
+  }, [showChatDialog, selectedChat?.id, selectedChat?.admin, markReadIfNeeded]);
+
+  useEffect(() => {
+    if (!showChatDialog || getMessagesLoading) return;
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const el = messagesScrollRef.current;
+        if (el) {
+          el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+        } else {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+        }
+      });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [showChatDialog, messages.length, getMessagesLoading]);
+
+  useEffect(() => {
+    let es: EventSource | null = null;
+    let pollInterval: number | null = null;
+    let stopped = false;
+
+    const startPolling = () => {
+      if (pollInterval) return;
+      pollInterval = window.setInterval(() => {
+        if (selectedChatIdRef.current) {
+          loadMessages(selectedChatIdRef.current, { silent: true });
+        }
+        loadChats({ silent: true });
+      }, 4000);
+    };
+
+    const handleSseData = (raw: string) => {
+      if (stopped) return;
+      let payload: { type?: string; chatId?: string; senderType?: string };
+      try {
+        payload = JSON.parse(raw) as { type?: string; chatId?: string; senderType?: string };
+      } catch {
+        return;
+      }
+
+      const t = payload.type;
+      if (t === "read_state_updated") {
+        loadChats({ silent: true });
+        return;
+      }
+      if (t === "connected") {
+        return;
+      }
+      if (t === "message_created") {
+        loadChats({ silent: true });
+        const openId = selectedChatIdRef.current;
+        if (openId && payload.chatId === openId && payload.senderType === "user") {
+          readAllAckRef.current = false;
+          loadMessages(openId, { silent: true });
+          void markReadIfNeeded(openId);
+        }
+        return;
+      }
+      loadChats();
+    };
+
+    try {
+      es = new EventSource("/api/admin/inbox/events");
+      es.onmessage = (ev) => handleSseData(ev.data);
+      es.onerror = () => {
+        es?.close();
+        es = null;
+        startPolling();
+      };
+    } catch {
+      startPolling();
+    }
+
+    return () => {
+      stopped = true;
+      es?.close();
+      if (pollInterval) window.clearInterval(pollInterval);
+    };
+  }, [markReadIfNeeded, loadChats, loadMessages]);
 
   const handleAcceptChat = async (chatId: string) => {
-    setAccepting(true);
+    setAcceptingChatId(chatId);
     setError(null);
     setSuccess(null);
 
     try {
       const response = await fetch(`/api/admin/inbox/${chatId}/accept`, {
         method: "PUT",
+        credentials: "include",
       });
 
       const data = await response.json();
 
       if (!response.ok) {
         setError(data.error || "Failed to accept chat");
-        setAccepting(false);
         return;
       }
 
       setSuccess("Chat accepted successfully");
-      loadChats(); // Refresh to move chat from "new" to "my"
+      if (data.chat?.id) {
+        const c = data.chat as Chat;
+        setSelectedChat((prev) =>
+          prev?.id === c.id
+            ? {
+                ...prev,
+                status: c.status,
+                admin: c.admin,
+                messages: c.messages ?? prev.messages,
+                _count: c._count ?? prev._count,
+                unreadCount: prev.unreadCount,
+              }
+            : prev,
+        );
+      }
+      loadChats({ silent: true });
     } catch (err) {
       setError("Network error. Please try again.");
     } finally {
-      setAccepting(false);
+      setAcceptingChatId(null);
     }
   };
 
@@ -211,7 +345,8 @@ export default function AdminInboxPage() {
   };
 
   const handleSendMessage = async () => {
-    if (!selectedChat || !messageInput.trim() || sending) return;
+    if (!selectedChat || !selectedChat.admin || selectedChat.status === "closed" || !messageInput.trim() || sending)
+      return;
 
     setSending(true);
     const messageContent = messageInput.trim();
@@ -233,11 +368,27 @@ export default function AdminInboxPage() {
         return;
       }
 
-      // Response format: { status: "Message sent successfully", message }
       if (data.message) {
-        setMessages((prev) => [...prev, data.message]);
+        const msg = data.message as Message;
+        lastSentMessageIdRef.current = msg.id;
+        setMessages((prev) => [...prev, msg]);
+        setChats((prev) =>
+          patchChatListAfterMessage(prev, selectedChat.id, {
+            id: msg.id,
+            content: msg.content,
+            createdAt: msg.createdAt,
+          }),
+        );
+        setSelectedChat((prev) =>
+          prev && prev.id === selectedChat.id
+            ? patchChatListAfterMessage([prev], selectedChat.id, {
+                id: msg.id,
+                content: msg.content,
+                createdAt: msg.createdAt,
+              })[0]
+            : prev,
+        );
       }
-      loadChats();
     } catch (err) {
       setError("Network error. Please try again.");
       setMessageInput(messageContent);
@@ -255,7 +406,7 @@ export default function AdminInboxPage() {
       });
 
       if (response.ok) {
-        loadChats();
+        loadChats({ silent: true });
         if (selectedChat && selectedChat.id === chatId) {
           setSelectedChat({ ...selectedChat, status });
         }
@@ -458,9 +609,11 @@ export default function AdminInboxPage() {
                         <FontAwesomeIcon icon={faClock} className="h-3 w-3 mr-1" />
                         {new Date(chat.updatedAt).toLocaleDateString()}
                       </span>
-                      <span>
-                        {chat._count.messages} message{chat._count.messages !== 1 ? "s" : ""}
-                      </span>
+                      {activeTab === "my" && chat.unreadCount > 0 ? (
+                        <span className="text-primary font-medium">
+                          {chat.unreadCount} unread
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                   {activeTab === "new" && (
@@ -469,14 +622,14 @@ export default function AdminInboxPage() {
                         e.stopPropagation();
                         handleAcceptChat(chat.id);
                       }}
-                      disabled={accepting}
+                      disabled={acceptingChatId !== null}
                       size="sm"
                       className={cn(
                         "flex-shrink-0",
-                        accepting ? "cursor-not-allowed" : "cursor-pointer",
+                        acceptingChatId !== null ? "cursor-not-allowed" : "cursor-pointer",
                       )}
                     >
-                      {accepting ? (
+                      {acceptingChatId === chat.id ? (
                         <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 mr-2 animate-spin" />
                       ) : (
                         <FontAwesomeIcon icon={faCheckCircle} className="h-4 w-4 mr-2" />
@@ -491,71 +644,23 @@ export default function AdminInboxPage() {
         </div>
       )}
 
-      {/* Pagination */}
-      {!loading && chats.length > 0 && totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-white/10 pt-4">
-          <div className="text-sm text-muted-foreground">
-            Showing {(currentPage - 1) * pageSize + 1} to{" "}
-            {Math.min(currentPage * pageSize, totalCount)} of {totalCount} chats
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className={cn(currentPage === 1 ? "cursor-not-allowed" : "cursor-pointer")}
-            >
-              <FontAwesomeIcon icon={faChevronLeft} className="h-4 w-4 mr-1" />
-              Previous
-            </Button>
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum: number;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={currentPage === pageNum ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(pageNum)}
-                    className="cursor-pointer min-w-[40px]"
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-              className={cn(currentPage === totalPages ? "cursor-not-allowed" : "cursor-pointer")}
-            >
-              Next
-              <FontAwesomeIcon icon={faChevronRight} className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <InboxPagination
+        loading={loading}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Chat Dialog */}
       <Dialog
         open={showChatDialog}
         onOpenChange={setShowChatDialog}
-        className="lg:max-w-4xl! max-w-[95vw]!"
+        className="lg:max-w-4xl! max-w-[95vw]! flex max-h-[90vh] flex-col overflow-hidden"
       >
-        <DialogContent className="flex flex-col">
-          <DialogHeader className="px-0 border-b border-white/40 sticky top-0 bg-background">
+        <DialogContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <DialogHeader className="shrink-0 border-b border-white/40 bg-background px-0">
             <div className="flex items-center justify-between">
               <DialogTitle className="w-full text-2xl font-semibold">
                 {selectedChat?.subject}
@@ -579,7 +684,10 @@ export default function AdminInboxPage() {
               {selectedChat && getStatusBadge(selectedChat.status)}
             </div>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto space-y-4 py-4 min-h-[300px] max-h-[350px] overflow-y-auto px-4">
+          <div
+            ref={messagesScrollRef}
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4"
+          >
             {getMessagesLoading ? (
               <div className="flex justify-center items-center gap-2 py-10">
                 <FontAwesomeIcon icon={faSpinner} size="lg" className="animate-spin" />
@@ -612,7 +720,33 @@ export default function AdminInboxPage() {
             )}
             <div ref={messagesEndRef} />
           </div>
-          <div className="space-y-2 pt-4 border-t border-white/40">
+          <div className="shrink-0 space-y-2 border-t border-white/40 pt-4">
+            {selectedChat && !selectedChat.admin && (
+              <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-sm text-yellow-100 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <span>Accept this chat to send messages.</span>
+                <Button
+                  size="sm"
+                  onClick={() => handleAcceptChat(selectedChat.id)}
+                  disabled={acceptingChatId !== null}
+                  className={cn(
+                    "cursor-pointer shrink-0",
+                    acceptingChatId !== null && "cursor-not-allowed",
+                  )}
+                >
+                  {acceptingChatId === selectedChat.id ? (
+                    <>
+                      <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 mr-2 animate-spin" />
+                      Accepting…
+                    </>
+                  ) : (
+                    <>
+                      <FontAwesomeIcon icon={faCheckCircle} className="h-4 w-4 mr-2" />
+                      Accept chat
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -648,16 +782,28 @@ export default function AdminInboxPage() {
                     handleSendMessage();
                   }
                 }}
-                placeholder="Type your message..."
-                disabled={sending || selectedChat?.status === "closed"}
+                placeholder={
+                  selectedChat?.admin
+                    ? "Type your message..."
+                    : "Accept the chat above to reply…"
+                }
+                disabled={sending || selectedChat?.status === "closed" || !selectedChat?.admin}
                 rows={2}
                 className="flex-1 min-h-[60px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
               />
               <Button
                 onClick={handleSendMessage}
-                disabled={sending || selectedChat?.status === "closed" || !messageInput.trim()}
+                disabled={
+                  sending ||
+                  selectedChat?.status === "closed" ||
+                  !selectedChat?.admin ||
+                  !messageInput.trim()
+                }
                 className={cn(
-                  sending || selectedChat?.status === "closed" || !messageInput.trim()
+                  sending ||
+                    selectedChat?.status === "closed" ||
+                    !selectedChat?.admin ||
+                    !messageInput.trim()
                     ? "cursor-not-allowed"
                     : "cursor-pointer",
                 )}

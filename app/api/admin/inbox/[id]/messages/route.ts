@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { publishInboxEvent } from "@/lib/inbox/realtime";
 
 const prisma = new PrismaClient();
 
@@ -63,8 +64,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: "Chat not found" }, { status: 404 });
     }
 
-    // Verify access: admin can only send messages to chats they are handling or unassigned chats
-    if (chat.adminId && chat.adminId !== adminId) {
+    if (!chat.adminId) {
+      return NextResponse.json(
+        { error: "Accept this chat before sending messages" },
+        { status: 403 },
+      );
+    }
+
+    if (chat.adminId !== adminId) {
       return NextResponse.json(
         { error: "You can only send messages to chats you are handling" },
         { status: 403 },
@@ -85,6 +92,17 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     await prisma.chat.update({
       where: { id: params.id },
       data: { updatedAt: new Date() },
+    });
+
+    publishInboxEvent({
+      type: "message_created",
+      chatId: chat.id,
+      userId: chat.userId,
+      adminId: chat.adminId,
+      messageId: message.id,
+      content: message.content,
+      createdAt: message.createdAt.toISOString(),
+      senderType: "admin",
     });
 
     return NextResponse.json({ status: "Message sent successfully", message }, { status: 201 });

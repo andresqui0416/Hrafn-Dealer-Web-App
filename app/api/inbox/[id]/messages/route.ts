@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { publishInboxEvent } from "@/lib/inbox/realtime";
 
 const prisma = new PrismaClient();
 
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     });
 
     // Update chat's updatedAt timestamp
-    await prisma.chat.update({
+    const updatedChat = await prisma.chat.update({
       where: { id: params.id },
       data: {
         status: "accepted",
@@ -73,7 +74,24 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       },
     });
 
-    return NextResponse.json({ message }, { status: 201 });
+    publishInboxEvent({
+      type: "message_created",
+      chatId: chat.id,
+      userId,
+      adminId: updatedChat.adminId,
+      messageId: message.id,
+      content: message.content,
+      createdAt: message.createdAt.toISOString(),
+      senderType: "user",
+    });
+
+    return NextResponse.json(
+      {
+        message,
+        chat: { id: updatedChat.id, status: updatedChat.status },
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Send message error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
