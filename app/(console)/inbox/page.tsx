@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,9 +13,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner, faX, faPlus, faEnvelope, faClock } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSpinner,
+  faX,
+  faPlus,
+  faEnvelope,
+  faClock,
+  faChevronLeft,
+  faChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/auth-context";
+import { patchChatListAfterMessage } from "@/lib/inbox/chat-list-patch";
+import { InboxPagination } from "@/components/inbox-pagination";
 
 type Chat = {
   id: string;
@@ -31,6 +40,7 @@ type Chat = {
   _count: {
     messages: number;
   };
+  unreadCount: number;
 };
 
 type Message = {
@@ -56,65 +66,87 @@ export default function InboxPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [getMessagesLoading, setGetMessagesLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const messagesScrollRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const loadChatsAbortRef = useRef<AbortController | null>(null);
+  const silentLoadChatsAbortRef = useRef<AbortController | null>(null);
+  const selectedChatIdRef = useRef<string | null>(null);
+  /** True after mark-read succeeded for the currently open chat; skip duplicate POSTs until new messages arrive. */
+  const readAllAckRef = useRef(false);
+  const lastSentMessageIdRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    loadChats();
-
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
+  const markReadIfNeeded = useCallback(async (chatId: string) => {
+    if (readAllAckRef.current) return;
+    try {
+      const res = await fetch(`/api/inbox/${chatId}/mark-read`, { method: "POST" });
+      if (res.ok) readAllAckRef.current = true;
+    } catch {
+      // best-effort
+    }
   }, []);
 
-  useEffect(() => {
-    if (showChatDialog === true && selectedChat !== null && selectedChat.id) {
-      loadMessages(selectedChat.id);
-    } else if (showChatDialog === false) {
-      setSelectedChat(null);
-      setMessages([]);
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const loadChats = useCallback(async (options?: { silent?: boolean; page?: number }) => {
+    const silent = options?.silent === true;
+    const pageForFetch = options?.page ?? currentPage;
+    let controller: AbortController;
+    if (silent) {
+      silentLoadChatsAbortRef.current?.abort();
+      controller = new AbortController();
+      silentLoadChatsAbortRef.current = controller;
+    } else {
+      loadChatsAbortRef.current?.abort();
+      silentLoadChatsAbortRef.current?.abort();
+      controller = new AbortController();
+      loadChatsAbortRef.current = controller;
     }
-  }, [showChatDialog, selectedChat]);
-
-  const loadChats = async () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
+    const signal = controller.signal;
 
     try {
-      setLoading(true);
-      const response = await fetch("/api/inbox", { signal });
+      if (!silent) setLoading(true);
+      const params = new URLSearchParams();
+      params.set("page", String(pageForFetch));
+      params.set("pageSize", String(pageSize));
+      const response = await fetch(`/api/inbox?${params.toString()}`, { signal });
       if (response.ok) {
         const data = await response.json();
         setChats(data.chats || []);
+        if (data.pagination) {
+          setTotalPages(data.pagination.totalPages ?? 1);
+          setTotalCount(data.pagination.totalCount ?? 0);
+          if (typeof data.pagination.page === "number") {
+            setCurrentPage(data.pagination.page);
+          }
+        }
       } else {
-        if (!signal.aborted) {
+        if (!signal.aborted && !silent) {
           setError("Failed to load chats");
         }
       }
     } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") {
+      const isAbort =
+        (err instanceof DOMException && err.name === "AbortError") ||
+        (err instanceof Error && err.name === "AbortError");
+      if (isAbort) {
         return;
       }
-      if (!signal.aborted) {
+      if (!signal.aborted && !silent) {
         setError("Failed to load chats");
       }
     } finally {
-      if (!signal.aborted) {
+      if (!signal.aborted && !silent) {
         setLoading(false);
       }
     }
-  };
+  }, [currentPage, pageSize]);
 
-  const loadMessages = async (chatId: string) => {
+  const loadMessages = useCallback(async (chatId: string, options?: { silent?: boolean }) => {
+    const silent = options?.silent === true;
     try {
-      setGetMessagesLoading(true);
+      if (!silent) setGetMessagesLoading(true);
       const response = await fetch(`/api/inbox/${chatId}/messages`);
       if (response.ok) {
         const data = await response.json();
@@ -123,9 +155,159 @@ export default function InboxPage() {
     } catch (err) {
       console.error("Failed to load messages:", err);
     } finally {
-      setGetMessagesLoading(false);
+      if (!silent) setGetMessagesLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadChats();
+
+    return () => {
+      loadChatsAbortRef.current?.abort();
+      silentLoadChatsAbortRef.current?.abort();
+    };
+  }, [loadChats]);
+
+  useEffect(() => {
+    if (showChatDialog === true && selectedChat !== null && selectedChat.id) {
+      selectedChatIdRef.current = selectedChat.id;
+      loadMessages(selectedChat.id);
+      void markReadIfNeeded(selectedChat.id);
+    } else if (showChatDialog === false) {
+      setSelectedChat(null);
+      setMessages([]);
+      selectedChatIdRef.current = null;
+      readAllAckRef.current = false;
+    }
+  }, [showChatDialog, selectedChat, loadMessages, markReadIfNeeded]);
+
+  useEffect(() => {
+    if (!showChatDialog || getMessagesLoading) return;
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [showChatDialog, messages.length, getMessagesLoading]);
+
+  useEffect(() => {
+    let es: EventSource | null = null;
+    let pollInterval: number | null = null;
+    let stopped = false;
+
+    const startPolling = () => {
+      if (pollInterval) return;
+      pollInterval = window.setInterval(() => {
+        if (selectedChatIdRef.current) {
+          loadMessages(selectedChatIdRef.current, { silent: true });
+        }
+      }, 4000);
+    };
+
+    const handleSseData = (raw: string) => {
+      if (stopped) return;
+      let payload: { type?: string; chatId?: string; senderType?: string };
+      try {
+        payload = JSON.parse(raw) as { type?: string; chatId?: string; senderType?: string };
+      } catch {
+        loadChats({ silent: true });
+        return;
+      }
+
+      const t = payload.type;
+      // read_state_updated follows mark-read; full loadChats() would flash the list loading spinner.
+      if (t === "read_state_updated") {
+        loadChats({ silent: true });
+        return;
+      }
+      if (t === "connected") {
+        return;
+      }
+      if (t === "chat_created") {
+        loadChats({ silent: true });
+        return;
+      }
+      if (t === "message_created") {
+        const p = payload as {
+          chatId?: string;
+          messageId?: string;
+          content?: string;
+          createdAt?: string;
+          senderType?: string;
+        };
+        const chatId = p.chatId;
+        const messageId = p.messageId;
+        const content = p.content;
+        const createdAt = p.createdAt;
+        if (
+          chatId &&
+          messageId &&
+          typeof content === "string" &&
+          typeof createdAt === "string"
+        ) {
+          if (messageId === lastSentMessageIdRef.current) {
+            lastSentMessageIdRef.current = null;
+          } else {
+            const unreadDelta = payload.senderType === "admin" ? 1 : 0;
+            const patchOpts = unreadDelta ? { unreadDelta } : undefined;
+            setChats((prev) =>
+              patchChatListAfterMessage(
+                prev,
+                chatId,
+                {
+                  id: messageId,
+                  content,
+                  createdAt,
+                },
+                patchOpts,
+              ),
+            );
+            setSelectedChat((prev) =>
+              prev && prev.id === chatId
+                ? patchChatListAfterMessage(
+                    [prev],
+                    chatId,
+                    {
+                      id: messageId,
+                      content,
+                      createdAt,
+                    },
+                    patchOpts,
+                  )[0]
+                : prev,
+            );
+          }
+        }
+        const openId = selectedChatIdRef.current;
+        if (openId && payload.chatId === openId && payload.senderType === "admin") {
+          readAllAckRef.current = false;
+          loadMessages(openId, { silent: true });
+          void markReadIfNeeded(openId);
+        }
+        return;
+      }
+      loadChats({ silent: true });
+    };
+
+    try {
+      es = new EventSource("/api/inbox/events");
+      es.onmessage = (ev) => handleSseData(ev.data);
+      es.onerror = () => {
+        es?.close();
+        es = null;
+        startPolling();
+      };
+    } catch {
+      startPolling();
+    }
+
+    return () => {
+      stopped = true;
+      es?.close();
+      if (pollInterval) window.clearInterval(pollInterval);
+    };
+  }, [loadChats, loadMessages, markReadIfNeeded]);
 
   const handleCreateChat = async () => {
     if (!subject.trim() || !content.trim()) {
@@ -156,7 +338,7 @@ export default function InboxPage() {
       setSubject("");
       setContent("");
       setShowCreateDialog(false);
-      loadChats();
+      loadChats({ silent: true, page: 1 });
     } catch (err) {
       setError("Network error. Please try again.");
     } finally {
@@ -192,9 +374,29 @@ export default function InboxPage() {
         return;
       }
 
-      // Add message to local state
-      setMessages((prev) => [...prev, data.message]);
-      loadChats(); // Refresh chat list to update last message
+      const msg = data.message as Message;
+      const chatPatch = data.chat as { status?: Chat["status"] } | undefined;
+      lastSentMessageIdRef.current = msg.id;
+      setMessages((prev) => [...prev, msg]);
+      setChats((prev) => {
+        const next = patchChatListAfterMessage(prev, selectedChat.id, {
+          id: msg.id,
+          content: msg.content,
+          createdAt: msg.createdAt,
+        });
+        if (!chatPatch?.status) return next;
+        const status = chatPatch.status;
+        return next.map((c) => (c.id === selectedChat.id ? { ...c, status } : c));
+      });
+      setSelectedChat((prev) => {
+        if (!prev || prev.id !== selectedChat.id) return prev;
+        const row = patchChatListAfterMessage([prev], selectedChat.id, {
+          id: msg.id,
+          content: msg.content,
+          createdAt: msg.createdAt,
+        })[0];
+        return chatPatch?.status ? { ...row, status: chatPatch.status } : row;
+      });
     } catch (err) {
       setError("Network error. Please try again.");
       setMessageInput(messageContent);
@@ -209,6 +411,12 @@ export default function InboxPage() {
     }
     return "No messages yet";
   };
+
+  const closedBadge = (
+    <span className="shrink-0 rounded-md bg-gray-500/20 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+      Closed
+    </span>
+  );
 
   return (
     <div className="space-y-6">
@@ -275,6 +483,7 @@ export default function InboxPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold truncate">{chat.subject}</h3>
+                      {chat.status === "closed" ? closedBadge : null}
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                       {getChatPreview(chat)}
@@ -284,9 +493,11 @@ export default function InboxPage() {
                         <FontAwesomeIcon icon={faClock} className="h-3 w-3 mr-1" />
                         {new Date(chat.updatedAt).toLocaleDateString()}
                       </span>
-                      <span>
-                        {chat._count.messages} message{chat._count.messages !== 1 ? "s" : ""}
-                      </span>
+                      {chat.unreadCount > 0 ? (
+                        <span className="text-primary font-medium">
+                          {chat.unreadCount} unread
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -295,6 +506,15 @@ export default function InboxPage() {
           ))}
         </div>
       )}
+
+      <InboxPagination
+        loading={loading}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Create Chat Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -374,14 +594,17 @@ export default function InboxPage() {
       <Dialog
         open={showChatDialog}
         onOpenChange={setShowChatDialog}
-        className="lg:max-w-4xl! max-w-[95vw]!"
+        className="lg:max-w-4xl! max-w-[95vw]! flex max-h-[90vh] flex-col overflow-hidden"
       >
-        <DialogContent className="flex flex-col">
-          <div className="flex items-center justify-between border-b border-white/40">
+        <DialogContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="flex shrink-0 items-center justify-between border-b border-white/40">
             <DialogHeader className="px-0">
-              <DialogTitle className="w-full text-2xl font-semibold">
-                {selectedChat?.subject}
-              </DialogTitle>
+              <div className="flex flex-wrap items-center gap-2">
+                <DialogTitle className="text-2xl font-semibold">
+                  {selectedChat?.subject}
+                </DialogTitle>
+                {selectedChat?.status === "closed" ? closedBadge : null}
+              </div>
             </DialogHeader>
             <Button
               variant="ghost"
@@ -392,7 +615,7 @@ export default function InboxPage() {
               <FontAwesomeIcon icon={faX} className="h-3 w-3" />
             </Button>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-4 py-4 min-h-[300px] max-h-[500px]">
+          <div ref={messagesScrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto py-4">
             {getMessagesLoading ? (
               <div className="flex justify-center items-center gap-2 py-10">
                 <FontAwesomeIcon icon={faSpinner} size="lg" className="animate-spin" />
@@ -425,7 +648,7 @@ export default function InboxPage() {
             )}
             <div ref={messagesEndRef} />
           </div>
-          <div className="flex items-end gap-2 pt-4 border-t border-white/40">
+          <div className="flex shrink-0 items-end gap-2 border-t border-white/40 pt-4">
             <textarea
               id="message"
               name="message"
