@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { publishInboxEvent } from "@/lib/inbox/realtime";
+import { getUnreadCountByChatIdForUser } from "@/lib/inbox/unread-by-chat";
 
 const prisma = new PrismaClient();
 
@@ -10,6 +12,16 @@ export async function GET(request: NextRequest) {
   try {
     // Get userId from middleware-set header (guaranteed to exist by auth middleware)
     const userId = request.headers.get("x-user-id")!;
+
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
+
+    const validPageSize = Math.min(Math.max(1, pageSize), 100);
+    const totalCount = await prisma.chat.count({ where: { userId } });
+    const totalPages = Math.max(1, Math.ceil(totalCount / validPageSize) || 1);
+    const validPage = Math.min(Math.max(1, page), totalPages);
+    const skip = (validPage - 1) * validPageSize;
 
     const chats = await prisma.chat.findMany({
       where: { userId },
@@ -33,9 +45,26 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { updatedAt: "desc" },
+      skip,
+      take: validPageSize,
     });
 
-    return NextResponse.json({ chats });
+    const chatIds = chats.map((c) => c.id);
+    const unreadMap = await getUnreadCountByChatIdForUser(prisma, chatIds, userId);
+    const chatsWithUnread = chats.map((c) => ({
+      ...c,
+      unreadCount: unreadMap[c.id] ?? 0,
+    }));
+
+    return NextResponse.json({
+      chats: chatsWithUnread,
+      pagination: {
+        page: validPage,
+        pageSize: validPageSize,
+        totalCount,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error("Get chats error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -86,6 +115,13 @@ export async function POST(request: NextRequest) {
           orderBy: { createdAt: "asc" },
         },
       },
+    });
+
+    publishInboxEvent({
+      type: "chat_created",
+      chatId: chat.id,
+      userId,
+      createdAt: chat.createdAt.toISOString(),
     });
 
     return NextResponse.json({ chat }, { status: 201 });

@@ -19,6 +19,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
+import { InboxUnreadBadge } from "@/components/inbox-unread-badge";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -115,6 +116,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               >
                 <FontAwesomeIcon icon={item.icon} className="h-4 w-4" />
                 {item.label}
+                {item.href === "/admin/inbox" ? (
+                  <InboxUnreadBadge variant="admin" active={pathname === item.href} />
+                ) : null}
               </Link>
             ))}
           </nav>
