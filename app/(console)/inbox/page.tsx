@@ -170,9 +170,12 @@ export default function InboxPage() {
 
   useEffect(() => {
     if (showChatDialog === true && selectedChat !== null && selectedChat.id) {
-      selectedChatIdRef.current = selectedChat.id;
-      loadMessages(selectedChat.id);
-      void markReadIfNeeded(selectedChat.id);
+      // Only load messages when opening a different chat (avoid reloading after local UI patches).
+      if (selectedChatIdRef.current !== selectedChat.id) {
+        selectedChatIdRef.current = selectedChat.id;
+        loadMessages(selectedChat.id);
+        void markReadIfNeeded(selectedChat.id);
+      }
     } else if (showChatDialog === false) {
       setSelectedChat(null);
       setMessages([]);
