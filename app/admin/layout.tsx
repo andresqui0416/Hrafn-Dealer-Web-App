@@ -19,6 +19,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
+import { InboxUnreadBadge } from "@/components/inbox-unread-badge";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -62,11 +63,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const navItems = [
     { href: "/admin/dealers", label: "Dealer Management", icon: faBuilding },
     { href: "/admin/services", label: "Service Management", icon: faServer },
-    { href: "/admin/inbox", label: "Inbox", icon: faInbox },
     { href: "/admin/fine-tuning", label: "Fine-Tuning", icon: faBrain },
     { href: "/admin/scraping-status", label: "Scraping Status", icon: faChartLine },
     { href: "/admin/payments", label: "Payments", icon: faCreditCard },
     { href: "/admin/fortellis-logs", label: "Fortellis Logs", icon: faFileLines },
+    { href: "/admin/inbox", label: "Inbox", icon: faInbox },
   ];
 
   // If on login page, render children directly without layout
@@ -115,6 +116,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               >
                 <FontAwesomeIcon icon={item.icon} className="h-4 w-4" />
                 {item.label}
+                {item.href === "/admin/inbox" ? (
+                  <InboxUnreadBadge variant="admin" active={pathname === item.href} />
+                ) : null}
               </Link>
             ))}
           </nav>

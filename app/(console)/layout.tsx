@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/contexts/theme-context";
 import Image from "next/image";
+import { InboxUnreadBadge } from "@/components/inbox-unread-badge";
 
 export default function ConsoleLayout({ children }: Readonly<{ children: ReactNode }>) {
   const pathname = usePathname();
@@ -78,6 +79,9 @@ export default function ConsoleLayout({ children }: Readonly<{ children: ReactNo
             >
               <FontAwesomeIcon icon={item.icon} className="h-4 w-4" />
               {item.label}
+              {item.href === "/inbox" ? (
+                <InboxUnreadBadge variant="user" active={pathname === item.href} />
+              ) : null}
             </Link>
           ))}
         </nav>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { getUnreadCountByChatIdForAdmin } from "@/lib/inbox/unread-by-chat";
 
 const prisma = new PrismaClient();
 
@@ -13,10 +14,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
 
-    // Validate pagination parameters
-    const validPage = Math.max(1, page);
-    const validPageSize = Math.min(Math.max(1, pageSize), 100); // Max 100 items per page
-    const skip = (validPage - 1) * validPageSize;
+    const validPageSize = Math.min(Math.max(1, pageSize), 100);
 
     // Build where clause
     const where: any = { adminId: null };
@@ -31,8 +29,10 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Get total count for pagination
     const totalCount = await prisma.chat.count({ where });
+    const totalPages = Math.max(1, Math.ceil(totalCount / validPageSize) || 1);
+    const validPage = Math.min(Math.max(1, page), totalPages);
+    const skip = (validPage - 1) * validPageSize;
 
     // New chats: no handler assigned (adminId is null)
     const chats = await prisma.chat.findMany({
@@ -65,10 +65,15 @@ export async function GET(request: NextRequest) {
       take: validPageSize,
     });
 
-    const totalPages = Math.ceil(totalCount / validPageSize);
+    const chatIds = chats.map((c) => c.id);
+    const unreadMap = await getUnreadCountByChatIdForAdmin(prisma, chatIds, { kind: "unassigned" });
+    const chatsWithUnread = chats.map((c) => ({
+      ...c,
+      unreadCount: unreadMap[c.id] ?? 0,
+    }));
 
     return NextResponse.json({
-      chats,
+      chats: chatsWithUnread,
       pagination: {
         page: validPage,
         pageSize: validPageSize,
