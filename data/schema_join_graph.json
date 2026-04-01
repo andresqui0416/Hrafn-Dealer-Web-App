@@ -50,6 +50,36 @@
     "to_mapped_column": "id"
   },
   {
+    "from_table": "ScrapeFailureLog",
+    "from_mapped_table": "scrape_failure_log",
+    "from_column": "scrapeEventId",
+    "from_mapped_column": "scrape_event_id",
+    "to_table": "ScrapeEvent",
+    "to_mapped_table": "scrape_events",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "ScrapeSnapshot",
+    "from_mapped_table": "scrape_snapshots",
+    "from_column": "scrapeEventId",
+    "from_mapped_column": "scrape_event_id",
+    "to_table": "ScrapeEvent",
+    "to_mapped_table": "scrape_events",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "OfferVersion",
+    "from_mapped_table": "offer_versions",
+    "from_column": "scrapeEventId",
+    "from_mapped_column": "scrape_event_id",
+    "to_table": "ScrapeEvent",
+    "to_mapped_table": "scrape_events",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
     "from_table": "UserDealerRole",
     "from_mapped_table": "UserDealerRole",
     "from_column": "userId",
@@ -246,6 +276,16 @@
     "from_mapped_column": "saleDataId",
     "to_table": "SaleData",
     "to_mapped_table": "SaleData",
+    "to_column": "id",
+    "to_mapped_column": "id"
+  },
+  {
+    "from_table": "PaymentHistory",
+    "from_mapped_table": "PaymentHistory",
+    "from_column": "userId",
+    "from_mapped_column": "userId",
+    "to_table": "User",
+    "to_mapped_table": "User",
     "to_column": "id",
     "to_mapped_column": "id"
   }

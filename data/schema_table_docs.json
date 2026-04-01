@@ -7,7 +7,9 @@
       "table": "Dealer",
       "mapped_table": "Dealer",
       "domain": "general",
-      "synonyms": ["dealer"]
+      "synonyms": [
+        "dealer"
+      ]
     }
   },
   {
@@ -18,18 +20,22 @@
       "table": "DealerDepartment",
       "mapped_table": "DealerDepartment",
       "domain": "general",
-      "synonyms": ["dealer department"]
+      "synonyms": [
+        "dealer department"
+      ]
     }
   },
   {
     "id": "tbl:User",
-    "text": "Table \"User\" (Prisma model: User).\nDomain: auth.\nTable synonyms: user.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- email (Prisma: email, type: String, importance: high); synonyms: email\n- name (Prisma: name, type: String, importance: high); synonyms: name\n- createdAt (Prisma: createdAt, type: DateTime, importance: high); synonyms: created date, created time, created at\n- updatedAt (Prisma: updatedAt, type: DateTime, importance: high); synonyms: updated date, updated time, updated at\n- passwordHash (Prisma: passwordHash, type: String, importance: low); synonyms: password hash\n- phone (Prisma: phone, type: String, importance: low); synonyms: phone\n- avatar (Prisma: avatar, type: String?, importance: low); synonyms: avatar",
+    "text": "Table \"User\" (Prisma model: User).\nDomain: auth.\nTable synonyms: user.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- email (Prisma: email, type: String, importance: high); synonyms: email\n- name (Prisma: name, type: String, importance: high); synonyms: name\n- createdAt (Prisma: createdAt, type: DateTime, importance: high); synonyms: created date, created time, created at\n- updatedAt (Prisma: updatedAt, type: DateTime, importance: high); synonyms: updated date, updated time, updated at\n- passwordHash (Prisma: passwordHash, type: String, importance: low); synonyms: password hash\n- phone (Prisma: phone, type: String, importance: low); synonyms: phone\n- avatar (Prisma: avatar, type: String?, importance: low); synonyms: avatar\n- subscriptionExpiresAt (Prisma: subscriptionExpiresAt, type: DateTime?, importance: low); synonyms: subscription expires at",
     "metadata": {
       "kind": "table",
       "table": "User",
       "mapped_table": "User",
       "domain": "auth",
-      "synonyms": ["user"]
+      "synonyms": [
+        "user"
+      ]
     }
   },
   {
@@ -40,7 +46,9 @@
       "table": "Admin",
       "mapped_table": "Admin",
       "domain": "admin",
-      "synonyms": ["admin"]
+      "synonyms": [
+        "admin"
+      ]
     }
   },
   {
@@ -51,7 +59,9 @@
       "table": "Session",
       "mapped_table": "Session",
       "domain": "auth",
-      "synonyms": ["session"]
+      "synonyms": [
+        "session"
+      ]
     }
   },
   {
@@ -62,7 +72,9 @@
       "table": "AdminSession",
       "mapped_table": "AdminSession",
       "domain": "admin",
-      "synonyms": ["admin session"]
+      "synonyms": [
+        "admin session"
+      ]
     }
   },
   {
@@ -73,18 +85,78 @@
       "table": "InventoryListing",
       "mapped_table": "Inventory",
       "domain": "inventory",
-      "synonyms": ["inventory listing", "inventory"]
+      "synonyms": [
+        "inventory listing",
+        "inventory"
+      ]
     }
   },
   {
     "id": "tbl:Offers",
-    "text": "Table \"Offers\" (Prisma model: Offers).\nDomain: offers.\nTable synonyms: offers.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- brand (Prisma: brand, type: String, importance: high); synonyms: brand\n- year (Prisma: year, type: Int?, importance: high); synonyms: year\n- make (Prisma: make, type: String?, importance: high); synonyms: make\n- model (Prisma: model, type: String?, importance: high); synonyms: model\n- offer_type (Prisma: offerType, type: String, importance: high); synonyms: offer type, offer category\n- offer_amount (Prisma: offerAmount, type: Decimal?, importance: high); synonyms: offer amount\n- expiration_date (Prisma: expirationDate, type: DateTime?, importance: high); synonyms: expiration, expires, end date, expiration date\n- created_at (Prisma: createdAt, type: DateTime, importance: high); synonyms: created date, created time, created at\n- updated_at (Prisma: updatedAt, type: DateTime, importance: high); synonyms: updated date, updated time, updated at\n- model_code (Prisma: modelCode, type: String?, importance: medium); synonyms: model code\n- term_months (Prisma: termMonths, type: Int?, importance: medium); synonyms: term months\n- cash_back (Prisma: cashBack, type: Decimal?, importance: medium); synonyms: cash back\n- trade_discount (Prisma: tradeDiscount, type: Decimal?, importance: medium); synonyms: trade discount\n- due_at_signing (Prisma: dueAtSigning, type: Decimal?, importance: medium); synonyms: due at signing\n- monthly_payment (Prisma: monthlyPayment, type: Decimal?, importance: medium); synonyms: monthly payment\n- miles_per_year (Prisma: milesPerYear, type: Int?, importance: medium); synonyms: miles per year\n- fine_print (Prisma: finePrint, type: String?, importance: medium); synonyms: fine print\n- scraped_at (Prisma: scrapedAt, type: DateTime, importance: medium); synonyms: scraped at\n- trim (Prisma: trim, type: String?, importance: low); synonyms: trim\n- apr (Prisma: apr, type: Decimal?, importance: low); synonyms: apr\n- terms (Prisma: terms, type: String?, importance: low); synonyms: terms",
+    "text": "Table \"Offers\" (Prisma model: Offers).\nDomain: offers.\nTable synonyms: offers.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- brand (Prisma: brand, type: String, importance: high); synonyms: brand\n- year (Prisma: year, type: Int?, importance: high); synonyms: year\n- make (Prisma: make, type: String?, importance: high); synonyms: make\n- model (Prisma: model, type: String?, importance: high); synonyms: model\n- offer_type (Prisma: offerType, type: String, importance: high); synonyms: offer type, offer category\n- offer_amount (Prisma: offerAmount, type: Decimal?, importance: high); synonyms: offer amount\n- expiration_date (Prisma: expirationDate, type: DateTime?, importance: high); synonyms: expiration, expires, end date, expiration date\n- created_at (Prisma: createdAt, type: DateTime, importance: high); synonyms: created date, created time, created at\n- updated_at (Prisma: updatedAt, type: DateTime, importance: high); synonyms: updated date, updated time, updated at\n- model_code (Prisma: modelCode, type: String?, importance: medium); synonyms: model code\n- apr_rate (Prisma: aprRate, type: Decimal?, importance: medium); synonyms: apr rate\n- lease_term_months (Prisma: leaseTermMonths, type: Int?, importance: medium); synonyms: lease term months\n- apr_term_months (Prisma: aprTermMonths, type: Int?, importance: medium); synonyms: apr term months\n- cash_value (Prisma: cashValue, type: Decimal?, importance: medium); synonyms: cash value\n- trade_discount (Prisma: tradeDiscount, type: Decimal?, importance: medium); synonyms: trade discount\n- lease_due_at_signing (Prisma: leaseDueAtSigning, type: Decimal?, importance: medium); synonyms: lease due at signing\n- lease_monthly_payment (Prisma: leaseMonthlyPayment, type: Decimal?, importance: medium); synonyms: lease monthly payment\n- miles_per_year (Prisma: milesPerYear, type: Int?, importance: medium); synonyms: miles per year\n- fine_print (Prisma: finePrint, type: String?, importance: medium); synonyms: fine print\n- scraped_at (Prisma: scrapedAt, type: DateTime, importance: medium); synonyms: scraped at\n- loyalty_bonus (Prisma: loyaltyBonus, type: Decimal?, importance: medium); synonyms: loyalty bonus\n- conquest_bonus (Prisma: conquestBonus, type: Decimal?, importance: medium); synonyms: conquest bonus\n- military_discount (Prisma: militaryDiscount, type: Decimal?, importance: medium); synonyms: military discount\n- college_grad (Prisma: collegeGrad, type: Decimal?, importance: medium); synonyms: college grad\n- first_responder (Prisma: firstResponder, type: Decimal?, importance: medium); synonyms: first responder\n- source_url (Prisma: sourceUrl, type: String?, importance: medium); synonyms: source url\n- trim (Prisma: trim, type: String?, importance: low); synonyms: trim\n- terms (Prisma: terms, type: String?, importance: low); synonyms: terms\n- version (Prisma: version, type: Int, importance: low); synonyms: version",
     "metadata": {
       "kind": "table",
       "table": "Offers",
       "mapped_table": "Offers",
       "domain": "offers",
-      "synonyms": ["offers"]
+      "synonyms": [
+        "offers"
+      ]
+    }
+  },
+  {
+    "id": "tbl:ScrapeEvent",
+    "text": "Table \"scrape_events\" (Prisma model: ScrapeEvent).\nDomain: general.\nTable synonyms: scrape event, scrape events.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- brand (Prisma: brand, type: String?, importance: high); synonyms: brand\n- status (Prisma: status, type: String, importance: high); synonyms: status, state\n- started_at (Prisma: startedAt, type: DateTime, importance: medium); synonyms: started at\n- completed_at (Prisma: completedAt, type: DateTime?, importance: medium); synonyms: completed at\n- records_inserted (Prisma: recordsInserted, type: Int, importance: medium); synonyms: records inserted\n- records_replaced (Prisma: recordsReplaced, type: Int, importance: medium); synonyms: records replaced\n- records_failed (Prisma: recordsFailed, type: Int, importance: medium); synonyms: records failed\n- error_message (Prisma: errorMessage, type: String?, importance: medium); synonyms: error message\n- source (Prisma: source, type: String?, importance: low); synonyms: source",
+    "metadata": {
+      "kind": "table",
+      "table": "ScrapeEvent",
+      "mapped_table": "scrape_events",
+      "domain": "general",
+      "synonyms": [
+        "scrape event",
+        "scrape events"
+      ]
+    }
+  },
+  {
+    "id": "tbl:ScrapeFailureLog",
+    "text": "Table \"scrape_failure_log\" (Prisma model: ScrapeFailureLog).\nDomain: general.\nTable synonyms: scrape failure log.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- scrape_event_id (Prisma: scrapeEventId, type: String?, importance: high) FK-> scrape_events(id); synonyms: scrape event id\n- brand (Prisma: brand, type: String?, importance: high); synonyms: brand\n- created_at (Prisma: createdAt, type: DateTime, importance: high); synonyms: created date, created time, created at\n- failure_type (Prisma: failureType, type: String, importance: medium); synonyms: failure type\n- source (Prisma: source, type: String?, importance: low); synonyms: source\n- message (Prisma: message, type: String, importance: low); synonyms: message\nForeign keys / join hints:\n- scrape_failure_log.scrape_event_id -> scrape_events.id",
+    "metadata": {
+      "kind": "table",
+      "table": "ScrapeFailureLog",
+      "mapped_table": "scrape_failure_log",
+      "domain": "general",
+      "synonyms": [
+        "scrape failure log"
+      ]
+    }
+  },
+  {
+    "id": "tbl:ScrapeSnapshot",
+    "text": "Table \"scrape_snapshots\" (Prisma model: ScrapeSnapshot).\nDomain: general.\nTable synonyms: scrape snapshot, scrape snapshots.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- scrape_event_id (Prisma: scrapeEventId, type: String, importance: high) FK-> scrape_events(id); synonyms: scrape event id\n- created_at (Prisma: createdAt, type: DateTime, importance: high); synonyms: created date, created time, created at\n- raw_payload (Prisma: rawPayload, type: Json, importance: medium); synonyms: raw payload\nForeign keys / join hints:\n- scrape_snapshots.scrape_event_id -> scrape_events.id",
+    "metadata": {
+      "kind": "table",
+      "table": "ScrapeSnapshot",
+      "mapped_table": "scrape_snapshots",
+      "domain": "general",
+      "synonyms": [
+        "scrape snapshot",
+        "scrape snapshots"
+      ]
+    }
+  },
+  {
+    "id": "tbl:OfferVersion",
+    "text": "Table \"offer_versions\" (Prisma model: OfferVersion).\nDomain: offers.\nTable synonyms: offer version, offer versions.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- scrape_event_id (Prisma: scrapeEventId, type: String, importance: high) FK-> scrape_events(id); synonyms: scrape event id\n- brand (Prisma: brand, type: String, importance: high); synonyms: brand\n- year (Prisma: year, type: Int?, importance: high); synonyms: year\n- make (Prisma: make, type: String?, importance: high); synonyms: make\n- model (Prisma: model, type: String?, importance: high); synonyms: model\n- offer_type (Prisma: offerType, type: String, importance: high); synonyms: offer type, offer category\n- offer_amount (Prisma: offerAmount, type: Decimal?, importance: high); synonyms: offer amount\n- expiration_date (Prisma: expirationDate, type: DateTime?, importance: high); synonyms: expiration, expires, end date, expiration date\n- model_code (Prisma: modelCode, type: String?, importance: medium); synonyms: model code\n- apr_rate (Prisma: aprRate, type: Decimal?, importance: medium); synonyms: apr rate\n- lease_term_months (Prisma: leaseTermMonths, type: Int?, importance: medium); synonyms: lease term months\n- apr_term_months (Prisma: aprTermMonths, type: Int?, importance: medium); synonyms: apr term months\n- cash_value (Prisma: cashValue, type: Decimal?, importance: medium); synonyms: cash value\n- trade_discount (Prisma: tradeDiscount, type: Decimal?, importance: medium); synonyms: trade discount\n- lease_due_at_signing (Prisma: leaseDueAtSigning, type: Decimal?, importance: medium); synonyms: lease due at signing\n- lease_monthly_payment (Prisma: leaseMonthlyPayment, type: Decimal?, importance: medium); synonyms: lease monthly payment\n- miles_per_year (Prisma: milesPerYear, type: Int?, importance: medium); synonyms: miles per year\n- fine_print (Prisma: finePrint, type: String?, importance: medium); synonyms: fine print\n- scraped_at (Prisma: scrapedAt, type: DateTime, importance: medium); synonyms: scraped at\n- source_url (Prisma: sourceUrl, type: String?, importance: medium); synonyms: source url\n- loyalty_bonus (Prisma: loyaltyBonus, type: Decimal?, importance: medium); synonyms: loyalty bonus\n- conquest_bonus (Prisma: conquestBonus, type: Decimal?, importance: medium); synonyms: conquest bonus\n- military_discount (Prisma: militaryDiscount, type: Decimal?, importance: medium); synonyms: military discount\n- college_grad (Prisma: collegeGrad, type: Decimal?, importance: medium); synonyms: college grad\n- first_responder (Prisma: firstResponder, type: Decimal?, importance: medium); synonyms: first responder\n- effective_from (Prisma: effectiveFrom, type: DateTime, importance: medium); synonyms: effective from\n- effective_to (Prisma: effectiveTo, type: DateTime?, importance: medium); synonyms: effective to\n- trim (Prisma: trim, type: String?, importance: low); synonyms: trim\n- terms (Prisma: terms, type: String?, importance: low); synonyms: terms\n- version (Prisma: version, type: Int, importance: low); synonyms: version\nForeign keys / join hints:\n- offer_versions.scrape_event_id -> scrape_events.id",
+    "metadata": {
+      "kind": "table",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "domain": "offers",
+      "synonyms": [
+        "offer version",
+        "offer versions"
+      ]
     }
   },
   {
@@ -95,7 +167,9 @@
       "table": "UserDealerRole",
       "mapped_table": "UserDealerRole",
       "domain": "auth",
-      "synonyms": ["user dealer role"]
+      "synonyms": [
+        "user dealer role"
+      ]
     }
   },
   {
@@ -106,7 +180,9 @@
       "table": "ServiceKind",
       "mapped_table": "ServiceKind",
       "domain": "general",
-      "synonyms": ["service kind"]
+      "synonyms": [
+        "service kind"
+      ]
     }
   },
   {
@@ -117,7 +193,9 @@
       "table": "DealerService",
       "mapped_table": "DealerService",
       "domain": "general",
-      "synonyms": ["dealer service"]
+      "synonyms": [
+        "dealer service"
+      ]
     }
   },
   {
@@ -128,18 +206,22 @@
       "table": "Chat",
       "mapped_table": "Chat",
       "domain": "chat",
-      "synonyms": ["chat"]
+      "synonyms": [
+        "chat"
+      ]
     }
   },
   {
     "id": "tbl:Message",
-    "text": "Table \"Message\" (Prisma model: Message).\nDomain: chat.\nTable synonyms: message.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- chatId (Prisma: chatId, type: String, importance: high) FK-> Chat(id); synonyms: chat id\n- content (Prisma: content, type: String, importance: high); synonyms: content\n- createdAt (Prisma: createdAt, type: DateTime, importance: high); synonyms: created date, created time, created at\n- senderId (Prisma: senderId, type: String, importance: low); synonyms: sender id\n- senderType (Prisma: senderType, type: String, importance: low); synonyms: sender type\nForeign keys / join hints:\n- Message.chatId -> Chat.id",
+    "text": "Table \"Message\" (Prisma model: Message).\nDomain: chat.\nTable synonyms: message.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- chatId (Prisma: chatId, type: String, importance: high) FK-> Chat(id); synonyms: chat id\n- content (Prisma: content, type: String, importance: high); synonyms: content\n- createdAt (Prisma: createdAt, type: DateTime, importance: high); synonyms: created date, created time, created at\n- read_at (Prisma: readAt, type: DateTime?, importance: medium); synonyms: read at\n- senderId (Prisma: senderId, type: String, importance: low); synonyms: sender id\n- senderType (Prisma: senderType, type: String, importance: low); synonyms: sender type\nForeign keys / join hints:\n- Message.chatId -> Chat.id",
     "metadata": {
       "kind": "table",
       "table": "Message",
       "mapped_table": "Message",
       "domain": "chat",
-      "synonyms": ["message"]
+      "synonyms": [
+        "message"
+      ]
     }
   },
   {
@@ -150,7 +232,9 @@
       "table": "SaleData",
       "mapped_table": "SaleData",
       "domain": "sales",
-      "synonyms": ["sale data"]
+      "synonyms": [
+        "sale data"
+      ]
     }
   },
   {
@@ -161,7 +245,9 @@
       "table": "SaleCommission",
       "mapped_table": "SaleCommission",
       "domain": "sales",
-      "synonyms": ["sale commission"]
+      "synonyms": [
+        "sale commission"
+      ]
     }
   },
   {
@@ -172,7 +258,9 @@
       "table": "SaleDeal",
       "mapped_table": "SaleDeal",
       "domain": "sales",
-      "synonyms": ["sale deal"]
+      "synonyms": [
+        "sale deal"
+      ]
     }
   },
   {
@@ -183,7 +271,9 @@
       "table": "SaleDealAuxiliary",
       "mapped_table": "SaleDealAuxiliary",
       "domain": "sales",
-      "synonyms": ["sale deal auxiliary"]
+      "synonyms": [
+        "sale deal auxiliary"
+      ]
     }
   },
   {
@@ -194,7 +284,9 @@
       "table": "SaleDealEvent",
       "mapped_table": "SaleDealEvent",
       "domain": "sales",
-      "synonyms": ["sale deal event"]
+      "synonyms": [
+        "sale deal event"
+      ]
     }
   },
   {
@@ -205,7 +297,9 @@
       "table": "SaleFee",
       "mapped_table": "SaleFee",
       "domain": "sales",
-      "synonyms": ["sale fee"]
+      "synonyms": [
+        "sale fee"
+      ]
     }
   },
   {
@@ -216,7 +310,9 @@
       "table": "SaleIncentive",
       "mapped_table": "SaleIncentive",
       "domain": "sales",
-      "synonyms": ["sale incentive"]
+      "synonyms": [
+        "sale incentive"
+      ]
     }
   },
   {
@@ -227,7 +323,9 @@
       "table": "SaleInsurance",
       "mapped_table": "SaleInsurance",
       "domain": "sales",
-      "synonyms": ["sale insurance"]
+      "synonyms": [
+        "sale insurance"
+      ]
     }
   },
   {
@@ -238,7 +336,9 @@
       "table": "SaleSalesPerson",
       "mapped_table": "SaleSalesPerson",
       "domain": "sales",
-      "synonyms": ["sale sales person"]
+      "synonyms": [
+        "sale sales person"
+      ]
     }
   },
   {
@@ -249,7 +349,9 @@
       "table": "SaleTax",
       "mapped_table": "SaleTax",
       "domain": "sales",
-      "synonyms": ["sale tax"]
+      "synonyms": [
+        "sale tax"
+      ]
     }
   },
   {
@@ -260,7 +362,9 @@
       "table": "SaleTotal",
       "mapped_table": "SaleTotal",
       "domain": "sales",
-      "synonyms": ["sale total"]
+      "synonyms": [
+        "sale total"
+      ]
     }
   },
   {
@@ -271,7 +375,9 @@
       "table": "SaleTrade",
       "mapped_table": "SaleTrade",
       "domain": "sales",
-      "synonyms": ["sale trade"]
+      "synonyms": [
+        "sale trade"
+      ]
     }
   },
   {
@@ -282,7 +388,9 @@
       "table": "SaleVehicle",
       "mapped_table": "SaleVehicle",
       "domain": "sales",
-      "synonyms": ["sale vehicle"]
+      "synonyms": [
+        "sale vehicle"
+      ]
     }
   },
   {
@@ -293,7 +401,36 @@
       "table": "CrmApiAccessToken",
       "mapped_table": "CrmApiAccessToken",
       "domain": "general",
-      "synonyms": ["crm api access token"]
+      "synonyms": [
+        "crm api access token"
+      ]
+    }
+  },
+  {
+    "id": "tbl:FortellisApiLog",
+    "text": "Table \"fortellis_api_logs\" (Prisma model: FortellisApiLog).\nDomain: general.\nTable synonyms: fortellis api log, fortellis api logs.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- createdAt (Prisma: createdAt, type: DateTime, importance: high); synonyms: created date, created time, created at\n- requestId (Prisma: requestId, type: String?, importance: low); synonyms: request id\n- method (Prisma: method, type: String, importance: low); synonyms: method\n- url (Prisma: url, type: String, importance: low); synonyms: url\n- requestHeaders (Prisma: requestHeaders, type: Json, importance: low); synonyms: request headers\n- requestBody (Prisma: requestBody, type: String?, importance: low); synonyms: request body\n- responseStatus (Prisma: responseStatus, type: Int, importance: low); synonyms: response status\n- responseHeaders (Prisma: responseHeaders, type: Json, importance: low); synonyms: response headers\n- responseBody (Prisma: responseBody, type: String?, importance: low); synonyms: response body",
+    "metadata": {
+      "kind": "table",
+      "table": "FortellisApiLog",
+      "mapped_table": "fortellis_api_logs",
+      "domain": "general",
+      "synonyms": [
+        "fortellis api log",
+        "fortellis api logs"
+      ]
+    }
+  },
+  {
+    "id": "tbl:PaymentHistory",
+    "text": "Table \"PaymentHistory\" (Prisma model: PaymentHistory).\nDomain: general.\nTable synonyms: payment history.\nColumns (Postgres identifiers):\n- id (Prisma: id, type: String, importance: high); synonyms: id\n- userId (Prisma: userId, type: String, importance: high) FK-> User(id); synonyms: user id\n- createdAt (Prisma: createdAt, type: DateTime, importance: high); synonyms: created date, created time, created at\n- stripeSubscriptionId (Prisma: stripeSubscriptionId, type: String, importance: low); synonyms: stripe subscription id\n- stripeCustomerId (Prisma: stripeCustomerId, type: String, importance: low); synonyms: stripe customer id\n- stripePriceId (Prisma: stripePriceId, type: String?, importance: low); synonyms: stripe price id\n- stripeInvoiceId (Prisma: stripeInvoiceId, type: String?, importance: low); synonyms: stripe invoice id\n- stripeInvoiceUrl (Prisma: stripeInvoiceUrl, type: String?, importance: low); synonyms: stripe invoice url\n- plan (Prisma: plan, type: String?, importance: low); synonyms: plan\n- interval (Prisma: interval, type: String?, importance: low); synonyms: interval\n- amount (Prisma: amount, type: Decimal?, importance: low); synonyms: amount\n- currency (Prisma: currency, type: String?, importance: low); synonyms: currency\n- issueDate (Prisma: issueDate, type: DateTime?, importance: low); synonyms: issue date\n- paymentMethod (Prisma: paymentMethod, type: String?, importance: low); synonyms: payment method\nForeign keys / join hints:\n- PaymentHistory.userId -> User.id",
+    "metadata": {
+      "kind": "table",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "domain": "general",
+      "synonyms": [
+        "payment history"
+      ]
     }
   },
   {
@@ -304,7 +441,9 @@
       "table": "FineTuningSample",
       "mapped_table": "FineTuningSample",
       "domain": "fine_tuning",
-      "synonyms": ["fine tuning sample"]
+      "synonyms": [
+        "fine tuning sample"
+      ]
     }
   }
 ]
