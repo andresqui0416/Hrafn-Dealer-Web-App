@@ -912,8 +912,12 @@ export default function FineTuningPage() {
       </Dialog>
 
       {/* Import Dialog */}
-      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-        <DialogContent className="pb-0">
+      <Dialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        className="flex flex-col min-h-0"
+      >
+        <DialogContent className="pb-0 flex flex-col min-h-0">
           <DialogHeader className="px-0">
             <DialogTitle>Import Fine-Tuning Samples</DialogTitle>
             <DialogDescription>
@@ -923,180 +927,183 @@ export default function FineTuningPage() {
             </DialogDescription>
           </DialogHeader>
 
-          {/* Tabs */}
-          <div className="border-b border-white/10 mt-4">
-            <nav className="flex space-x-8">
-              <button
-                onClick={() => {
-                  setImportTab("CSV");
-                  setImportFile(null);
-                  setError(null);
-                  const fileInput = document.getElementById("import-file") as HTMLInputElement;
-                  if (fileInput) {
-                    fileInput.value = "";
-                  }
-                }}
-                className={cn(
-                  "border-b-2 py-4 px-1 text-sm font-medium transition-colors cursor-pointer",
-                  importTab === "CSV"
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:border-white/20 hover:text-foreground",
-                )}
-              >
-                CSV
-              </button>
-              <button
-                onClick={() => {
-                  setImportTab("JSON");
-                  setImportFile(null);
-                  setError(null);
-                  const fileInput = document.getElementById("import-file") as HTMLInputElement;
-                  if (fileInput) {
-                    fileInput.value = "";
-                  }
-                }}
-                className={cn(
-                  "border-b-2 py-4 px-1 text-sm font-medium transition-colors cursor-pointer",
-                  importTab === "JSON"
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:border-white/20 hover:text-foreground",
-                )}
-              >
-                JSON
-              </button>
-            </nav>
-          </div>
-
-          <div className="space-y-4 py-4">
-            {importTab === "JSON" && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Import Mode</label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={importMode === "file" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      setImportMode("file");
-                      setImportText("");
-                      setError(null);
-                    }}
-                    className="cursor-pointer"
-                  >
-                    Upload File
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={importMode === "text" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      setImportMode("text");
-                      setImportFile(null);
-                      setError(null);
-                      const fileInput = document.getElementById("import-file") as HTMLInputElement;
-                      if (fileInput) {
-                        fileInput.value = "";
-                      }
-                    }}
-                    className="cursor-pointer"
-                  >
-                    Paste JSON
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {importMode === "file" ? (
-              <div className="space-y-2">
-                <label htmlFor="import-file" className="text-sm font-medium">
-                  {importTab} File <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  id="import-file"
-                  name="import-file"
-                  type="file"
-                  accept={importTab === "CSV" ? ".csv" : ".json"}
-                  onChange={handleFileSelect}
-                  disabled={importing}
-                  className="cursor-pointer"
-                />
-                <p className="text-xs text-muted-foreground">
-                  {importTab} format only (Max size: 10MB)
-                </p>
-                {importFile && (
-                  <p className="text-sm text-foreground">
-                    Selected: <span className="font-medium">{importFile.name}</span> (
-                    {(importFile.size / 1024).toFixed(2)} KB)
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <label htmlFor="import-text" className="text-sm font-medium">
-                  JSON Data <span className="text-destructive">*</span>
-                </label>
-                <textarea
-                  id="import-text"
-                  name="import-text"
-                  rows={12}
-                  placeholder='Paste your JSON array here, e.g., [{"type": "NLQ", "question": "...", "answer": "..."}]'
-                  value={importText}
-                  onChange={(e) => {
-                    setImportText(e.target.value);
+          <div className="flex-1 min-h-0 overflow-y-auto pr-1 -mr-1">
+            {/* Tabs */}
+            <div className="border-b border-white/10 mt-4">
+              <nav className="flex space-x-8">
+                <button
+                  onClick={() => {
+                    setImportTab("CSV");
+                    setImportFile(null);
                     setError(null);
+                    const fileInput = document.getElementById("import-file") as HTMLInputElement;
+                    if (fileInput) {
+                      fileInput.value = "";
+                    }
                   }}
-                  disabled={importing}
-                  className="flex min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 font-mono"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Paste a valid JSON array of fine-tuning samples
-                </p>
-              </div>
-            )}
+                  className={cn(
+                    "border-b-2 py-4 px-1 text-sm font-medium transition-colors cursor-pointer",
+                    importTab === "CSV"
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:border-white/20 hover:text-foreground",
+                  )}
+                >
+                  CSV
+                </button>
+                <button
+                  onClick={() => {
+                    setImportTab("JSON");
+                    setImportFile(null);
+                    setError(null);
+                    const fileInput = document.getElementById("import-file") as HTMLInputElement;
+                    if (fileInput) {
+                      fileInput.value = "";
+                    }
+                  }}
+                  className={cn(
+                    "border-b-2 py-4 px-1 text-sm font-medium transition-colors cursor-pointer",
+                    importTab === "JSON"
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:border-white/20 hover:text-foreground",
+                  )}
+                >
+                  JSON
+                </button>
+              </nav>
+            </div>
 
-            {importResult && (
-              <div className="space-y-2">
-                <div className="rounded-md bg-green-500/15 p-3 text-sm">
-                  <p className="font-medium text-white">
-                    Imported {importResult.imported} of {importResult.total} samples
+            <div className="space-y-4 py-4">
+              {importTab === "JSON" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Import Mode</label>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={importMode === "file" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setImportMode("file");
+                        setImportText("");
+                        setError(null);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      Upload File
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={importMode === "text" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setImportMode("text");
+                        setImportFile(null);
+                        setError(null);
+                        const fileInput = document.getElementById(
+                          "import-file",
+                        ) as HTMLInputElement;
+                        if (fileInput) {
+                          fileInput.value = "";
+                        }
+                      }}
+                      className="cursor-pointer"
+                    >
+                      Paste JSON
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {importMode === "file" ? (
+                <div className="space-y-2">
+                  <label htmlFor="import-file" className="text-sm font-medium">
+                    {importTab} File <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    id="import-file"
+                    name="import-file"
+                    type="file"
+                    accept={importTab === "CSV" ? ".csv" : ".json"}
+                    onChange={handleFileSelect}
+                    disabled={importing}
+                    className="cursor-pointer"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {importTab} format only (Max size: 10MB)
                   </p>
-                  {importResult.errors && importResult.errors.length > 0 && (
-                    <div className="mt-2">
-                      <p className="font-medium text-destructive mb-1">Errors:</p>
-                      <ul className="list-disc list-inside space-y-1 text-xs text-destructive">
-                        {importResult.errors.slice(0, 10).map((err, idx) => (
-                          <li key={idx}>{err}</li>
-                        ))}
-                        {importResult.errors.length > 10 && (
-                          <li>... and {importResult.errors.length - 10} more errors</li>
-                        )}
-                      </ul>
-                    </div>
+                  {importFile && (
+                    <p className="text-sm text-foreground">
+                      Selected: <span className="font-medium">{importFile.name}</span> (
+                      {(importFile.size / 1024).toFixed(2)} KB)
+                    </p>
                   )}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="space-y-2">
+                  <label htmlFor="import-text" className="text-sm font-medium">
+                    JSON Data <span className="text-destructive">*</span>
+                  </label>
+                  <textarea
+                    id="import-text"
+                    name="import-text"
+                    rows={12}
+                    placeholder='Paste your JSON array here, e.g., [{"type": "NLQ", "question": "...", "answer": "..."}]'
+                    value={importText}
+                    onChange={(e) => {
+                      setImportText(e.target.value);
+                      setError(null);
+                    }}
+                    disabled={importing}
+                    className="flex min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Paste a valid JSON array of fine-tuning samples
+                  </p>
+                </div>
+              )}
 
-            {importTab === "CSV" ? (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">CSV Format Example:</p>
-                <p className="text-xs text-muted-foreground mb-2">
-                  CSV files should have columns: type, question, answer (case-insensitive)
-                </p>
-                <pre className="text-xs bg-white/5 p-2 rounded border border-white/10 overflow-x-auto">
-                  {`type,question,answer
+              {importResult && (
+                <div className="space-y-2">
+                  <div className="rounded-md bg-green-500/15 p-3 text-sm">
+                    <p className="font-medium text-white">
+                      Imported {importResult.imported} of {importResult.total} samples
+                    </p>
+                    {importResult.errors && importResult.errors.length > 0 && (
+                      <div className="mt-2">
+                        <p className="font-medium text-destructive mb-1">Errors:</p>
+                        <ul className="list-disc list-inside space-y-1 text-xs text-destructive">
+                          {importResult.errors.slice(0, 10).map((err, idx) => (
+                            <li key={idx}>{err}</li>
+                          ))}
+                          {importResult.errors.length > 10 && (
+                            <li>... and {importResult.errors.length - 10} more errors</li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {importTab === "CSV" ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">CSV Format Example:</p>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    CSV files should have columns: type, question, answer (case-insensitive)
+                  </p>
+                  <pre className="text-xs bg-white/5 p-2 rounded border border-white/10 overflow-x-auto">
+                    {`type,question,answer
 NLQ,What cars are available?,SELECT * FROM "Inventory" WHERE status = 'available' LIMIT 10
 FAQ,What are your hours?,We're open Monday-Friday 9am-6pm...`}
-                </pre>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">JSON Format Example:</p>
-                <p className="text-xs text-muted-foreground mb-2">
-                  JSON files should be an array of objects with type, question, and answer fields
-                </p>
-                <pre className="text-xs bg-white/5 p-2 rounded border border-white/10 overflow-x-auto">
-                  {`[
+                  </pre>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">JSON Format Example:</p>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    JSON files should be an array of objects with type, question, and answer fields
+                  </p>
+                  <pre className="text-xs bg-white/5 p-2 rounded border border-white/10 overflow-x-auto">
+                    {`[
   {
     "type": "NLQ",
     "question": "What cars are available?",
@@ -1108,10 +1115,12 @@ FAQ,What are your hours?,We're open Monday-Friday 9am-6pm...`}
     "answer": "We're open Monday-Friday 9am-6pm..."
   }
 ]`}
-                </pre>
-              </div>
-            )}
+                  </pre>
+                </div>
+              )}
+            </div>
           </div>
+
           <DialogFooter className="px-0">
             <Button
               variant="outline"

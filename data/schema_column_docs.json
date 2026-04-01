@@ -11,7 +11,9 @@
       "type": "String",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -27,7 +29,9 @@
       "type": "String",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["name"]
+      "synonyms": [
+        "name"
+      ]
     }
   },
   {
@@ -42,7 +46,9 @@
       "type": "String",
       "importance": "low",
       "domain": "general",
-      "synonyms": ["address"]
+      "synonyms": [
+        "address"
+      ]
     }
   },
   {
@@ -57,7 +63,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -72,7 +82,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
     }
   },
   {
@@ -87,7 +101,9 @@
       "type": "String",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -103,7 +119,9 @@
       "type": "DmsType",
       "importance": "low",
       "domain": "general",
-      "synonyms": ["dms type"]
+      "synonyms": [
+        "dms type"
+      ]
     }
   },
   {
@@ -118,7 +136,11 @@
       "type": "String",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["dealer id", "dealership id", "store id"],
+      "synonyms": [
+        "dealer id",
+        "dealership id",
+        "store id"
+      ],
       "is_fk": true,
       "fk_target": "Dealer(id)"
     }
@@ -135,7 +157,9 @@
       "type": "String",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["service id"],
+      "synonyms": [
+        "service id"
+      ],
       "is_fk": true,
       "fk_target": "DealerService(id)"
     }
@@ -152,7 +176,9 @@
       "type": "DateTime?",
       "importance": "low",
       "domain": "general",
-      "synonyms": ["last sales data sync at"]
+      "synonyms": [
+        "last sales data sync at"
+      ]
     }
   },
   {
@@ -167,7 +193,9 @@
       "type": "Boolean",
       "importance": "low",
       "domain": "general",
-      "synonyms": ["sales data sync in progress"]
+      "synonyms": [
+        "sales data sync in progress"
+      ]
     }
   },
   {
@@ -182,7 +210,9 @@
       "type": "DateTime?",
       "importance": "low",
       "domain": "general",
-      "synonyms": ["sales data sync started at"]
+      "synonyms": [
+        "sales data sync started at"
+      ]
     }
   },
   {
@@ -197,7 +227,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -212,7 +246,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
     }
   },
   {
@@ -227,7 +265,9 @@
       "type": "String",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -243,7 +283,9 @@
       "type": "String",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["email"]
+      "synonyms": [
+        "email"
+      ]
     }
   },
   {
@@ -258,7 +300,9 @@
       "type": "String",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["name"]
+      "synonyms": [
+        "name"
+      ]
     }
   },
   {
@@ -273,7 +317,9 @@
       "type": "String",
       "importance": "low",
       "domain": "auth",
-      "synonyms": ["password hash"]
+      "synonyms": [
+        "password hash"
+      ]
     }
   },
   {
@@ -288,7 +334,9 @@
       "type": "String",
       "importance": "low",
       "domain": "auth",
-      "synonyms": ["phone"]
+      "synonyms": [
+        "phone"
+      ]
     }
   },
   {
@@ -303,7 +351,26 @@
       "type": "String?",
       "importance": "low",
       "domain": "auth",
-      "synonyms": ["avatar"]
+      "synonyms": [
+        "avatar"
+      ]
+    }
+  },
+  {
+    "id": "col:User.subscriptionExpiresAt",
+    "text": "Column \"User\".\"subscriptionExpiresAt\" (Prisma: User.subscriptionExpiresAt). Type: DateTime?. Synonyms: subscription expires at.",
+    "metadata": {
+      "kind": "column",
+      "table": "User",
+      "mapped_table": "User",
+      "column": "subscriptionExpiresAt",
+      "mapped_column": "subscriptionExpiresAt",
+      "type": "DateTime?",
+      "importance": "low",
+      "domain": "auth",
+      "synonyms": [
+        "subscription expires at"
+      ]
     }
   },
   {
@@ -318,7 +385,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -333,7 +404,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
     }
   },
   {
@@ -348,7 +423,9 @@
       "type": "String",
       "importance": "high",
       "domain": "admin",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -364,7 +441,9 @@
       "type": "String",
       "importance": "high",
       "domain": "admin",
-      "synonyms": ["email"]
+      "synonyms": [
+        "email"
+      ]
     }
   },
   {
@@ -379,7 +458,9 @@
       "type": "String",
       "importance": "high",
       "domain": "admin",
-      "synonyms": ["name"]
+      "synonyms": [
+        "name"
+      ]
     }
   },
   {
@@ -394,7 +475,9 @@
       "type": "String",
       "importance": "low",
       "domain": "admin",
-      "synonyms": ["password hash"]
+      "synonyms": [
+        "password hash"
+      ]
     }
   },
   {
@@ -409,7 +492,9 @@
       "type": "AdminRole",
       "importance": "high",
       "domain": "admin",
-      "synonyms": ["role"]
+      "synonyms": [
+        "role"
+      ]
     }
   },
   {
@@ -424,7 +509,9 @@
       "type": "Boolean",
       "importance": "low",
       "domain": "admin",
-      "synonyms": ["is active"]
+      "synonyms": [
+        "is active"
+      ]
     }
   },
   {
@@ -439,7 +526,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "admin",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -454,7 +545,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "admin",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
     }
   },
   {
@@ -469,7 +564,9 @@
       "type": "String",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -485,7 +582,9 @@
       "type": "String",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["user id"],
+      "synonyms": [
+        "user id"
+      ],
       "is_fk": true,
       "fk_target": "User(id)"
     }
@@ -502,7 +601,9 @@
       "type": "String",
       "importance": "low",
       "domain": "auth",
-      "synonyms": ["jwt id"]
+      "synonyms": [
+        "jwt id"
+      ]
     }
   },
   {
@@ -517,7 +618,9 @@
       "type": "DateTime",
       "importance": "low",
       "domain": "auth",
-      "synonyms": ["expires at"]
+      "synonyms": [
+        "expires at"
+      ]
     }
   },
   {
@@ -532,7 +635,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -547,7 +654,9 @@
       "type": "String",
       "importance": "high",
       "domain": "admin",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -563,7 +672,9 @@
       "type": "String",
       "importance": "high",
       "domain": "admin",
-      "synonyms": ["admin id"],
+      "synonyms": [
+        "admin id"
+      ],
       "is_fk": true,
       "fk_target": "Admin(id)"
     }
@@ -580,7 +691,9 @@
       "type": "String",
       "importance": "low",
       "domain": "admin",
-      "synonyms": ["jwt id"]
+      "synonyms": [
+        "jwt id"
+      ]
     }
   },
   {
@@ -595,7 +708,9 @@
       "type": "DateTime",
       "importance": "low",
       "domain": "admin",
-      "synonyms": ["expires at"]
+      "synonyms": [
+        "expires at"
+      ]
     }
   },
   {
@@ -610,7 +725,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "admin",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -625,7 +744,9 @@
       "type": "String",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -641,7 +762,11 @@
       "type": "String",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["dealer id", "dealership id", "store id"],
+      "synonyms": [
+        "dealer id",
+        "dealership id",
+        "store id"
+      ],
       "is_fk": true,
       "fk_target": "Dealer(id)"
     }
@@ -658,7 +783,12 @@
       "type": "String",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["vin", "vehicle vin", "chassis number", "vehicle identification number"]
+      "synonyms": [
+        "vin",
+        "vehicle vin",
+        "chassis number",
+        "vehicle identification number"
+      ]
     }
   },
   {
@@ -673,7 +803,9 @@
       "type": "Int",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["year"]
+      "synonyms": [
+        "year"
+      ]
     }
   },
   {
@@ -688,7 +820,9 @@
       "type": "String",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["make"]
+      "synonyms": [
+        "make"
+      ]
     }
   },
   {
@@ -703,7 +837,9 @@
       "type": "String",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["model"]
+      "synonyms": [
+        "model"
+      ]
     }
   },
   {
@@ -718,7 +854,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "inventory",
-      "synonyms": ["trim"]
+      "synonyms": [
+        "trim"
+      ]
     }
   },
   {
@@ -733,7 +871,11 @@
       "type": "String?",
       "importance": "medium",
       "domain": "inventory",
-      "synonyms": ["body style", "vehicle type", "body"]
+      "synonyms": [
+        "body style",
+        "vehicle type",
+        "body"
+      ]
     }
   },
   {
@@ -748,7 +890,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "inventory",
-      "synonyms": ["drivetrain"]
+      "synonyms": [
+        "drivetrain"
+      ]
     }
   },
   {
@@ -763,7 +907,10 @@
       "type": "Decimal?",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["msrp", "sticker price"]
+      "synonyms": [
+        "msrp",
+        "sticker price"
+      ]
     }
   },
   {
@@ -778,7 +925,11 @@
       "type": "Decimal?",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["price", "sale price", "listing price"]
+      "synonyms": [
+        "price",
+        "sale price",
+        "listing price"
+      ]
     }
   },
   {
@@ -793,7 +944,10 @@
       "type": "Int",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["mileage", "odometer"]
+      "synonyms": [
+        "mileage",
+        "odometer"
+      ]
     }
   },
   {
@@ -808,7 +962,10 @@
       "type": "InventoryStatus",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["status", "state"]
+      "synonyms": [
+        "status",
+        "state"
+      ]
     }
   },
   {
@@ -823,7 +980,9 @@
       "type": "DateTime",
       "importance": "medium",
       "domain": "inventory",
-      "synonyms": ["scraped at"]
+      "synonyms": [
+        "scraped at"
+      ]
     }
   },
   {
@@ -838,7 +997,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -853,7 +1016,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "inventory",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
     }
   },
   {
@@ -868,7 +1035,9 @@
       "type": "String",
       "importance": "high",
       "domain": "offers",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -884,7 +1053,9 @@
       "type": "String",
       "importance": "high",
       "domain": "offers",
-      "synonyms": ["brand"]
+      "synonyms": [
+        "brand"
+      ]
     }
   },
   {
@@ -899,7 +1070,9 @@
       "type": "Int?",
       "importance": "high",
       "domain": "offers",
-      "synonyms": ["year"]
+      "synonyms": [
+        "year"
+      ]
     }
   },
   {
@@ -914,7 +1087,9 @@
       "type": "String?",
       "importance": "high",
       "domain": "offers",
-      "synonyms": ["make"]
+      "synonyms": [
+        "make"
+      ]
     }
   },
   {
@@ -929,7 +1104,9 @@
       "type": "String?",
       "importance": "high",
       "domain": "offers",
-      "synonyms": ["model"]
+      "synonyms": [
+        "model"
+      ]
     }
   },
   {
@@ -944,7 +1121,9 @@
       "type": "String?",
       "importance": "medium",
       "domain": "offers",
-      "synonyms": ["model code"]
+      "synonyms": [
+        "model code"
+      ]
     }
   },
   {
@@ -959,7 +1138,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "offers",
-      "synonyms": ["trim"]
+      "synonyms": [
+        "trim"
+      ]
     }
   },
   {
@@ -974,7 +1155,10 @@
       "type": "String",
       "importance": "high",
       "domain": "offers",
-      "synonyms": ["offer type", "offer category"]
+      "synonyms": [
+        "offer type",
+        "offer category"
+      ]
     }
   },
   {
@@ -989,52 +1173,77 @@
       "type": "Decimal?",
       "importance": "high",
       "domain": "offers",
-      "synonyms": ["offer amount"]
+      "synonyms": [
+        "offer amount"
+      ]
     }
   },
   {
-    "id": "col:Offers.apr",
-    "text": "Column \"Offers\".\"apr\" (Prisma: Offers.apr). Type: Decimal?. Synonyms: apr.",
+    "id": "col:Offers.aprRate",
+    "text": "Column \"Offers\".\"apr_rate\" (Prisma: Offers.aprRate). Type: Decimal?. Synonyms: apr rate.",
     "metadata": {
       "kind": "column",
       "table": "Offers",
       "mapped_table": "Offers",
-      "column": "apr",
-      "mapped_column": "apr",
+      "column": "aprRate",
+      "mapped_column": "apr_rate",
       "type": "Decimal?",
-      "importance": "low",
+      "importance": "medium",
       "domain": "offers",
-      "synonyms": ["apr"]
+      "synonyms": [
+        "apr rate"
+      ]
     }
   },
   {
-    "id": "col:Offers.termMonths",
-    "text": "Column \"Offers\".\"term_months\" (Prisma: Offers.termMonths). Type: Int?. Synonyms: term months.",
+    "id": "col:Offers.leaseTermMonths",
+    "text": "Column \"Offers\".\"lease_term_months\" (Prisma: Offers.leaseTermMonths). Type: Int?. Synonyms: lease term months.",
     "metadata": {
       "kind": "column",
       "table": "Offers",
       "mapped_table": "Offers",
-      "column": "termMonths",
-      "mapped_column": "term_months",
+      "column": "leaseTermMonths",
+      "mapped_column": "lease_term_months",
       "type": "Int?",
       "importance": "medium",
       "domain": "offers",
-      "synonyms": ["term months"]
+      "synonyms": [
+        "lease term months"
+      ]
     }
   },
   {
-    "id": "col:Offers.cashBack",
-    "text": "Column \"Offers\".\"cash_back\" (Prisma: Offers.cashBack). Type: Decimal?. Synonyms: cash back.",
+    "id": "col:Offers.aprTermMonths",
+    "text": "Column \"Offers\".\"apr_term_months\" (Prisma: Offers.aprTermMonths). Type: Int?. Synonyms: apr term months.",
     "metadata": {
       "kind": "column",
       "table": "Offers",
       "mapped_table": "Offers",
-      "column": "cashBack",
-      "mapped_column": "cash_back",
+      "column": "aprTermMonths",
+      "mapped_column": "apr_term_months",
+      "type": "Int?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "apr term months"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.cashValue",
+    "text": "Column \"Offers\".\"cash_value\" (Prisma: Offers.cashValue). Type: Decimal?. Synonyms: cash value.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "cashValue",
+      "mapped_column": "cash_value",
       "type": "Decimal?",
       "importance": "medium",
       "domain": "offers",
-      "synonyms": ["cash back"]
+      "synonyms": [
+        "cash value"
+      ]
     }
   },
   {
@@ -1049,37 +1258,43 @@
       "type": "Decimal?",
       "importance": "medium",
       "domain": "offers",
-      "synonyms": ["trade discount"]
+      "synonyms": [
+        "trade discount"
+      ]
     }
   },
   {
-    "id": "col:Offers.dueAtSigning",
-    "text": "Column \"Offers\".\"due_at_signing\" (Prisma: Offers.dueAtSigning). Type: Decimal?. Synonyms: due at signing.",
+    "id": "col:Offers.leaseDueAtSigning",
+    "text": "Column \"Offers\".\"lease_due_at_signing\" (Prisma: Offers.leaseDueAtSigning). Type: Decimal?. Synonyms: lease due at signing.",
     "metadata": {
       "kind": "column",
       "table": "Offers",
       "mapped_table": "Offers",
-      "column": "dueAtSigning",
-      "mapped_column": "due_at_signing",
+      "column": "leaseDueAtSigning",
+      "mapped_column": "lease_due_at_signing",
       "type": "Decimal?",
       "importance": "medium",
       "domain": "offers",
-      "synonyms": ["due at signing"]
+      "synonyms": [
+        "lease due at signing"
+      ]
     }
   },
   {
-    "id": "col:Offers.monthlyPayment",
-    "text": "Column \"Offers\".\"monthly_payment\" (Prisma: Offers.monthlyPayment). Type: Decimal?. Synonyms: monthly payment.",
+    "id": "col:Offers.leaseMonthlyPayment",
+    "text": "Column \"Offers\".\"lease_monthly_payment\" (Prisma: Offers.leaseMonthlyPayment). Type: Decimal?. Synonyms: lease monthly payment.",
     "metadata": {
       "kind": "column",
       "table": "Offers",
       "mapped_table": "Offers",
-      "column": "monthlyPayment",
-      "mapped_column": "monthly_payment",
+      "column": "leaseMonthlyPayment",
+      "mapped_column": "lease_monthly_payment",
       "type": "Decimal?",
       "importance": "medium",
       "domain": "offers",
-      "synonyms": ["monthly payment"]
+      "synonyms": [
+        "lease monthly payment"
+      ]
     }
   },
   {
@@ -1094,7 +1309,9 @@
       "type": "Int?",
       "importance": "medium",
       "domain": "offers",
-      "synonyms": ["miles per year"]
+      "synonyms": [
+        "miles per year"
+      ]
     }
   },
   {
@@ -1109,7 +1326,12 @@
       "type": "DateTime?",
       "importance": "high",
       "domain": "offers",
-      "synonyms": ["expiration", "expires", "end date", "expiration date"]
+      "synonyms": [
+        "expiration",
+        "expires",
+        "end date",
+        "expiration date"
+      ]
     }
   },
   {
@@ -1124,7 +1346,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "offers",
-      "synonyms": ["terms"]
+      "synonyms": [
+        "terms"
+      ]
     }
   },
   {
@@ -1139,7 +1363,9 @@
       "type": "String?",
       "importance": "medium",
       "domain": "offers",
-      "synonyms": ["fine print"]
+      "synonyms": [
+        "fine print"
+      ]
     }
   },
   {
@@ -1154,7 +1380,9 @@
       "type": "DateTime",
       "importance": "medium",
       "domain": "offers",
-      "synonyms": ["scraped at"]
+      "synonyms": [
+        "scraped at"
+      ]
     }
   },
   {
@@ -1169,7 +1397,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "offers",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -1184,7 +1416,1033 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "offers",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.version",
+    "text": "Column \"Offers\".\"version\" (Prisma: Offers.version). Type: Int. Synonyms: version.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "version",
+      "mapped_column": "version",
+      "type": "Int",
+      "importance": "low",
+      "domain": "offers",
+      "synonyms": [
+        "version"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.loyaltyBonus",
+    "text": "Column \"Offers\".\"loyalty_bonus\" (Prisma: Offers.loyaltyBonus). Type: Decimal?. Synonyms: loyalty bonus.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "loyaltyBonus",
+      "mapped_column": "loyalty_bonus",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "loyalty bonus"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.conquestBonus",
+    "text": "Column \"Offers\".\"conquest_bonus\" (Prisma: Offers.conquestBonus). Type: Decimal?. Synonyms: conquest bonus.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "conquestBonus",
+      "mapped_column": "conquest_bonus",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "conquest bonus"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.militaryDiscount",
+    "text": "Column \"Offers\".\"military_discount\" (Prisma: Offers.militaryDiscount). Type: Decimal?. Synonyms: military discount.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "militaryDiscount",
+      "mapped_column": "military_discount",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "military discount"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.collegeGrad",
+    "text": "Column \"Offers\".\"college_grad\" (Prisma: Offers.collegeGrad). Type: Decimal?. Synonyms: college grad.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "collegeGrad",
+      "mapped_column": "college_grad",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "college grad"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.firstResponder",
+    "text": "Column \"Offers\".\"first_responder\" (Prisma: Offers.firstResponder). Type: Decimal?. Synonyms: first responder.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "firstResponder",
+      "mapped_column": "first_responder",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "first responder"
+      ]
+    }
+  },
+  {
+    "id": "col:Offers.sourceUrl",
+    "text": "Column \"Offers\".\"source_url\" (Prisma: Offers.sourceUrl). Type: String?. Synonyms: source url.",
+    "metadata": {
+      "kind": "column",
+      "table": "Offers",
+      "mapped_table": "Offers",
+      "column": "sourceUrl",
+      "mapped_column": "source_url",
+      "type": "String?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "source url"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeEvent.id",
+    "text": "Column \"scrape_events\".\"id\" (Prisma: ScrapeEvent.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeEvent",
+      "mapped_table": "scrape_events",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:ScrapeEvent.source",
+    "text": "Column \"scrape_events\".\"source\" (Prisma: ScrapeEvent.source). Type: String?. Synonyms: source.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeEvent",
+      "mapped_table": "scrape_events",
+      "column": "source",
+      "mapped_column": "source",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "source"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeEvent.brand",
+    "text": "Column \"scrape_events\".\"brand\" (Prisma: ScrapeEvent.brand). Type: String?. Synonyms: brand.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeEvent",
+      "mapped_table": "scrape_events",
+      "column": "brand",
+      "mapped_column": "brand",
+      "type": "String?",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "brand"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeEvent.startedAt",
+    "text": "Column \"scrape_events\".\"started_at\" (Prisma: ScrapeEvent.startedAt). Type: DateTime. Synonyms: started at.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeEvent",
+      "mapped_table": "scrape_events",
+      "column": "startedAt",
+      "mapped_column": "started_at",
+      "type": "DateTime",
+      "importance": "medium",
+      "domain": "general",
+      "synonyms": [
+        "started at"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeEvent.completedAt",
+    "text": "Column \"scrape_events\".\"completed_at\" (Prisma: ScrapeEvent.completedAt). Type: DateTime?. Synonyms: completed at.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeEvent",
+      "mapped_table": "scrape_events",
+      "column": "completedAt",
+      "mapped_column": "completed_at",
+      "type": "DateTime?",
+      "importance": "medium",
+      "domain": "general",
+      "synonyms": [
+        "completed at"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeEvent.status",
+    "text": "Column \"scrape_events\".\"status\" (Prisma: ScrapeEvent.status). Type: String. Synonyms: status, state.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeEvent",
+      "mapped_table": "scrape_events",
+      "column": "status",
+      "mapped_column": "status",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "status",
+        "state"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeEvent.recordsInserted",
+    "text": "Column \"scrape_events\".\"records_inserted\" (Prisma: ScrapeEvent.recordsInserted). Type: Int. Synonyms: records inserted.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeEvent",
+      "mapped_table": "scrape_events",
+      "column": "recordsInserted",
+      "mapped_column": "records_inserted",
+      "type": "Int",
+      "importance": "medium",
+      "domain": "general",
+      "synonyms": [
+        "records inserted"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeEvent.recordsReplaced",
+    "text": "Column \"scrape_events\".\"records_replaced\" (Prisma: ScrapeEvent.recordsReplaced). Type: Int. Synonyms: records replaced.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeEvent",
+      "mapped_table": "scrape_events",
+      "column": "recordsReplaced",
+      "mapped_column": "records_replaced",
+      "type": "Int",
+      "importance": "medium",
+      "domain": "general",
+      "synonyms": [
+        "records replaced"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeEvent.recordsFailed",
+    "text": "Column \"scrape_events\".\"records_failed\" (Prisma: ScrapeEvent.recordsFailed). Type: Int. Synonyms: records failed.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeEvent",
+      "mapped_table": "scrape_events",
+      "column": "recordsFailed",
+      "mapped_column": "records_failed",
+      "type": "Int",
+      "importance": "medium",
+      "domain": "general",
+      "synonyms": [
+        "records failed"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeEvent.errorMessage",
+    "text": "Column \"scrape_events\".\"error_message\" (Prisma: ScrapeEvent.errorMessage). Type: String?. Synonyms: error message.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeEvent",
+      "mapped_table": "scrape_events",
+      "column": "errorMessage",
+      "mapped_column": "error_message",
+      "type": "String?",
+      "importance": "medium",
+      "domain": "general",
+      "synonyms": [
+        "error message"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeFailureLog.id",
+    "text": "Column \"scrape_failure_log\".\"id\" (Prisma: ScrapeFailureLog.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeFailureLog",
+      "mapped_table": "scrape_failure_log",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:ScrapeFailureLog.scrapeEventId",
+    "text": "Column \"scrape_failure_log\".\"scrape_event_id\" (Prisma: ScrapeFailureLog.scrapeEventId). Type: String?. FK to ScrapeEvent (table \"scrape_events\") via id. Synonyms: scrape event id.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeFailureLog",
+      "mapped_table": "scrape_failure_log",
+      "column": "scrapeEventId",
+      "mapped_column": "scrape_event_id",
+      "type": "String?",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "scrape event id"
+      ],
+      "is_fk": true,
+      "fk_target": "ScrapeEvent(id)"
+    }
+  },
+  {
+    "id": "col:ScrapeFailureLog.brand",
+    "text": "Column \"scrape_failure_log\".\"brand\" (Prisma: ScrapeFailureLog.brand). Type: String?. Synonyms: brand.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeFailureLog",
+      "mapped_table": "scrape_failure_log",
+      "column": "brand",
+      "mapped_column": "brand",
+      "type": "String?",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "brand"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeFailureLog.source",
+    "text": "Column \"scrape_failure_log\".\"source\" (Prisma: ScrapeFailureLog.source). Type: String?. Synonyms: source.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeFailureLog",
+      "mapped_table": "scrape_failure_log",
+      "column": "source",
+      "mapped_column": "source",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "source"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeFailureLog.failureType",
+    "text": "Column \"scrape_failure_log\".\"failure_type\" (Prisma: ScrapeFailureLog.failureType). Type: String. Synonyms: failure type.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeFailureLog",
+      "mapped_table": "scrape_failure_log",
+      "column": "failureType",
+      "mapped_column": "failure_type",
+      "type": "String",
+      "importance": "medium",
+      "domain": "general",
+      "synonyms": [
+        "failure type"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeFailureLog.message",
+    "text": "Column \"scrape_failure_log\".\"message\" (Prisma: ScrapeFailureLog.message). Type: String. Synonyms: message.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeFailureLog",
+      "mapped_table": "scrape_failure_log",
+      "column": "message",
+      "mapped_column": "message",
+      "type": "String",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "message"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeFailureLog.createdAt",
+    "text": "Column \"scrape_failure_log\".\"created_at\" (Prisma: ScrapeFailureLog.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeFailureLog",
+      "mapped_table": "scrape_failure_log",
+      "column": "createdAt",
+      "mapped_column": "created_at",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeSnapshot.id",
+    "text": "Column \"scrape_snapshots\".\"id\" (Prisma: ScrapeSnapshot.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeSnapshot",
+      "mapped_table": "scrape_snapshots",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:ScrapeSnapshot.scrapeEventId",
+    "text": "Column \"scrape_snapshots\".\"scrape_event_id\" (Prisma: ScrapeSnapshot.scrapeEventId). Type: String. FK to ScrapeEvent (table \"scrape_events\") via id. Synonyms: scrape event id.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeSnapshot",
+      "mapped_table": "scrape_snapshots",
+      "column": "scrapeEventId",
+      "mapped_column": "scrape_event_id",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "scrape event id"
+      ],
+      "is_fk": true,
+      "fk_target": "ScrapeEvent(id)"
+    }
+  },
+  {
+    "id": "col:ScrapeSnapshot.rawPayload",
+    "text": "Column \"scrape_snapshots\".\"raw_payload\" (Prisma: ScrapeSnapshot.rawPayload). Type: Json. Synonyms: raw payload.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeSnapshot",
+      "mapped_table": "scrape_snapshots",
+      "column": "rawPayload",
+      "mapped_column": "raw_payload",
+      "type": "Json",
+      "importance": "medium",
+      "domain": "general",
+      "synonyms": [
+        "raw payload"
+      ]
+    }
+  },
+  {
+    "id": "col:ScrapeSnapshot.createdAt",
+    "text": "Column \"scrape_snapshots\".\"created_at\" (Prisma: ScrapeSnapshot.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "ScrapeSnapshot",
+      "mapped_table": "scrape_snapshots",
+      "column": "createdAt",
+      "mapped_column": "created_at",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.id",
+    "text": "Column \"offer_versions\".\"id\" (Prisma: OfferVersion.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:OfferVersion.scrapeEventId",
+    "text": "Column \"offer_versions\".\"scrape_event_id\" (Prisma: OfferVersion.scrapeEventId). Type: String. FK to ScrapeEvent (table \"scrape_events\") via id. Synonyms: scrape event id.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "scrapeEventId",
+      "mapped_column": "scrape_event_id",
+      "type": "String",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "scrape event id"
+      ],
+      "is_fk": true,
+      "fk_target": "ScrapeEvent(id)"
+    }
+  },
+  {
+    "id": "col:OfferVersion.brand",
+    "text": "Column \"offer_versions\".\"brand\" (Prisma: OfferVersion.brand). Type: String. Synonyms: brand.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "brand",
+      "mapped_column": "brand",
+      "type": "String",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "brand"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.year",
+    "text": "Column \"offer_versions\".\"year\" (Prisma: OfferVersion.year). Type: Int?. Synonyms: year.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "year",
+      "mapped_column": "year",
+      "type": "Int?",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "year"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.make",
+    "text": "Column \"offer_versions\".\"make\" (Prisma: OfferVersion.make). Type: String?. Synonyms: make.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "make",
+      "mapped_column": "make",
+      "type": "String?",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "make"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.model",
+    "text": "Column \"offer_versions\".\"model\" (Prisma: OfferVersion.model). Type: String?. Synonyms: model.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "model",
+      "mapped_column": "model",
+      "type": "String?",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "model"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.modelCode",
+    "text": "Column \"offer_versions\".\"model_code\" (Prisma: OfferVersion.modelCode). Type: String?. Synonyms: model code.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "modelCode",
+      "mapped_column": "model_code",
+      "type": "String?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "model code"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.trim",
+    "text": "Column \"offer_versions\".\"trim\" (Prisma: OfferVersion.trim). Type: String?. Synonyms: trim.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "trim",
+      "mapped_column": "trim",
+      "type": "String?",
+      "importance": "low",
+      "domain": "offers",
+      "synonyms": [
+        "trim"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.offerType",
+    "text": "Column \"offer_versions\".\"offer_type\" (Prisma: OfferVersion.offerType). Type: String. Synonyms: offer type, offer category.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "offerType",
+      "mapped_column": "offer_type",
+      "type": "String",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "offer type",
+        "offer category"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.offerAmount",
+    "text": "Column \"offer_versions\".\"offer_amount\" (Prisma: OfferVersion.offerAmount). Type: Decimal?. Synonyms: offer amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "offerAmount",
+      "mapped_column": "offer_amount",
+      "type": "Decimal?",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "offer amount"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.aprRate",
+    "text": "Column \"offer_versions\".\"apr_rate\" (Prisma: OfferVersion.aprRate). Type: Decimal?. Synonyms: apr rate.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "aprRate",
+      "mapped_column": "apr_rate",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "apr rate"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.leaseTermMonths",
+    "text": "Column \"offer_versions\".\"lease_term_months\" (Prisma: OfferVersion.leaseTermMonths). Type: Int?. Synonyms: lease term months.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "leaseTermMonths",
+      "mapped_column": "lease_term_months",
+      "type": "Int?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "lease term months"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.aprTermMonths",
+    "text": "Column \"offer_versions\".\"apr_term_months\" (Prisma: OfferVersion.aprTermMonths). Type: Int?. Synonyms: apr term months.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "aprTermMonths",
+      "mapped_column": "apr_term_months",
+      "type": "Int?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "apr term months"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.cashValue",
+    "text": "Column \"offer_versions\".\"cash_value\" (Prisma: OfferVersion.cashValue). Type: Decimal?. Synonyms: cash value.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "cashValue",
+      "mapped_column": "cash_value",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "cash value"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.tradeDiscount",
+    "text": "Column \"offer_versions\".\"trade_discount\" (Prisma: OfferVersion.tradeDiscount). Type: Decimal?. Synonyms: trade discount.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "tradeDiscount",
+      "mapped_column": "trade_discount",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "trade discount"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.leaseDueAtSigning",
+    "text": "Column \"offer_versions\".\"lease_due_at_signing\" (Prisma: OfferVersion.leaseDueAtSigning). Type: Decimal?. Synonyms: lease due at signing.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "leaseDueAtSigning",
+      "mapped_column": "lease_due_at_signing",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "lease due at signing"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.leaseMonthlyPayment",
+    "text": "Column \"offer_versions\".\"lease_monthly_payment\" (Prisma: OfferVersion.leaseMonthlyPayment). Type: Decimal?. Synonyms: lease monthly payment.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "leaseMonthlyPayment",
+      "mapped_column": "lease_monthly_payment",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "lease monthly payment"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.milesPerYear",
+    "text": "Column \"offer_versions\".\"miles_per_year\" (Prisma: OfferVersion.milesPerYear). Type: Int?. Synonyms: miles per year.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "milesPerYear",
+      "mapped_column": "miles_per_year",
+      "type": "Int?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "miles per year"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.expirationDate",
+    "text": "Column \"offer_versions\".\"expiration_date\" (Prisma: OfferVersion.expirationDate). Type: DateTime?. Synonyms: expiration, expires, end date, expiration date.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "expirationDate",
+      "mapped_column": "expiration_date",
+      "type": "DateTime?",
+      "importance": "high",
+      "domain": "offers",
+      "synonyms": [
+        "expiration",
+        "expires",
+        "end date",
+        "expiration date"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.terms",
+    "text": "Column \"offer_versions\".\"terms\" (Prisma: OfferVersion.terms). Type: String?. Synonyms: terms.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "terms",
+      "mapped_column": "terms",
+      "type": "String?",
+      "importance": "low",
+      "domain": "offers",
+      "synonyms": [
+        "terms"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.finePrint",
+    "text": "Column \"offer_versions\".\"fine_print\" (Prisma: OfferVersion.finePrint). Type: String?. Synonyms: fine print.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "finePrint",
+      "mapped_column": "fine_print",
+      "type": "String?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "fine print"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.scrapedAt",
+    "text": "Column \"offer_versions\".\"scraped_at\" (Prisma: OfferVersion.scrapedAt). Type: DateTime. Synonyms: scraped at.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "scrapedAt",
+      "mapped_column": "scraped_at",
+      "type": "DateTime",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "scraped at"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.sourceUrl",
+    "text": "Column \"offer_versions\".\"source_url\" (Prisma: OfferVersion.sourceUrl). Type: String?. Synonyms: source url.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "sourceUrl",
+      "mapped_column": "source_url",
+      "type": "String?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "source url"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.loyaltyBonus",
+    "text": "Column \"offer_versions\".\"loyalty_bonus\" (Prisma: OfferVersion.loyaltyBonus). Type: Decimal?. Synonyms: loyalty bonus.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "loyaltyBonus",
+      "mapped_column": "loyalty_bonus",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "loyalty bonus"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.conquestBonus",
+    "text": "Column \"offer_versions\".\"conquest_bonus\" (Prisma: OfferVersion.conquestBonus). Type: Decimal?. Synonyms: conquest bonus.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "conquestBonus",
+      "mapped_column": "conquest_bonus",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "conquest bonus"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.militaryDiscount",
+    "text": "Column \"offer_versions\".\"military_discount\" (Prisma: OfferVersion.militaryDiscount). Type: Decimal?. Synonyms: military discount.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "militaryDiscount",
+      "mapped_column": "military_discount",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "military discount"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.collegeGrad",
+    "text": "Column \"offer_versions\".\"college_grad\" (Prisma: OfferVersion.collegeGrad). Type: Decimal?. Synonyms: college grad.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "collegeGrad",
+      "mapped_column": "college_grad",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "college grad"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.firstResponder",
+    "text": "Column \"offer_versions\".\"first_responder\" (Prisma: OfferVersion.firstResponder). Type: Decimal?. Synonyms: first responder.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "firstResponder",
+      "mapped_column": "first_responder",
+      "type": "Decimal?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "first responder"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.version",
+    "text": "Column \"offer_versions\".\"version\" (Prisma: OfferVersion.version). Type: Int. Synonyms: version.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "version",
+      "mapped_column": "version",
+      "type": "Int",
+      "importance": "low",
+      "domain": "offers",
+      "synonyms": [
+        "version"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.effectiveFrom",
+    "text": "Column \"offer_versions\".\"effective_from\" (Prisma: OfferVersion.effectiveFrom). Type: DateTime. Synonyms: effective from.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "effectiveFrom",
+      "mapped_column": "effective_from",
+      "type": "DateTime",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "effective from"
+      ]
+    }
+  },
+  {
+    "id": "col:OfferVersion.effectiveTo",
+    "text": "Column \"offer_versions\".\"effective_to\" (Prisma: OfferVersion.effectiveTo). Type: DateTime?. Synonyms: effective to.",
+    "metadata": {
+      "kind": "column",
+      "table": "OfferVersion",
+      "mapped_table": "offer_versions",
+      "column": "effectiveTo",
+      "mapped_column": "effective_to",
+      "type": "DateTime?",
+      "importance": "medium",
+      "domain": "offers",
+      "synonyms": [
+        "effective to"
+      ]
     }
   },
   {
@@ -1199,7 +2457,9 @@
       "type": "String",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -1215,7 +2475,9 @@
       "type": "String",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["user id"],
+      "synonyms": [
+        "user id"
+      ],
       "is_fk": true,
       "fk_target": "User(id)"
     }
@@ -1232,7 +2494,11 @@
       "type": "String",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["dealer id", "dealership id", "store id"],
+      "synonyms": [
+        "dealer id",
+        "dealership id",
+        "store id"
+      ],
       "is_fk": true,
       "fk_target": "Dealer(id)"
     }
@@ -1249,7 +2515,9 @@
       "type": "Role",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["role"]
+      "synonyms": [
+        "role"
+      ]
     }
   },
   {
@@ -1264,7 +2532,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "auth",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -1279,7 +2551,9 @@
       "type": "String",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -1295,7 +2569,9 @@
       "type": "String",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["name"]
+      "synonyms": [
+        "name"
+      ]
     }
   },
   {
@@ -1310,7 +2586,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "general",
-      "synonyms": ["description"]
+      "synonyms": [
+        "description"
+      ]
     }
   },
   {
@@ -1325,7 +2603,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -1340,7 +2622,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
     }
   },
   {
@@ -1355,7 +2641,9 @@
       "type": "String",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -1371,7 +2659,11 @@
       "type": "String",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["dealer id", "dealership id", "store id"],
+      "synonyms": [
+        "dealer id",
+        "dealership id",
+        "store id"
+      ],
       "is_fk": true,
       "fk_target": "Dealer(id)"
     }
@@ -1388,7 +2680,9 @@
       "type": "String",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["service kind id"],
+      "synonyms": [
+        "service kind id"
+      ],
       "is_fk": true,
       "fk_target": "ServiceKind(id)"
     }
@@ -1405,7 +2699,9 @@
       "type": "String",
       "importance": "low",
       "domain": "general",
-      "synonyms": ["org name"]
+      "synonyms": [
+        "org name"
+      ]
     }
   },
   {
@@ -1420,7 +2716,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "general",
-      "synonyms": ["subscription id"]
+      "synonyms": [
+        "subscription id"
+      ]
     }
   },
   {
@@ -1435,7 +2733,10 @@
       "type": "ServiceStatus",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["status", "state"]
+      "synonyms": [
+        "status",
+        "state"
+      ]
     }
   },
   {
@@ -1450,7 +2751,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -1465,7 +2770,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
     }
   },
   {
@@ -1480,7 +2789,9 @@
       "type": "String",
       "importance": "high",
       "domain": "chat",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -1496,7 +2807,9 @@
       "type": "String",
       "importance": "high",
       "domain": "chat",
-      "synonyms": ["user id"],
+      "synonyms": [
+        "user id"
+      ],
       "is_fk": true,
       "fk_target": "User(id)"
     }
@@ -1513,7 +2826,9 @@
       "type": "String?",
       "importance": "high",
       "domain": "chat",
-      "synonyms": ["admin id"],
+      "synonyms": [
+        "admin id"
+      ],
       "is_fk": true,
       "fk_target": "Admin(id)"
     }
@@ -1530,7 +2845,9 @@
       "type": "String",
       "importance": "high",
       "domain": "chat",
-      "synonyms": ["subject"]
+      "synonyms": [
+        "subject"
+      ]
     }
   },
   {
@@ -1545,7 +2862,10 @@
       "type": "ChatStatus",
       "importance": "high",
       "domain": "chat",
-      "synonyms": ["status", "state"]
+      "synonyms": [
+        "status",
+        "state"
+      ]
     }
   },
   {
@@ -1560,7 +2880,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "chat",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -1575,7 +2899,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "chat",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
     }
   },
   {
@@ -1590,7 +2918,9 @@
       "type": "String",
       "importance": "high",
       "domain": "chat",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -1606,7 +2936,9 @@
       "type": "String",
       "importance": "high",
       "domain": "chat",
-      "synonyms": ["chat id"],
+      "synonyms": [
+        "chat id"
+      ],
       "is_fk": true,
       "fk_target": "Chat(id)"
     }
@@ -1623,7 +2955,9 @@
       "type": "String",
       "importance": "low",
       "domain": "chat",
-      "synonyms": ["sender id"]
+      "synonyms": [
+        "sender id"
+      ]
     }
   },
   {
@@ -1638,7 +2972,9 @@
       "type": "String",
       "importance": "low",
       "domain": "chat",
-      "synonyms": ["sender type"]
+      "synonyms": [
+        "sender type"
+      ]
     }
   },
   {
@@ -1653,7 +2989,9 @@
       "type": "String",
       "importance": "high",
       "domain": "chat",
-      "synonyms": ["content"]
+      "synonyms": [
+        "content"
+      ]
     }
   },
   {
@@ -1668,7 +3006,28 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "chat",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:Message.readAt",
+    "text": "Column \"Message\".\"read_at\" (Prisma: Message.readAt). Type: DateTime?. Synonyms: read at.",
+    "metadata": {
+      "kind": "column",
+      "table": "Message",
+      "mapped_table": "Message",
+      "column": "readAt",
+      "mapped_column": "read_at",
+      "type": "DateTime?",
+      "importance": "medium",
+      "domain": "chat",
+      "synonyms": [
+        "read at"
+      ]
     }
   },
   {
@@ -1683,7 +3042,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -1699,7 +3060,11 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["dealer id", "dealership id", "store id"],
+      "synonyms": [
+        "dealer id",
+        "dealership id",
+        "store id"
+      ],
       "is_fk": true,
       "fk_target": "Dealer(id)"
     }
@@ -1716,7 +3081,12 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["deal number", "deal id", "sale deal number", "deal no"]
+      "synonyms": [
+        "deal number",
+        "deal id",
+        "sale deal number",
+        "deal no"
+      ]
     }
   },
   {
@@ -1731,7 +3101,10 @@
       "type": "String?",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["status", "state"]
+      "synonyms": [
+        "status",
+        "state"
+      ]
     }
   },
   {
@@ -1746,7 +3119,9 @@
       "type": "DateTime?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["deal status date"]
+      "synonyms": [
+        "deal status date"
+      ]
     }
   },
   {
@@ -1761,7 +3136,9 @@
       "type": "DateTime?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["changed date"]
+      "synonyms": [
+        "changed date"
+      ]
     }
   },
   {
@@ -1776,7 +3153,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -1791,7 +3172,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
     }
   },
   {
@@ -1806,7 +3191,9 @@
       "type": "SaleCommission?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["commission"]
+      "synonyms": [
+        "commission"
+      ]
     }
   },
   {
@@ -1821,7 +3208,9 @@
       "type": "SaleDeal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["deal"]
+      "synonyms": [
+        "deal"
+      ]
     }
   },
   {
@@ -1836,7 +3225,9 @@
       "type": "SaleDealAuxiliary?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["deal auxiliary"]
+      "synonyms": [
+        "deal auxiliary"
+      ]
     }
   },
   {
@@ -1851,7 +3242,9 @@
       "type": "SaleIncentive?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["incentives"]
+      "synonyms": [
+        "incentives"
+      ]
     }
   },
   {
@@ -1866,7 +3259,9 @@
       "type": "SaleInsurance?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["insurance"]
+      "synonyms": [
+        "insurance"
+      ]
     }
   },
   {
@@ -1881,7 +3276,9 @@
       "type": "SaleSalesPerson?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sales persons"]
+      "synonyms": [
+        "sales persons"
+      ]
     }
   },
   {
@@ -1896,7 +3293,9 @@
       "type": "SaleTax?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["tax"]
+      "synonyms": [
+        "tax"
+      ]
     }
   },
   {
@@ -1911,7 +3310,9 @@
       "type": "SaleTotal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["totals"]
+      "synonyms": [
+        "totals"
+      ]
     }
   },
   {
@@ -1926,7 +3327,9 @@
       "type": "SaleVehicle?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["vehicle"]
+      "synonyms": [
+        "vehicle"
+      ]
     }
   },
   {
@@ -1941,7 +3344,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -1957,7 +3362,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -1974,7 +3381,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["commission gross"]
+      "synonyms": [
+        "commission gross"
+      ]
     }
   },
   {
@@ -1989,7 +3398,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["commission pack"]
+      "synonyms": [
+        "commission pack"
+      ]
     }
   },
   {
@@ -2004,7 +3415,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["comm on sale dlr"]
+      "synonyms": [
+        "comm on sale dlr"
+      ]
     }
   },
   {
@@ -2019,7 +3432,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["surplus cash"]
+      "synonyms": [
+        "surplus cash"
+      ]
     }
   },
   {
@@ -2034,7 +3449,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["options comm dlr"]
+      "synonyms": [
+        "options comm dlr"
+      ]
     }
   },
   {
@@ -2049,7 +3466,9 @@
       "type": "Json?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["commissions base"]
+      "synonyms": [
+        "commissions base"
+      ]
     }
   },
   {
@@ -2064,7 +3483,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp1 bonus"]
+      "synonyms": [
+        "sp1 bonus"
+      ]
     }
   },
   {
@@ -2079,7 +3500,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp1 commission"]
+      "synonyms": [
+        "sp1 commission"
+      ]
     }
   },
   {
@@ -2094,7 +3517,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp1 sale credit sp"]
+      "synonyms": [
+        "sp1 sale credit sp"
+      ]
     }
   },
   {
@@ -2109,7 +3534,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp1 surplus cash"]
+      "synonyms": [
+        "sp1 surplus cash"
+      ]
     }
   },
   {
@@ -2124,7 +3551,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp1 total commission"]
+      "synonyms": [
+        "sp1 total commission"
+      ]
     }
   },
   {
@@ -2139,7 +3568,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp2 bonus"]
+      "synonyms": [
+        "sp2 bonus"
+      ]
     }
   },
   {
@@ -2154,7 +3585,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp2 commission"]
+      "synonyms": [
+        "sp2 commission"
+      ]
     }
   },
   {
@@ -2169,7 +3602,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp2 sale credit sp"]
+      "synonyms": [
+        "sp2 sale credit sp"
+      ]
     }
   },
   {
@@ -2184,7 +3619,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp2 surplus cash"]
+      "synonyms": [
+        "sp2 surplus cash"
+      ]
     }
   },
   {
@@ -2199,7 +3636,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp2 total commission"]
+      "synonyms": [
+        "sp2 total commission"
+      ]
     }
   },
   {
@@ -2214,7 +3653,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp2 purchase mbispcomm amount"]
+      "synonyms": [
+        "sp2 purchase mbispcomm amount"
+      ]
     }
   },
   {
@@ -2229,7 +3670,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp3 bonus"]
+      "synonyms": [
+        "sp3 bonus"
+      ]
     }
   },
   {
@@ -2244,7 +3687,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp3 commission"]
+      "synonyms": [
+        "sp3 commission"
+      ]
     }
   },
   {
@@ -2259,7 +3704,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp3 sale credit sp"]
+      "synonyms": [
+        "sp3 sale credit sp"
+      ]
     }
   },
   {
@@ -2274,7 +3721,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sp3 surplus cash"]
+      "synonyms": [
+        "sp3 surplus cash"
+      ]
     }
   },
   {
@@ -2289,7 +3738,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -2305,7 +3756,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -2322,7 +3775,12 @@
       "type": "String?",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["deal number", "deal id", "sale deal number", "deal no"]
+      "synonyms": [
+        "deal number",
+        "deal id",
+        "sale deal number",
+        "deal no"
+      ]
     }
   },
   {
@@ -2337,7 +3795,10 @@
       "type": "Decimal?",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["msrp", "sticker price"]
+      "synonyms": [
+        "msrp",
+        "sticker price"
+      ]
     }
   },
   {
@@ -2352,7 +3813,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -2368,7 +3831,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -2385,7 +3850,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux1"]
+      "synonyms": [
+        "fi aux1"
+      ]
     }
   },
   {
@@ -2400,7 +3867,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux2"]
+      "synonyms": [
+        "fi aux2"
+      ]
     }
   },
   {
@@ -2415,7 +3884,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux3"]
+      "synonyms": [
+        "fi aux3"
+      ]
     }
   },
   {
@@ -2430,7 +3901,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux4"]
+      "synonyms": [
+        "fi aux4"
+      ]
     }
   },
   {
@@ -2445,7 +3918,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux5"]
+      "synonyms": [
+        "fi aux5"
+      ]
     }
   },
   {
@@ -2460,7 +3935,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux6"]
+      "synonyms": [
+        "fi aux6"
+      ]
     }
   },
   {
@@ -2475,7 +3952,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux7"]
+      "synonyms": [
+        "fi aux7"
+      ]
     }
   },
   {
@@ -2490,7 +3969,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux8"]
+      "synonyms": [
+        "fi aux8"
+      ]
     }
   },
   {
@@ -2505,7 +3986,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux9"]
+      "synonyms": [
+        "fi aux9"
+      ]
     }
   },
   {
@@ -2520,7 +4003,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux10"]
+      "synonyms": [
+        "fi aux10"
+      ]
     }
   },
   {
@@ -2535,7 +4020,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux11"]
+      "synonyms": [
+        "fi aux11"
+      ]
     }
   },
   {
@@ -2550,7 +4037,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux12"]
+      "synonyms": [
+        "fi aux12"
+      ]
     }
   },
   {
@@ -2565,7 +4054,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux13"]
+      "synonyms": [
+        "fi aux13"
+      ]
     }
   },
   {
@@ -2580,7 +4071,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux14"]
+      "synonyms": [
+        "fi aux14"
+      ]
     }
   },
   {
@@ -2595,7 +4088,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux15"]
+      "synonyms": [
+        "fi aux15"
+      ]
     }
   },
   {
@@ -2610,7 +4105,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux16"]
+      "synonyms": [
+        "fi aux16"
+      ]
     }
   },
   {
@@ -2625,7 +4122,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux17"]
+      "synonyms": [
+        "fi aux17"
+      ]
     }
   },
   {
@@ -2640,7 +4139,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux18"]
+      "synonyms": [
+        "fi aux18"
+      ]
     }
   },
   {
@@ -2655,7 +4156,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux19"]
+      "synonyms": [
+        "fi aux19"
+      ]
     }
   },
   {
@@ -2670,7 +4173,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux20"]
+      "synonyms": [
+        "fi aux20"
+      ]
     }
   },
   {
@@ -2685,7 +4190,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux21"]
+      "synonyms": [
+        "fi aux21"
+      ]
     }
   },
   {
@@ -2700,7 +4207,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux22"]
+      "synonyms": [
+        "fi aux22"
+      ]
     }
   },
   {
@@ -2715,7 +4224,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux23"]
+      "synonyms": [
+        "fi aux23"
+      ]
     }
   },
   {
@@ -2730,7 +4241,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux24"]
+      "synonyms": [
+        "fi aux24"
+      ]
     }
   },
   {
@@ -2745,7 +4258,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux25"]
+      "synonyms": [
+        "fi aux25"
+      ]
     }
   },
   {
@@ -2760,7 +4275,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux26"]
+      "synonyms": [
+        "fi aux26"
+      ]
     }
   },
   {
@@ -2775,7 +4292,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux27"]
+      "synonyms": [
+        "fi aux27"
+      ]
     }
   },
   {
@@ -2790,7 +4309,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux28"]
+      "synonyms": [
+        "fi aux28"
+      ]
     }
   },
   {
@@ -2805,7 +4326,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux29"]
+      "synonyms": [
+        "fi aux29"
+      ]
     }
   },
   {
@@ -2820,7 +4343,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux30"]
+      "synonyms": [
+        "fi aux30"
+      ]
     }
   },
   {
@@ -2835,7 +4360,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux31"]
+      "synonyms": [
+        "fi aux31"
+      ]
     }
   },
   {
@@ -2850,7 +4377,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux32"]
+      "synonyms": [
+        "fi aux32"
+      ]
     }
   },
   {
@@ -2865,7 +4394,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux33"]
+      "synonyms": [
+        "fi aux33"
+      ]
     }
   },
   {
@@ -2880,7 +4411,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux34"]
+      "synonyms": [
+        "fi aux34"
+      ]
     }
   },
   {
@@ -2895,7 +4428,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux35"]
+      "synonyms": [
+        "fi aux35"
+      ]
     }
   },
   {
@@ -2910,7 +4445,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux36"]
+      "synonyms": [
+        "fi aux36"
+      ]
     }
   },
   {
@@ -2925,7 +4462,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux37"]
+      "synonyms": [
+        "fi aux37"
+      ]
     }
   },
   {
@@ -2940,7 +4479,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux38"]
+      "synonyms": [
+        "fi aux38"
+      ]
     }
   },
   {
@@ -2955,7 +4496,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux39"]
+      "synonyms": [
+        "fi aux39"
+      ]
     }
   },
   {
@@ -2970,7 +4513,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux40"]
+      "synonyms": [
+        "fi aux40"
+      ]
     }
   },
   {
@@ -2985,7 +4530,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux41"]
+      "synonyms": [
+        "fi aux41"
+      ]
     }
   },
   {
@@ -3000,7 +4547,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux42"]
+      "synonyms": [
+        "fi aux42"
+      ]
     }
   },
   {
@@ -3015,7 +4564,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux43"]
+      "synonyms": [
+        "fi aux43"
+      ]
     }
   },
   {
@@ -3030,7 +4581,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux44"]
+      "synonyms": [
+        "fi aux44"
+      ]
     }
   },
   {
@@ -3045,7 +4598,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux45"]
+      "synonyms": [
+        "fi aux45"
+      ]
     }
   },
   {
@@ -3060,7 +4615,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux46"]
+      "synonyms": [
+        "fi aux46"
+      ]
     }
   },
   {
@@ -3075,7 +4632,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux47"]
+      "synonyms": [
+        "fi aux47"
+      ]
     }
   },
   {
@@ -3090,7 +4649,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux48"]
+      "synonyms": [
+        "fi aux48"
+      ]
     }
   },
   {
@@ -3105,7 +4666,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux49"]
+      "synonyms": [
+        "fi aux49"
+      ]
     }
   },
   {
@@ -3120,7 +4683,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi aux50"]
+      "synonyms": [
+        "fi aux50"
+      ]
     }
   },
   {
@@ -3135,7 +4700,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -3151,7 +4718,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -3168,7 +4737,9 @@
       "type": "DateTime?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["special contract1 date"]
+      "synonyms": [
+        "special contract1 date"
+      ]
     }
   },
   {
@@ -3183,7 +4754,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["special contract1 reason"]
+      "synonyms": [
+        "special contract1 reason"
+      ]
     }
   },
   {
@@ -3198,7 +4771,9 @@
       "type": "DateTime?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["special contract2 date"]
+      "synonyms": [
+        "special contract2 date"
+      ]
     }
   },
   {
@@ -3213,7 +4788,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["special contract2 reason"]
+      "synonyms": [
+        "special contract2 reason"
+      ]
     }
   },
   {
@@ -3228,7 +4805,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["deal event"]
+      "synonyms": [
+        "deal event"
+      ]
     }
   },
   {
@@ -3243,7 +4822,9 @@
       "type": "DateTime?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["deal event date"]
+      "synonyms": [
+        "deal event date"
+      ]
     }
   },
   {
@@ -3258,7 +4839,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["event order"]
+      "synonyms": [
+        "event order"
+      ]
     }
   },
   {
@@ -3273,7 +4856,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -3289,7 +4874,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -3306,7 +4893,9 @@
       "type": "String",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fee type"]
+      "synonyms": [
+        "fee type"
+      ]
     }
   },
   {
@@ -3321,7 +4910,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["amount"]
+      "synonyms": [
+        "amount"
+      ]
     }
   },
   {
@@ -3336,7 +4927,9 @@
       "type": "String?",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["name"]
+      "synonyms": [
+        "name"
+      ]
     }
   },
   {
@@ -3351,7 +4944,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["cost amount"]
+      "synonyms": [
+        "cost amount"
+      ]
     }
   },
   {
@@ -3366,7 +4961,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["profit type"]
+      "synonyms": [
+        "profit type"
+      ]
     }
   },
   {
@@ -3381,7 +4978,9 @@
       "type": "Boolean?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["flag"]
+      "synonyms": [
+        "flag"
+      ]
     }
   },
   {
@@ -3396,7 +4995,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["order index"]
+      "synonyms": [
+        "order index"
+      ]
     }
   },
   {
@@ -3411,7 +5012,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -3427,7 +5030,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -3444,7 +5049,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["incentive dealer"]
+      "synonyms": [
+        "incentive dealer"
+      ]
     }
   },
   {
@@ -3459,7 +5066,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["incentive program"]
+      "synonyms": [
+        "incentive program"
+      ]
     }
   },
   {
@@ -3474,7 +5083,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["rebate amount"]
+      "synonyms": [
+        "rebate amount"
+      ]
     }
   },
   {
@@ -3489,7 +5100,9 @@
       "type": "Json?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["common rebate details"]
+      "synonyms": [
+        "common rebate details"
+      ]
     }
   },
   {
@@ -3504,7 +5117,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -3520,7 +5135,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -3537,7 +5154,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["ext warranty exp miles lease"]
+      "synonyms": [
+        "ext warranty exp miles lease"
+      ]
     }
   },
   {
@@ -3552,7 +5171,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["ext warranty term lease"]
+      "synonyms": [
+        "ext warranty term lease"
+      ]
     }
   },
   {
@@ -3567,7 +5188,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["insurance type code"]
+      "synonyms": [
+        "insurance type code"
+      ]
     }
   },
   {
@@ -3582,7 +5205,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["texas gapinsurance amount"]
+      "synonyms": [
+        "texas gapinsurance amount"
+      ]
     }
   },
   {
@@ -3597,7 +5222,9 @@
       "type": "Json?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["insurance1"]
+      "synonyms": [
+        "insurance1"
+      ]
     }
   },
   {
@@ -3612,7 +5239,9 @@
       "type": "Json?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["insurance2"]
+      "synonyms": [
+        "insurance2"
+      ]
     }
   },
   {
@@ -3627,7 +5256,9 @@
       "type": "Json?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["insurance3"]
+      "synonyms": [
+        "insurance3"
+      ]
     }
   },
   {
@@ -3642,7 +5273,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["ahi cost"]
+      "synonyms": [
+        "ahi cost"
+      ]
     }
   },
   {
@@ -3657,7 +5290,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["ahi income"]
+      "synonyms": [
+        "ahi income"
+      ]
     }
   },
   {
@@ -3672,7 +5307,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["ahi monthly max amount"]
+      "synonyms": [
+        "ahi monthly max amount"
+      ]
     }
   },
   {
@@ -3687,7 +5324,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["ahi premium"]
+      "synonyms": [
+        "ahi premium"
+      ]
     }
   },
   {
@@ -3702,7 +5341,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["ahi rate"]
+      "synonyms": [
+        "ahi rate"
+      ]
     }
   },
   {
@@ -3717,7 +5358,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["ahi term"]
+      "synonyms": [
+        "ahi term"
+      ]
     }
   },
   {
@@ -3732,7 +5375,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["cli cost"]
+      "synonyms": [
+        "cli cost"
+      ]
     }
   },
   {
@@ -3747,7 +5392,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["cli income"]
+      "synonyms": [
+        "cli income"
+      ]
     }
   },
   {
@@ -3762,7 +5409,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["cli monthly max amount"]
+      "synonyms": [
+        "cli monthly max amount"
+      ]
     }
   },
   {
@@ -3777,7 +5426,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["cli premium"]
+      "synonyms": [
+        "cli premium"
+      ]
     }
   },
   {
@@ -3792,7 +5443,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["cli rate"]
+      "synonyms": [
+        "cli rate"
+      ]
     }
   },
   {
@@ -3807,7 +5460,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["cli term"]
+      "synonyms": [
+        "cli term"
+      ]
     }
   },
   {
@@ -3822,7 +5477,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["cli insurance type"]
+      "synonyms": [
+        "cli insurance type"
+      ]
     }
   },
   {
@@ -3837,7 +5494,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi carrier"]
+      "synonyms": [
+        "mbi carrier"
+      ]
     }
   },
   {
@@ -3852,7 +5511,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi cost"]
+      "synonyms": [
+        "mbi cost"
+      ]
     }
   },
   {
@@ -3867,7 +5528,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi deductible"]
+      "synonyms": [
+        "mbi deductible"
+      ]
     }
   },
   {
@@ -3882,7 +5545,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi elig comment"]
+      "synonyms": [
+        "mbi elig comment"
+      ]
     }
   },
   {
@@ -3897,7 +5562,9 @@
       "type": "Boolean?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi elig flag"]
+      "synonyms": [
+        "mbi elig flag"
+      ]
     }
   },
   {
@@ -3912,7 +5579,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi fee"]
+      "synonyms": [
+        "mbi fee"
+      ]
     }
   },
   {
@@ -3927,7 +5596,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi income"]
+      "synonyms": [
+        "mbi income"
+      ]
     }
   },
   {
@@ -3942,7 +5613,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi limit"]
+      "synonyms": [
+        "mbi limit"
+      ]
     }
   },
   {
@@ -3957,7 +5630,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi limit max"]
+      "synonyms": [
+        "mbi limit max"
+      ]
     }
   },
   {
@@ -3972,7 +5647,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi name"]
+      "synonyms": [
+        "mbi name"
+      ]
     }
   },
   {
@@ -3987,7 +5664,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi term"]
+      "synonyms": [
+        "mbi term"
+      ]
     }
   },
   {
@@ -4002,7 +5681,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi policy no"]
+      "synonyms": [
+        "mbi policy no"
+      ]
     }
   },
   {
@@ -4017,7 +5698,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["mbi purchase cost"]
+      "synonyms": [
+        "mbi purchase cost"
+      ]
     }
   },
   {
@@ -4032,7 +5715,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -4048,7 +5733,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -4065,7 +5752,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["assn slsperson"]
+      "synonyms": [
+        "assn slsperson"
+      ]
     }
   },
   {
@@ -4080,7 +5769,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["billing clerk"]
+      "synonyms": [
+        "billing clerk"
+      ]
     }
   },
   {
@@ -4095,7 +5786,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["closing mgr"]
+      "synonyms": [
+        "closing mgr"
+      ]
     }
   },
   {
@@ -4110,7 +5803,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["delivery coord"]
+      "synonyms": [
+        "delivery coord"
+      ]
     }
   },
   {
@@ -4125,7 +5820,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi mgr1"]
+      "synonyms": [
+        "fi mgr1"
+      ]
     }
   },
   {
@@ -4140,7 +5837,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["fi mgr2"]
+      "synonyms": [
+        "fi mgr2"
+      ]
     }
   },
   {
@@ -4155,7 +5854,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sales mgr"]
+      "synonyms": [
+        "sales mgr"
+      ]
     }
   },
   {
@@ -4170,7 +5871,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["salesperson1"]
+      "synonyms": [
+        "salesperson1"
+      ]
     }
   },
   {
@@ -4185,7 +5888,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["salesperson2"]
+      "synonyms": [
+        "salesperson2"
+      ]
     }
   },
   {
@@ -4200,7 +5905,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["salesperson3"]
+      "synonyms": [
+        "salesperson3"
+      ]
     }
   },
   {
@@ -4215,7 +5922,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -4231,7 +5940,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -4248,7 +5959,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["service tax amount"]
+      "synonyms": [
+        "service tax amount"
+      ]
     }
   },
   {
@@ -4263,7 +5976,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["lease flexible tax1 amount"]
+      "synonyms": [
+        "lease flexible tax1 amount"
+      ]
     }
   },
   {
@@ -4278,7 +5993,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["lease flexible tax2 amount"]
+      "synonyms": [
+        "lease flexible tax2 amount"
+      ]
     }
   },
   {
@@ -4293,7 +6010,9 @@
       "type": "Json?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["goods and services tax details"]
+      "synonyms": [
+        "goods and services tax details"
+      ]
     }
   },
   {
@@ -4308,7 +6027,9 @@
       "type": "Json?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["luxury tax details"]
+      "synonyms": [
+        "luxury tax details"
+      ]
     }
   },
   {
@@ -4323,7 +6044,9 @@
       "type": "Json?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["sales tax details"]
+      "synonyms": [
+        "sales tax details"
+      ]
     }
   },
   {
@@ -4338,7 +6061,9 @@
       "type": "Json?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["purchase flexible tax details"]
+      "synonyms": [
+        "purchase flexible tax details"
+      ]
     }
   },
   {
@@ -4353,7 +6078,9 @@
       "type": "Json?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["tax common details"]
+      "synonyms": [
+        "tax common details"
+      ]
     }
   },
   {
@@ -4368,7 +6095,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -4384,7 +6113,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -4401,7 +6132,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total trade allowance"]
+      "synonyms": [
+        "total trade allowance"
+      ]
     }
   },
   {
@@ -4416,7 +6149,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total trades acv"]
+      "synonyms": [
+        "total trades acv"
+      ]
     }
   },
   {
@@ -4431,7 +6166,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total trades net"]
+      "synonyms": [
+        "total trades net"
+      ]
     }
   },
   {
@@ -4446,7 +6183,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total trades over"]
+      "synonyms": [
+        "total trades over"
+      ]
     }
   },
   {
@@ -4461,7 +6200,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total trades payoff"]
+      "synonyms": [
+        "total trades payoff"
+      ]
     }
   },
   {
@@ -4476,7 +6217,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total ann fees"]
+      "synonyms": [
+        "total ann fees"
+      ]
     }
   },
   {
@@ -4491,7 +6234,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total back cost adjustments"]
+      "synonyms": [
+        "total back cost adjustments"
+      ]
     }
   },
   {
@@ -4506,7 +6251,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total base price"]
+      "synonyms": [
+        "total base price"
+      ]
     }
   },
   {
@@ -4521,7 +6268,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total cap reduction"]
+      "synonyms": [
+        "total cap reduction"
+      ]
     }
   },
   {
@@ -4536,7 +6285,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total cash surplus"]
+      "synonyms": [
+        "total cash surplus"
+      ]
     }
   },
   {
@@ -4551,7 +6302,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total commission"]
+      "synonyms": [
+        "total commission"
+      ]
     }
   },
   {
@@ -4566,7 +6319,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total dmvlicense fee california"]
+      "synonyms": [
+        "total dmvlicense fee california"
+      ]
     }
   },
   {
@@ -4581,7 +6336,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total down"]
+      "synonyms": [
+        "total down"
+      ]
     }
   },
   {
@@ -4596,7 +6353,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total financed fee options"]
+      "synonyms": [
+        "total financed fee options"
+      ]
     }
   },
   {
@@ -4611,7 +6370,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total front cost adjustments"]
+      "synonyms": [
+        "total front cost adjustments"
+      ]
     }
   },
   {
@@ -4626,7 +6387,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total insurance premiums"]
+      "synonyms": [
+        "total insurance premiums"
+      ]
     }
   },
   {
@@ -4641,7 +6404,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total gross"]
+      "synonyms": [
+        "total gross"
+      ]
     }
   },
   {
@@ -4656,7 +6421,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total init fees"]
+      "synonyms": [
+        "total init fees"
+      ]
     }
   },
   {
@@ -4671,7 +6438,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total of monthly payments"]
+      "synonyms": [
+        "total of monthly payments"
+      ]
     }
   },
   {
@@ -4686,7 +6455,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total options fees"]
+      "synonyms": [
+        "total options fees"
+      ]
     }
   },
   {
@@ -4701,7 +6472,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total taxable fees"]
+      "synonyms": [
+        "total taxable fees"
+      ]
     }
   },
   {
@@ -4716,7 +6489,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["total tax rate"]
+      "synonyms": [
+        "total tax rate"
+      ]
     }
   },
   {
@@ -4731,7 +6506,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["we owe cost total"]
+      "synonyms": [
+        "we owe cost total"
+      ]
     }
   },
   {
@@ -4746,7 +6523,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["we owe sale total"]
+      "synonyms": [
+        "we owe sale total"
+      ]
     }
   },
   {
@@ -4761,7 +6540,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["tax"]
+      "synonyms": [
+        "tax"
+      ]
     }
   },
   {
@@ -4776,7 +6557,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -4792,7 +6575,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -4809,7 +6594,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["net trade"]
+      "synonyms": [
+        "net trade"
+      ]
     }
   },
   {
@@ -4824,7 +6611,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade acv"]
+      "synonyms": [
+        "trade acv"
+      ]
     }
   },
   {
@@ -4839,7 +6628,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade color"]
+      "synonyms": [
+        "trade color"
+      ]
     }
   },
   {
@@ -4854,7 +6645,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade gross"]
+      "synonyms": [
+        "trade gross"
+      ]
     }
   },
   {
@@ -4869,7 +6662,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade make"]
+      "synonyms": [
+        "trade make"
+      ]
     }
   },
   {
@@ -4884,7 +6679,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade make name"]
+      "synonyms": [
+        "trade make name"
+      ]
     }
   },
   {
@@ -4899,7 +6696,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade mileage"]
+      "synonyms": [
+        "trade mileage"
+      ]
     }
   },
   {
@@ -4914,7 +6713,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade model"]
+      "synonyms": [
+        "trade model"
+      ]
     }
   },
   {
@@ -4929,7 +6730,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade model name"]
+      "synonyms": [
+        "trade model name"
+      ]
     }
   },
   {
@@ -4944,7 +6747,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade model no"]
+      "synonyms": [
+        "trade model no"
+      ]
     }
   },
   {
@@ -4959,7 +6764,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade model type"]
+      "synonyms": [
+        "trade model type"
+      ]
     }
   },
   {
@@ -4974,7 +6781,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade over"]
+      "synonyms": [
+        "trade over"
+      ]
     }
   },
   {
@@ -4989,7 +6798,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade pay off"]
+      "synonyms": [
+        "trade pay off"
+      ]
     }
   },
   {
@@ -5004,7 +6815,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade stock"]
+      "synonyms": [
+        "trade stock"
+      ]
     }
   },
   {
@@ -5019,7 +6832,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade style"]
+      "synonyms": [
+        "trade style"
+      ]
     }
   },
   {
@@ -5034,7 +6849,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade vin"]
+      "synonyms": [
+        "trade vin"
+      ]
     }
   },
   {
@@ -5049,7 +6866,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade year"]
+      "synonyms": [
+        "trade year"
+      ]
     }
   },
   {
@@ -5064,7 +6883,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["order index"]
+      "synonyms": [
+        "order index"
+      ]
     }
   },
   {
@@ -5079,7 +6900,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade dealer defined1"]
+      "synonyms": [
+        "trade dealer defined1"
+      ]
     }
   },
   {
@@ -5094,7 +6917,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade dealer defined2"]
+      "synonyms": [
+        "trade dealer defined2"
+      ]
     }
   },
   {
@@ -5109,7 +6934,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade dealer defined3"]
+      "synonyms": [
+        "trade dealer defined3"
+      ]
     }
   },
   {
@@ -5124,7 +6951,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade dealer defined4"]
+      "synonyms": [
+        "trade dealer defined4"
+      ]
     }
   },
   {
@@ -5139,7 +6968,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade dealer defined5"]
+      "synonyms": [
+        "trade dealer defined5"
+      ]
     }
   },
   {
@@ -5154,7 +6985,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade dealer defined6"]
+      "synonyms": [
+        "trade dealer defined6"
+      ]
     }
   },
   {
@@ -5169,7 +7002,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade dealer defined7"]
+      "synonyms": [
+        "trade dealer defined7"
+      ]
     }
   },
   {
@@ -5184,7 +7019,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["trade dealer defined8"]
+      "synonyms": [
+        "trade dealer defined8"
+      ]
     }
   },
   {
@@ -5199,7 +7036,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -5215,7 +7054,9 @@
       "type": "String",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["sale data id"],
+      "synonyms": [
+        "sale data id"
+      ],
       "is_fk": true,
       "fk_target": "SaleData(id)"
     }
@@ -5232,7 +7073,12 @@
       "type": "String?",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["vin", "vehicle vin", "chassis number", "vehicle identification number"]
+      "synonyms": [
+        "vin",
+        "vehicle vin",
+        "chassis number",
+        "vehicle identification number"
+      ]
     }
   },
   {
@@ -5247,7 +7093,9 @@
       "type": "String?",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["make"]
+      "synonyms": [
+        "make"
+      ]
     }
   },
   {
@@ -5262,7 +7110,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["make name"]
+      "synonyms": [
+        "make name"
+      ]
     }
   },
   {
@@ -5277,7 +7127,9 @@
       "type": "String?",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["model"]
+      "synonyms": [
+        "model"
+      ]
     }
   },
   {
@@ -5292,7 +7144,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["model name"]
+      "synonyms": [
+        "model name"
+      ]
     }
   },
   {
@@ -5307,7 +7161,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["model no"]
+      "synonyms": [
+        "model no"
+      ]
     }
   },
   {
@@ -5322,7 +7178,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["model type"]
+      "synonyms": [
+        "model type"
+      ]
     }
   },
   {
@@ -5337,7 +7195,9 @@
       "type": "Int?",
       "importance": "high",
       "domain": "sales",
-      "synonyms": ["year"]
+      "synonyms": [
+        "year"
+      ]
     }
   },
   {
@@ -5352,7 +7212,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["age"]
+      "synonyms": [
+        "age"
+      ]
     }
   },
   {
@@ -5367,7 +7229,11 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["body style", "vehicle type", "body"]
+      "synonyms": [
+        "body style",
+        "vehicle type",
+        "body"
+      ]
     }
   },
   {
@@ -5382,7 +7248,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["color"]
+      "synonyms": [
+        "color"
+      ]
     }
   },
   {
@@ -5397,7 +7265,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["stock no"]
+      "synonyms": [
+        "stock no"
+      ]
     }
   },
   {
@@ -5412,7 +7282,9 @@
       "type": "Int?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["vehicle mileage"]
+      "synonyms": [
+        "vehicle mileage"
+      ]
     }
   },
   {
@@ -5427,7 +7299,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["veh inventory company"]
+      "synonyms": [
+        "veh inventory company"
+      ]
     }
   },
   {
@@ -5442,7 +7316,9 @@
       "type": "String?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["veh sale company"]
+      "synonyms": [
+        "veh sale company"
+      ]
     }
   },
   {
@@ -5457,7 +7333,9 @@
       "type": "Decimal?",
       "importance": "low",
       "domain": "sales",
-      "synonyms": ["gl vehicle cost"]
+      "synonyms": [
+        "gl vehicle cost"
+      ]
     }
   },
   {
@@ -5472,7 +7350,9 @@
       "type": "String",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -5488,7 +7368,9 @@
       "type": "String",
       "importance": "low",
       "domain": "general",
-      "synonyms": ["access token"]
+      "synonyms": [
+        "access token"
+      ]
     }
   },
   {
@@ -5503,7 +7385,9 @@
       "type": "DateTime",
       "importance": "low",
       "domain": "general",
-      "synonyms": ["expires at"]
+      "synonyms": [
+        "expires at"
+      ]
     }
   },
   {
@@ -5518,7 +7402,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -5533,7 +7421,427 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "general",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
+    }
+  },
+  {
+    "id": "col:FortellisApiLog.id",
+    "text": "Column \"fortellis_api_logs\".\"id\" (Prisma: FortellisApiLog.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "FortellisApiLog",
+      "mapped_table": "fortellis_api_logs",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:FortellisApiLog.createdAt",
+    "text": "Column \"fortellis_api_logs\".\"createdAt\" (Prisma: FortellisApiLog.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "FortellisApiLog",
+      "mapped_table": "fortellis_api_logs",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
+    }
+  },
+  {
+    "id": "col:FortellisApiLog.requestId",
+    "text": "Column \"fortellis_api_logs\".\"requestId\" (Prisma: FortellisApiLog.requestId). Type: String?. Synonyms: request id.",
+    "metadata": {
+      "kind": "column",
+      "table": "FortellisApiLog",
+      "mapped_table": "fortellis_api_logs",
+      "column": "requestId",
+      "mapped_column": "requestId",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "request id"
+      ]
+    }
+  },
+  {
+    "id": "col:FortellisApiLog.method",
+    "text": "Column \"fortellis_api_logs\".\"method\" (Prisma: FortellisApiLog.method). Type: String. Synonyms: method.",
+    "metadata": {
+      "kind": "column",
+      "table": "FortellisApiLog",
+      "mapped_table": "fortellis_api_logs",
+      "column": "method",
+      "mapped_column": "method",
+      "type": "String",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "method"
+      ]
+    }
+  },
+  {
+    "id": "col:FortellisApiLog.url",
+    "text": "Column \"fortellis_api_logs\".\"url\" (Prisma: FortellisApiLog.url). Type: String. Synonyms: url.",
+    "metadata": {
+      "kind": "column",
+      "table": "FortellisApiLog",
+      "mapped_table": "fortellis_api_logs",
+      "column": "url",
+      "mapped_column": "url",
+      "type": "String",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "url"
+      ]
+    }
+  },
+  {
+    "id": "col:FortellisApiLog.requestHeaders",
+    "text": "Column \"fortellis_api_logs\".\"requestHeaders\" (Prisma: FortellisApiLog.requestHeaders). Type: Json. Synonyms: request headers.",
+    "metadata": {
+      "kind": "column",
+      "table": "FortellisApiLog",
+      "mapped_table": "fortellis_api_logs",
+      "column": "requestHeaders",
+      "mapped_column": "requestHeaders",
+      "type": "Json",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "request headers"
+      ]
+    }
+  },
+  {
+    "id": "col:FortellisApiLog.requestBody",
+    "text": "Column \"fortellis_api_logs\".\"requestBody\" (Prisma: FortellisApiLog.requestBody). Type: String?. Synonyms: request body.",
+    "metadata": {
+      "kind": "column",
+      "table": "FortellisApiLog",
+      "mapped_table": "fortellis_api_logs",
+      "column": "requestBody",
+      "mapped_column": "requestBody",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "request body"
+      ]
+    }
+  },
+  {
+    "id": "col:FortellisApiLog.responseStatus",
+    "text": "Column \"fortellis_api_logs\".\"responseStatus\" (Prisma: FortellisApiLog.responseStatus). Type: Int. Synonyms: response status.",
+    "metadata": {
+      "kind": "column",
+      "table": "FortellisApiLog",
+      "mapped_table": "fortellis_api_logs",
+      "column": "responseStatus",
+      "mapped_column": "responseStatus",
+      "type": "Int",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "response status"
+      ]
+    }
+  },
+  {
+    "id": "col:FortellisApiLog.responseHeaders",
+    "text": "Column \"fortellis_api_logs\".\"responseHeaders\" (Prisma: FortellisApiLog.responseHeaders). Type: Json. Synonyms: response headers.",
+    "metadata": {
+      "kind": "column",
+      "table": "FortellisApiLog",
+      "mapped_table": "fortellis_api_logs",
+      "column": "responseHeaders",
+      "mapped_column": "responseHeaders",
+      "type": "Json",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "response headers"
+      ]
+    }
+  },
+  {
+    "id": "col:FortellisApiLog.responseBody",
+    "text": "Column \"fortellis_api_logs\".\"responseBody\" (Prisma: FortellisApiLog.responseBody). Type: String?. Synonyms: response body.",
+    "metadata": {
+      "kind": "column",
+      "table": "FortellisApiLog",
+      "mapped_table": "fortellis_api_logs",
+      "column": "responseBody",
+      "mapped_column": "responseBody",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "response body"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.id",
+    "text": "Column \"PaymentHistory\".\"id\" (Prisma: PaymentHistory.id). Type: String. Constraints: primary key. Synonyms: id.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "id",
+      "mapped_column": "id",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "id"
+      ],
+      "is_pk": true
+    }
+  },
+  {
+    "id": "col:PaymentHistory.userId",
+    "text": "Column \"PaymentHistory\".\"userId\" (Prisma: PaymentHistory.userId). Type: String. FK to User (table \"User\") via id. Synonyms: user id.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "userId",
+      "mapped_column": "userId",
+      "type": "String",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "user id"
+      ],
+      "is_fk": true,
+      "fk_target": "User(id)"
+    }
+  },
+  {
+    "id": "col:PaymentHistory.stripeSubscriptionId",
+    "text": "Column \"PaymentHistory\".\"stripeSubscriptionId\" (Prisma: PaymentHistory.stripeSubscriptionId). Type: String. Synonyms: stripe subscription id.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "stripeSubscriptionId",
+      "mapped_column": "stripeSubscriptionId",
+      "type": "String",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "stripe subscription id"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.stripeCustomerId",
+    "text": "Column \"PaymentHistory\".\"stripeCustomerId\" (Prisma: PaymentHistory.stripeCustomerId). Type: String. Synonyms: stripe customer id.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "stripeCustomerId",
+      "mapped_column": "stripeCustomerId",
+      "type": "String",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "stripe customer id"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.stripePriceId",
+    "text": "Column \"PaymentHistory\".\"stripePriceId\" (Prisma: PaymentHistory.stripePriceId). Type: String?. Synonyms: stripe price id.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "stripePriceId",
+      "mapped_column": "stripePriceId",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "stripe price id"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.stripeInvoiceId",
+    "text": "Column \"PaymentHistory\".\"stripeInvoiceId\" (Prisma: PaymentHistory.stripeInvoiceId). Type: String?. Synonyms: stripe invoice id.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "stripeInvoiceId",
+      "mapped_column": "stripeInvoiceId",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "stripe invoice id"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.stripeInvoiceUrl",
+    "text": "Column \"PaymentHistory\".\"stripeInvoiceUrl\" (Prisma: PaymentHistory.stripeInvoiceUrl). Type: String?. Synonyms: stripe invoice url.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "stripeInvoiceUrl",
+      "mapped_column": "stripeInvoiceUrl",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "stripe invoice url"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.plan",
+    "text": "Column \"PaymentHistory\".\"plan\" (Prisma: PaymentHistory.plan). Type: String?. Synonyms: plan.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "plan",
+      "mapped_column": "plan",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "plan"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.interval",
+    "text": "Column \"PaymentHistory\".\"interval\" (Prisma: PaymentHistory.interval). Type: String?. Synonyms: interval.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "interval",
+      "mapped_column": "interval",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "interval"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.amount",
+    "text": "Column \"PaymentHistory\".\"amount\" (Prisma: PaymentHistory.amount). Type: Decimal?. Synonyms: amount.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "amount",
+      "mapped_column": "amount",
+      "type": "Decimal?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "amount"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.currency",
+    "text": "Column \"PaymentHistory\".\"currency\" (Prisma: PaymentHistory.currency). Type: String?. Synonyms: currency.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "currency",
+      "mapped_column": "currency",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "currency"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.issueDate",
+    "text": "Column \"PaymentHistory\".\"issueDate\" (Prisma: PaymentHistory.issueDate). Type: DateTime?. Synonyms: issue date.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "issueDate",
+      "mapped_column": "issueDate",
+      "type": "DateTime?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "issue date"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.paymentMethod",
+    "text": "Column \"PaymentHistory\".\"paymentMethod\" (Prisma: PaymentHistory.paymentMethod). Type: String?. Synonyms: payment method.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "paymentMethod",
+      "mapped_column": "paymentMethod",
+      "type": "String?",
+      "importance": "low",
+      "domain": "general",
+      "synonyms": [
+        "payment method"
+      ]
+    }
+  },
+  {
+    "id": "col:PaymentHistory.createdAt",
+    "text": "Column \"PaymentHistory\".\"createdAt\" (Prisma: PaymentHistory.createdAt). Type: DateTime. Synonyms: created date, created time, created at.",
+    "metadata": {
+      "kind": "column",
+      "table": "PaymentHistory",
+      "mapped_table": "PaymentHistory",
+      "column": "createdAt",
+      "mapped_column": "createdAt",
+      "type": "DateTime",
+      "importance": "high",
+      "domain": "general",
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -5548,7 +7856,9 @@
       "type": "String",
       "importance": "high",
       "domain": "fine_tuning",
-      "synonyms": ["id"],
+      "synonyms": [
+        "id"
+      ],
       "is_pk": true
     }
   },
@@ -5564,7 +7874,9 @@
       "type": "FineTuningSampleType",
       "importance": "high",
       "domain": "fine_tuning",
-      "synonyms": ["type"]
+      "synonyms": [
+        "type"
+      ]
     }
   },
   {
@@ -5579,7 +7891,9 @@
       "type": "String",
       "importance": "high",
       "domain": "fine_tuning",
-      "synonyms": ["question"]
+      "synonyms": [
+        "question"
+      ]
     }
   },
   {
@@ -5594,7 +7908,9 @@
       "type": "String",
       "importance": "high",
       "domain": "fine_tuning",
-      "synonyms": ["answer"]
+      "synonyms": [
+        "answer"
+      ]
     }
   },
   {
@@ -5609,7 +7925,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "fine_tuning",
-      "synonyms": ["created date", "created time", "created at"]
+      "synonyms": [
+        "created date",
+        "created time",
+        "created at"
+      ]
     }
   },
   {
@@ -5624,7 +7944,11 @@
       "type": "DateTime",
       "importance": "high",
       "domain": "fine_tuning",
-      "synonyms": ["updated date", "updated time", "updated at"]
+      "synonyms": [
+        "updated date",
+        "updated time",
+        "updated at"
+      ]
     }
   }
 ]
