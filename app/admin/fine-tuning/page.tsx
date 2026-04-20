@@ -439,7 +439,7 @@ export default function FineTuningPage() {
         Manage sample questions and answers for model fine-tuning
       </p>
       <div className="flex items-center justify-end">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             onClick={() => setShowImportDialog(true)}
             variant="outline"
@@ -764,8 +764,10 @@ export default function FineTuningPage() {
       </Dialog>
 
       {/* Create Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="pb-0">
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}
+      className="max-w-[95vw]! sm:max-w-3xl! max-h-[85vh] overflow-y-auto"
+      >
+        <DialogContent className="">
           <DialogHeader className="px-0">
             <DialogTitle>Create New {activeTab} Sample</DialogTitle>
             <DialogDescription>
@@ -806,7 +808,7 @@ export default function FineTuningPage() {
               />
             </div>
           </div>
-          <DialogFooter className="px-0">
+          <DialogFooter className="px-0 gap-4">
             <Button
               variant="outline"
               onClick={handleCloseCreateDialog}
@@ -838,8 +840,10 @@ export default function FineTuningPage() {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="pb-0">
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}
+      className="max-w-[95vw]! sm:max-w-3xl! max-h-[85vh] overflow-y-auto"
+      >
+        <DialogContent className="">
           <DialogHeader className="px-0">
             <DialogTitle>Edit {editingSample?.type} Sample</DialogTitle>
             <DialogDescription>
@@ -880,7 +884,7 @@ export default function FineTuningPage() {
               />
             </div>
           </div>
-          <DialogFooter className="px-0">
+          <DialogFooter className="px-0 gap-4">
             <Button
               variant="outline"
               onClick={handleCloseEditDialog}
@@ -915,9 +919,9 @@ export default function FineTuningPage() {
       <Dialog
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
-        className="flex flex-col min-h-0"
+        className="flex flex-col min-h-0 max-w-[90vw]! sm:max-w-3xl!"
       >
-        <DialogContent className="pb-0 flex flex-col min-h-0">
+        <DialogContent className="flex flex-col min-h-0">
           <DialogHeader className="px-0">
             <DialogTitle>Import Fine-Tuning Samples</DialogTitle>
             <DialogDescription>
@@ -1025,7 +1029,7 @@ export default function FineTuningPage() {
                     accept={importTab === "CSV" ? ".csv" : ".json"}
                     onChange={handleFileSelect}
                     disabled={importing}
-                    className="cursor-pointer"
+                    className="cursor-pointer w-full!"
                   />
                   <p className="text-xs text-muted-foreground">
                     {importTab} format only (Max size: 10MB)
@@ -1121,7 +1125,7 @@ FAQ,What are your hours?,We're open Monday-Friday 9am-6pm...`}
             </div>
           </div>
 
-          <DialogFooter className="px-0">
+          <DialogFooter className="px-0 gap-4">
             <Button
               variant="outline"
               onClick={handleCloseImportDialog}

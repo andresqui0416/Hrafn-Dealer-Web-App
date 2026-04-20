@@ -358,12 +358,23 @@ export default function SalesPage() {
       <Dialog
         open={selectedSaleId !== null}
         onOpenChange={(open) => !open && setSelectedSaleId(null)}
-        className="w-full !max-w-[90vw] sm:!max-w-2xl"
+        className="w-full !max-w-[90vw] sm:!max-w-2xl max-h-[85vh] overflow-y-auto"
       >
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Sale Details - {selectedSaleData?.dealNo || "Loading..."}</DialogTitle>
-            <DialogDescription>Complete sale information</DialogDescription>
+          <DialogHeader className="flex items-center justify-between flex-row border-b border-white/10 pb-2 px-0">
+            <div>
+              <DialogTitle>Sale Details - {selectedSaleData?.dealNo || "Loading..."}</DialogTitle>
+              <DialogDescription>Complete sale information</DialogDescription>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedSaleId(null)}
+              className="h-8 w-8 p-0 cursor-pointer"
+            >
+              <FontAwesomeIcon icon={faX} className="h-4 w-4" />
+            </Button>
           </DialogHeader>
 
           {loadingDetails ? (

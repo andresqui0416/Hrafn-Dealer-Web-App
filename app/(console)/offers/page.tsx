@@ -756,8 +756,10 @@ export default function OffersPage() {
       />
 
       {/* Offer Details Modal */}
-      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}
+      className="max-w-[95vw]! sm:max-w-3xl! max-h-[85vh] overflow-y-auto"
+      >
+        <DialogContent className="">
           <DialogHeader className="border-b border-white/10 pb-4 px-0">
             <div className="flex items-center justify-between">
               <div>

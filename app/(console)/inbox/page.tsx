@@ -520,8 +520,10 @@ export default function InboxPage() {
       />
 
       {/* Create Chat Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="pb-0">
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}
+      className="lg:max-w-4xl! max-w-[95vw]! flex max-h-[90vh] flex-col overflow-hidden"
+      >
+        <DialogContent>
           <DialogHeader className="px-0">
             <DialogTitle>Create New Chat</DialogTitle>
             <DialogDescription>
@@ -562,7 +564,7 @@ export default function InboxPage() {
               />
             </div>
           </div>
-          <DialogFooter className="px-0">
+          <DialogFooter className="px-0 gap-4">
             <Button
               variant="outline"
               onClick={() => setShowCreateDialog(false)}
@@ -599,10 +601,10 @@ export default function InboxPage() {
         onOpenChange={setShowChatDialog}
         className="lg:max-w-4xl! max-w-[95vw]! flex max-h-[90vh] flex-col overflow-hidden"
       >
-        <DialogContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex shrink-0 items-center justify-between border-b border-white/40">
-            <DialogHeader className="px-0">
-              <div className="flex flex-wrap items-center gap-2">
+        <DialogContent className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
+          <div className="flex items-center shrink-0 justify-between gap-3 border-b border-white/40 pb-5 sm:px-6">
+            <DialogHeader className="p-0 text-left">
+              <div className="flex flex-wrap items-center gap-2 pr-1">
                 <DialogTitle className="text-2xl font-semibold">
                   {selectedChat?.subject}
                 </DialogTitle>
@@ -613,12 +615,15 @@ export default function InboxPage() {
               variant="ghost"
               size="sm"
               onClick={() => setShowChatDialog(false)}
-              className="h-6 w-6 p-0 cursor-pointer hover:bg-red-500/20"
+              className="h-8 w-8 shrink-0 p-0 cursor-pointer hover:bg-red-500/20"
             >
               <FontAwesomeIcon icon={faX} className="h-3 w-3" />
             </Button>
           </div>
-          <div ref={messagesScrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto py-4">
+          <div
+            ref={messagesScrollRef}
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4 sm:px-6"
+          >
             {getMessagesLoading ? (
               <div className="flex justify-center items-center gap-2 py-10">
                 <FontAwesomeIcon icon={faSpinner} size="lg" className="animate-spin" />
@@ -651,7 +656,7 @@ export default function InboxPage() {
             )}
             <div ref={messagesEndRef} />
           </div>
-          <div className="flex shrink-0 items-end gap-2 border-t border-white/40 pt-4">
+          <div className="flex shrink-0 items-end gap-3 border-t border-white/40 px-5 pt-4 pb-5 sm:px-6">
             <textarea
               id="message"
               name="message"

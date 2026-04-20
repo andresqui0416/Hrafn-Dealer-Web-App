@@ -43,7 +43,7 @@ const Dialog = ({ open, onOpenChange, children, className }: DialogProps) => {
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("flex flex-col space-y-1.5 text-center sm:text-left p-6 pb-4", className)}
+    className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)}
     {...props}
   />
 );
@@ -60,14 +60,14 @@ const DialogDescription = ({ className, ...props }: React.HTMLAttributes<HTMLPar
 DialogDescription.displayName = "DialogDescription";
 
 const DialogContent = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("p-6 pt-0", className)} {...props} />
+  <div className={cn("p-6", className)} {...props} />
 );
 DialogContent.displayName = "DialogContent";
 
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 p-6 pt-4",
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-4",
       className,
     )}
     {...props}

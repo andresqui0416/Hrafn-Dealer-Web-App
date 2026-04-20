@@ -660,7 +660,7 @@ export default function AdminInboxPage() {
         className="lg:max-w-4xl! max-w-[95vw]! flex max-h-[90vh] flex-col overflow-hidden"
       >
         <DialogContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <DialogHeader className="shrink-0 border-b border-white/40 bg-background px-0">
+          <DialogHeader className="shrink-0 border-b border-white/40 bg-background px-0 pb-3">
             <div className="flex items-center justify-between">
               <DialogTitle className="w-full text-2xl font-semibold">
                 {selectedChat?.subject}
