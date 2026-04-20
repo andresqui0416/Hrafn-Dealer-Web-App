@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/auth-context";
 export default function Home() {
   const { user } = useAuth();
   return (
-    <div>
+    <div className="pb-20">
       <div className="my-10  px-4 py-8">
         <p className="lg:text-6xl text-4xl font-bold text-center text-foreground mb-10">
           Automotive&apos;s

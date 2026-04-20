@@ -34,14 +34,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
+      <body
+        className={`${inter.variable} ${robotoMono.variable} antialiased font-sans text-foreground`}
+      >
         <FontAwesomeConfig />
         <AuthProvider>
           <AppProvider>
             <ThemeProvider>
-              <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-background font-sans text-foreground">
-                <ConditionalLayout>{children}</ConditionalLayout>
-              </div>
+              <ConditionalLayout>{children}</ConditionalLayout>
             </ThemeProvider>
           </AppProvider>
         </AuthProvider>
