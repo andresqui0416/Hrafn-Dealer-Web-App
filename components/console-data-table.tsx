@@ -94,69 +94,82 @@ export function ConsoleDataTable<T>({
     }
   };
 
+  const tableHead = (
+    <thead className="bg-white/5 border-b border-white/10">
+      <tr>
+        {columns.map((col) => {
+          const isSorted = sort?.columnId === col.id;
+          const sortIndicator =
+            isSorted && sort?.direction === "asc"
+              ? " ▲"
+              : isSorted && sort?.direction === "desc"
+                ? " ▼"
+                : "";
+          return (
+            <th
+              key={col.id}
+              className={cn(
+                "px-4 py-3 text-left text-sm font-semibold select-none",
+                col.sortable && "cursor-pointer hover:text-foreground",
+                col.className,
+              )}
+              onClick={() => handleHeaderClick(col)}
+            >
+              <span>
+                {col.header}
+                {sortIndicator && (
+                  <span className="ml-1 text-[0.7rem] align-middle">{sortIndicator}</span>
+                )}
+              </span>
+            </th>
+          );
+        })}
+      </tr>
+    </thead>
+  );
+
+  /** Loading or no rows: fixed 160px band under column headers with centered content. */
+  const showPlaceholderSlot = loading || rows.length === 0;
+
   return (
-    <div className={cn("rounded-lg border border-white/10 overflow-hidden", className)}>
+    <div
+      className={cn(
+        "relative min-w-0 w-full max-w-full rounded-lg border border-white/10 overflow-hidden",
+        className,
+      )}
+    >
       {header && (
-        <div className="px-4 py-3 border-b border-white/10 text-xs text-muted-foreground">
+        <div className="relative z-20 px-4 py-3 border-b border-white/10 text-xs text-muted-foreground">
           {header}
         </div>
       )}
 
-      <div className="overflow-x-auto relative">
-        <table className="w-full text-sm">
-          <thead className="bg-white/5 border-b border-white/10">
-            <tr>
-              {columns.map((col) => {
-                const isSorted = sort?.columnId === col.id;
-                const sortIndicator =
-                  isSorted && sort?.direction === "asc"
-                    ? " ▲"
-                    : isSorted && sort?.direction === "desc"
-                      ? " ▼"
-                      : "";
-                return (
-                  <th
-                    key={col.id}
-                    className={cn(
-                      "px-4 py-3 text-left text-sm font-semibold select-none",
-                      col.sortable && "cursor-pointer hover:text-foreground",
-                      col.className,
-                    )}
-                    onClick={() => handleHeaderClick(col)}
-                  >
-                    <span>
-                      {col.header}
-                      {sortIndicator && (
-                        <span className="ml-1 text-[0.7rem] align-middle">{sortIndicator}</span>
-                      )}
-                    </span>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/10">
-            {loading ? (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-10 text-sm text-muted-foreground"
-                >
-                  {/* Spacer row keeps table height stable while overlay centers loader in viewport */}
-                  <span className="sr-only">Loading...</span>
-                </td>
-              </tr>
-            ) : rows.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-6 text-center text-sm text-muted-foreground"
-                >
+      {showPlaceholderSlot ? (
+        <>
+          <div className="min-w-0 w-full max-w-full overflow-x-auto">
+            <table className="w-full text-sm">{tableHead}</table>
+          </div>
+          <div className="relative h-[160px] shrink-0 border-t border-white/10">
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-4">
+              {loading ? (
+                <div className="pointer-events-auto inline-flex items-center gap-2 rounded-md bg-background/70 px-3 py-2 text-sm text-muted-foreground backdrop-blur">
+                  <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin" />
+                  Loading...
+                </div>
+              ) : (
+                <div role="status" className="text-center text-sm text-muted-foreground">
                   {emptyMessage ?? "No records found."}
-                </td>
-              </tr>
-            ) : (
-              rows.map((row, index) => (
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="relative min-w-0 w-full max-w-full overflow-x-auto">
+          <table className="w-full text-sm">
+            {tableHead}
+            <tbody className="divide-y divide-white/10">
+              {rows.map((row, index) => (
                 <tr
                   key={getRowKey ? getRowKey(row, index) : index}
                   className={cn(
@@ -175,20 +188,11 @@ export function ConsoleDataTable<T>({
                     </td>
                   ))}
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
-        {loading && (
-          <div className="absolute left-1/2 top-2/3 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-            <div className="inline-flex items-center gap-2 rounded-md bg-background/70 px-3 py-2 text-sm text-muted-foreground backdrop-blur">
-              <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin" />
-              Loading...
-            </div>
-          </div>
-        )}
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {footer ? (
         <div className="px-4 py-3 bg-white/5 text-xs text-muted-foreground">{footer}</div>
