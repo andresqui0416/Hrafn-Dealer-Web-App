@@ -663,8 +663,8 @@ export default function OffersPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:gap-4">
+        <div className="relative min-w-0 w-full lg:flex-1 lg:max-w-md">
           <FontAwesomeIcon
             icon={faSearch}
             className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"
@@ -680,11 +680,11 @@ export default function OffersPage() {
               setCurrentPage(1);
               setPageInput("1");
             }}
-            className="pl-10 w-full"
+            className="min-h-10 pl-10 w-full"
           />
         </div>
-        <div className="flex items-center gap-4 border-l border-white/10 pl-4">
-          <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+        <div className="flex min-w-0 flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-2 lg:flex-1 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-4">
+          <label className="flex min-w-0 items-start gap-3 text-sm cursor-pointer select-none sm:items-center">
             <input
               type="checkbox"
               checked={includeExpired}
@@ -693,11 +693,11 @@ export default function OffersPage() {
                 setCurrentPage(1);
                 setPageInput("1");
               }}
-              className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20"
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-background text-primary focus:ring-white/20 sm:mt-0"
             />
-            <span>Include expired offers</span>
+            <span className="min-w-0 leading-snug">Include expired offers</span>
           </label>
-          <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+          <label className="flex min-w-0 items-start gap-3 text-sm cursor-pointer select-none sm:items-center">
             <input
               type="checkbox"
               checked={includeUnverified}
@@ -706,16 +706,16 @@ export default function OffersPage() {
                 setCurrentPage(1);
                 setPageInput("1");
               }}
-              className="h-4 w-4 rounded border-white/20 bg-background text-primary focus:ring-white/20"
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-background text-primary focus:ring-white/20 sm:mt-0"
             />
-            <span>Include unverified offers</span>
+            <span className="min-w-0 leading-snug">Include unverified offers</span>
           </label>
         </div>
         <Button
           variant="outline"
           onClick={handleRefresh}
           disabled={refreshing}
-          className="gap-2 ml-auto"
+          className="min-h-10 w-full shrink-0 gap-2 lg:ml-auto lg:w-auto"
         >
           <FontAwesomeIcon
             icon={refreshing ? faSpinner : faRotateRight}
