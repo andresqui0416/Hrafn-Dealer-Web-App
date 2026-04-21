@@ -50,60 +50,60 @@ async function fetchAndStoreBulkData(
 /**
  * Fetch and store historical sales data in chunks
  */
-async function fetchAndStoreHistoryChunks(
-  saleDepartmentId: string,
-  subscriptionId: string,
-  dealerId: string,
-  startDate: Date,
-  endDate: Date,
-  dealerResults: { created: number; updated: number; errors: number; total: number },
-): Promise<void> {
-  let currentStart = new Date(startDate);
-  const sixMonthsInMs = 6 * 30 * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000; // Approximate 6 months minus 3 hours
+// async function fetchAndStoreHistoryChunks(
+//   saleDepartmentId: string,
+//   subscriptionId: string,
+//   dealerId: string,
+//   startDate: Date,
+//   endDate: Date,
+//   dealerResults: { created: number; updated: number; errors: number; total: number },
+// ): Promise<void> {
+//   let currentStart = new Date(startDate);
+//   const sixMonthsInMs = 6 * 30 * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000; // Approximate 6 months minus 3 hours
 
-  while (currentStart < endDate) {
-    const chunkEnd: Date = new Date(
-      Math.min(currentStart.getTime() + sixMonthsInMs, endDate.getTime()),
-    );
+//   while (currentStart < endDate) {
+//     const chunkEnd: Date = new Date(
+//       Math.min(currentStart.getTime() + sixMonthsInMs, endDate.getTime()),
+//     );
 
-    try {
-      const historyData = await getFISalesHistoryData(
-        saleDepartmentId,
-        subscriptionId,
-        currentStart.toISOString(),
-        chunkEnd.toISOString(),
-      );
-      console.log(`Fetched ${historyData.length} historical records in this chunk`);
+//     try {
+//       const historyData = await getFISalesHistoryData(
+//         saleDepartmentId,
+//         subscriptionId,
+//         currentStart.toISOString(),
+//         chunkEnd.toISOString(),
+//       );
+//       console.log(`Fetched ${historyData.length} historical records in this chunk`);
 
-      // Store data immediately to avoid memory waste
-      if (Array.isArray(historyData) && historyData.length > 0) {
-        const chunkResults = await storeSalesData(historyData, dealerId);
-        dealerResults.created += chunkResults.created;
-        dealerResults.updated += chunkResults.updated;
-        dealerResults.errors += chunkResults.errors;
-        dealerResults.total += historyData.length;
-        console.log(
-          `Stored chunk: ${chunkResults.created} created, ${chunkResults.updated} updated, ${chunkResults.errors} errors`,
-        );
-      }
-      await prisma.dealerDepartment.update({
-        where: { id: saleDepartmentId },
-        data: {
-          lastSalesDataSyncAt: chunkEnd,
-        } as any,
-      });
-    } catch (error: any) {
-      console.error(
-        `Error fetching history chunk ${currentStart.toISOString()} to ${chunkEnd.toISOString()}:`,
-        error?.message,
-      );
-      dealerResults.errors++;
-      throw error;
-    }
+//       // Store data immediately to avoid memory waste
+//       if (Array.isArray(historyData) && historyData.length > 0) {
+//         const chunkResults = await storeSalesData(historyData, dealerId);
+//         dealerResults.created += chunkResults.created;
+//         dealerResults.updated += chunkResults.updated;
+//         dealerResults.errors += chunkResults.errors;
+//         dealerResults.total += historyData.length;
+//         console.log(
+//           `Stored chunk: ${chunkResults.created} created, ${chunkResults.updated} updated, ${chunkResults.errors} errors`,
+//         );
+//       }
+//       await prisma.dealerDepartment.update({
+//         where: { id: saleDepartmentId },
+//         data: {
+//           lastSalesDataSyncAt: chunkEnd,
+//         } as any,
+//       });
+//     } catch (error: any) {
+//       console.error(
+//         `Error fetching history chunk ${currentStart.toISOString()} to ${chunkEnd.toISOString()}:`,
+//         error?.message,
+//       );
+//       dealerResults.errors++;
+//       throw error;
+//     }
 
-    currentStart = new Date(chunkEnd.getTime() + 1); // Move to next chunk
-  }
-}
+//     currentStart = new Date(chunkEnd.getTime() + 1); // Move to next chunk
+//   }
+// }
 
 export async function GET(request: NextRequest) {
   try {
@@ -203,13 +203,14 @@ export async function GET(request: NextRequest) {
           // Bulk API requires end date to be at least 60 minutes ago
           const bulkEndDate = new Date(now.getTime() - 60 * 60 * 1000);
 
-          const fiveYearsAgo = new Date(now);
-          const targetYear = now.getFullYear() - 5;
-          const targetMonth = now.getMonth();
-          const targetDate = now.getDate();
-          // setFullYear handles Feb 29th edge case: if target year is not a leap year, it adjusts to Feb 28
-          fiveYearsAgo.setFullYear(targetYear, targetMonth, targetDate);
-          const startDate = lastSyncAt || fiveYearsAgo;
+          // const fiveYearsAgo = new Date(now);
+          // const targetYear = now.getFullYear() - 5;
+          // const targetMonth = now.getMonth();
+          // const targetDate = now.getDate();
+          // // setFullYear handles Feb 29th edge case: if target year is not a leap year, it adjusts to Feb 28
+          // fiveYearsAgo.setFullYear(targetYear, targetMonth, targetDate);
+          // const startDate = lastSyncAt || fiveYearsAgo;
+          const startDate = lastSyncAt || historyEndDate;
           let dealerResults = {
             created: 0,
             updated: 0,
@@ -217,16 +218,16 @@ export async function GET(request: NextRequest) {
             total: 0,
           };
 
-          if (startDate <= historyEndDate) {
-            await fetchAndStoreHistoryChunks(
-              saleDepartment.id,
-              dealerService.subscriptionId as string,
-              dealerService.dealerId,
-              startDate,
-              historyEndDate,
-              dealerResults,
-            );
-          }
+          // if (startDate <= historyEndDate) {
+          //   await fetchAndStoreHistoryChunks(
+          //     saleDepartment.id,
+          //     dealerService.subscriptionId as string,
+          //     dealerService.dealerId,
+          //     startDate,
+          //     historyEndDate,
+          //     dealerResults,
+          //   );
+          // }
 
           await fetchAndStoreBulkData(
             saleDepartment.id,
