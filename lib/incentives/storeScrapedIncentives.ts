@@ -1,17 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
-/** Convert Prisma Decimal or number to number | null for NormalizedIncentiveOffer. */
-function toNumberOrNull(
-  v: { toNumber?: () => number } | number | null | undefined,
-): number | null {
-  if (v == null) return null;
-  if (typeof v === "number") return v;
-  if (typeof (v as { toNumber?: () => number }).toNumber === "function")
-    return (v as { toNumber: () => number }).toNumber();
-  return null;
-}
+import { Prisma, type Offers } from "@prisma/client";
+import { prisma } from "../prisma";
 
 /** Coerce value to Int for Prisma (year, aprTermMonths, leaseTermMonths, milesPerYear). */
 function toIntOrNull(v: string | number | null | undefined): number | null {
@@ -49,7 +37,143 @@ export type NormalizedIncentiveOffer = {
   militaryDiscount?: number | null;
   collegeGrad?: number | null;
   firstResponder?: number | null;
+  version?: number | null;
 };
+
+/** Prisma `Decimal` / create-input unions → plain number (null-safe; 0 is preserved). */
+function prismaDecimalToNumber(v: unknown): number | null {
+  if (v == null) return null;
+  if (typeof v === "number") return v;
+  if (typeof v === "string") {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+  if (typeof v === "object" && "toNumber" in v && typeof (v as { toNumber: () => number }).toNumber === "function") {
+    return (v as { toNumber: () => number }).toNumber();
+  }
+  return null;
+}
+
+/** Normalize a number to fixed DB scale so tiny source float noise does not bump versions. */
+function normalizeDecimalAtScale(v: unknown, scale: number): number | null {
+  const n = prismaDecimalToNumber(v);
+  if (n == null) return null;
+  return Number(n.toFixed(scale));
+}
+
+/** Map a row read back from `Offers` into the normalized shape used for `offer_versions`. */
+function prismaOfferRowToNormalized(row: Offers): NormalizedIncentiveOffer {
+  return {
+    brand: row.brand,
+    year: row.year,
+    make: row.make,
+    model: row.model,
+    modelCode: row.modelCode,
+    trim: row.trim,
+    offerType: row.offerType,
+    offerAmount: prismaDecimalToNumber(row.offerAmount),
+    aprRate: prismaDecimalToNumber(row.aprRate),
+    leaseTermMonths: row.leaseTermMonths,
+    aprTermMonths: row.aprTermMonths,
+    cashValue: prismaDecimalToNumber(row.cashValue),
+    tradeDiscount: prismaDecimalToNumber(row.tradeDiscount),
+    leaseDueAtSigning: prismaDecimalToNumber(row.leaseDueAtSigning),
+    leaseMonthlyPayment: prismaDecimalToNumber(row.leaseMonthlyPayment),
+    milesPerYear: row.milesPerYear,
+    expirationDate: row.expirationDate,
+    terms: row.terms,
+    finePrint: row.finePrint,
+    scrapedAt: row.scrapedAt,
+    sourceUrl: row.sourceUrl,
+    loyaltyBonus: prismaDecimalToNumber(row.loyaltyBonus),
+    conquestBonus: prismaDecimalToNumber(row.conquestBonus),
+    militaryDiscount: prismaDecimalToNumber(row.militaryDiscount),
+    collegeGrad: prismaDecimalToNumber(row.collegeGrad),
+    firstResponder: prismaDecimalToNumber(row.firstResponder),
+    version: row.version,
+  };
+}
+
+/**
+ * Calendar day in UTC as `YYYY-MM-DD` (aligns with `@db.Date`: time-of-day must not force a version bump).
+ */
+function expirationCalendarKeyUtc(d: Date | null | undefined): string | null {
+  if (d == null) return null;
+  const t = d instanceof Date ? d.getTime() : new Date(d as string | number).getTime();
+  if (Number.isNaN(t)) return null;
+  const x = new Date(t);
+  const y = x.getUTCFullYear();
+  const m = String(x.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(x.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** True when any user-visible offer terms differ from what is already stored (bump `Offers.version`). */
+function persistedOfferTermsChanged(
+  existing: Offers,
+  incoming: Prisma.OffersUncheckedCreateInput,
+): boolean {
+  const changed = (
+    normalizeDecimalAtScale(existing.offerAmount, 2) !== normalizeDecimalAtScale(incoming.offerAmount, 2) ||
+    normalizeDecimalAtScale(existing.aprRate, 4) !== normalizeDecimalAtScale(incoming.aprRate, 4) ||
+    existing.leaseTermMonths !== incoming.leaseTermMonths ||
+    existing.aprTermMonths !== incoming.aprTermMonths ||
+    normalizeDecimalAtScale(existing.cashValue, 2) !== normalizeDecimalAtScale(incoming.cashValue, 2) ||
+    normalizeDecimalAtScale(existing.tradeDiscount, 2) !== normalizeDecimalAtScale(incoming.tradeDiscount, 2) ||
+    normalizeDecimalAtScale(existing.leaseDueAtSigning, 2) !==
+    normalizeDecimalAtScale(incoming.leaseDueAtSigning, 2) ||
+    normalizeDecimalAtScale(existing.leaseMonthlyPayment, 2) !==
+    normalizeDecimalAtScale(incoming.leaseMonthlyPayment, 2) ||
+    existing.milesPerYear !== incoming.milesPerYear ||
+    expirationCalendarKeyUtc(existing.expirationDate) !==
+    expirationCalendarKeyUtc(incoming.expirationDate as Date | null | undefined) ||
+    existing.terms !== incoming.terms ||
+    existing.finePrint !== incoming.finePrint ||
+    normalizeDecimalAtScale(existing.loyaltyBonus, 2) !== normalizeDecimalAtScale(incoming.loyaltyBonus, 2) ||
+    normalizeDecimalAtScale(existing.conquestBonus, 2) !== normalizeDecimalAtScale(incoming.conquestBonus, 2) ||
+    normalizeDecimalAtScale(existing.militaryDiscount, 2) !== normalizeDecimalAtScale(incoming.militaryDiscount, 2) ||
+    normalizeDecimalAtScale(existing.collegeGrad, 2) !== normalizeDecimalAtScale(incoming.collegeGrad, 2) ||
+    normalizeDecimalAtScale(existing.firstResponder, 2) !== normalizeDecimalAtScale(incoming.firstResponder, 2) ||
+    existing.sourceUrl !== incoming.sourceUrl
+  );
+  changed && console.log("persistedOfferTermsChanged", changed, existing, incoming);
+  return changed;
+}
+
+/** Columns written to `Offers` from a normalized scrape row (no `id` / Prisma-managed fields). */
+function normalizedOfferToOffersWriteData(
+  o: NormalizedIncentiveOffer & { scrapedAt: Date },
+): Prisma.OffersUncheckedCreateInput {
+  return {
+    brand: o.brand,
+    year: toIntOrNull(o.year),
+    make: o.make ?? null,
+    model: o.model ?? null,
+    modelCode: o.modelCode ?? null,
+    trim: o.trim ?? null,
+    offerType: o.offerType,
+    offerAmount: o.offerAmount ?? null,
+    aprRate: o.aprRate ?? null,
+    leaseTermMonths: toIntOrNull(o.leaseTermMonths),
+    aprTermMonths: toIntOrNull(o.aprTermMonths),
+    cashValue: o.cashValue ?? null,
+    tradeDiscount: o.tradeDiscount ?? null,
+    leaseDueAtSigning: o.leaseDueAtSigning ?? null,
+    leaseMonthlyPayment: o.leaseMonthlyPayment ?? null,
+    milesPerYear: toIntOrNull(o.milesPerYear),
+    expirationDate: o.expirationDate ?? null,
+    terms: o.terms ?? null,
+    finePrint: o.finePrint ?? null,
+    scrapedAt: o.scrapedAt,
+    sourceUrl: o.sourceUrl ?? null,
+    loyaltyBonus: o.loyaltyBonus ?? null,
+    conquestBonus: o.conquestBonus ?? null,
+    militaryDiscount: o.militaryDiscount ?? null,
+    collegeGrad: o.collegeGrad ?? null,
+    firstResponder: o.firstResponder ?? null,
+    version: o.version ?? 1,
+  };
+}
 
 function mapOfferToVersionRow(
   offer: NormalizedIncentiveOffer,
@@ -86,7 +210,7 @@ function mapOfferToVersionRow(
     militaryDiscount: offer.militaryDiscount ?? null,
     collegeGrad: offer.collegeGrad ?? null,
     firstResponder: offer.firstResponder ?? null,
-    version: 1,
+    version: offer.version ?? 1,
     effectiveFrom,
     effectiveTo,
   };
@@ -109,7 +233,6 @@ export async function createScrapeEvent(params: {
   brand: string;
   source?: string | null;
 }): Promise<{ scrapeEventId: string }> {
-  await prisma.$connect();
   const event = await prisma.scrapeEvent.create({
     data: {
       source: params.source ?? null,
@@ -117,7 +240,6 @@ export async function createScrapeEvent(params: {
       status: "running",
     },
   });
-  await prisma.$disconnect();
   return { scrapeEventId: event.id };
 }
 
@@ -131,7 +253,6 @@ export async function markScrapeEventFailed(
   options?: { brand?: string | null; source?: string | null },
 ): Promise<void> {
   try {
-    await prisma.$connect();
     await prisma.scrapeEvent.update({
       where: { id: scrapeEventId },
       data: {
@@ -151,8 +272,6 @@ export async function markScrapeEventFailed(
     });
   } catch (err) {
     console.error("[markScrapeEventFailed]", err);
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -174,12 +293,11 @@ export async function storeScrapedIncentives(params: {
   let scrapeEventId: string | null = null;
 
   try {
-    await prisma.$connect();
-
     let event: { id: string };
     if (existingEventId) {
-      const existing = await prisma.scrapeEvent.findUnique({
+      const existing = await prisma.scrapeEvent.findFirst({
         where: { id: existingEventId },
+        orderBy: { startedAt: "desc" },
       });
       if (!existing || existing.status !== "running") {
         throw new Error(
@@ -200,113 +318,68 @@ export async function storeScrapedIncentives(params: {
       scrapeEventId = created.id;
     }
 
-    await prisma.scrapeSnapshot.create({
-      data: {
-        scrapeEventId: event.id,
-        rawPayload: rawPayload ?? { offers, source, brand },
-      },
-    });
-
     let recordsReplaced = 0;
-    const currentOffers = await prisma.offers.findMany({ where: { brand } });
-    recordsReplaced = currentOffers.length;
+    let recordsInserted = 0;
 
-    if (currentOffers.length > 0) {
-      const now = new Date();
-      await prisma.offerVersion.createMany({
-        data: currentOffers.map((row) =>
-          mapOfferToVersionRow(
-            {
-              brand: row.brand,
-              year: row.year,
-              make: row.make,
-              model: row.model,
-              modelCode: row.modelCode,
-              trim: row.trim,
-              offerType: row.offerType,
-              offerAmount: toNumberOrNull(row.offerAmount),
-              aprRate: toNumberOrNull(row.aprRate),
-              aprTermMonths: row.aprTermMonths,
-              leaseTermMonths: row.leaseTermMonths,
-              cashValue: toNumberOrNull(row.cashValue),
-              tradeDiscount: toNumberOrNull(row.tradeDiscount),
-              leaseDueAtSigning: toNumberOrNull(row.leaseDueAtSigning),
-              leaseMonthlyPayment: toNumberOrNull(row.leaseMonthlyPayment),
-              milesPerYear: row.milesPerYear,
-              expirationDate: row.expirationDate,
-              terms: row.terms,
-              finePrint: row.finePrint,
-              scrapedAt: row.scrapedAt,
-              sourceUrl: row.sourceUrl,
-              loyaltyBonus: toNumberOrNull(row.loyaltyBonus),
-              conquestBonus: toNumberOrNull(row.conquestBonus),
-              militaryDiscount: toNumberOrNull(row.militaryDiscount),
-              collegeGrad: toNumberOrNull(row.collegeGrad),
-              firstResponder: toNumberOrNull(row.firstResponder),
-            },
-            event.id,
-            row.scrapedAt,
-            now,
-          ),
-        ),
-      });
-    }
-
-    await prisma.offers.deleteMany({ where: { brand } });
-
-    const BATCH_SIZE = 10;
     let storedCount = 0;
     const offersWithDate = offers.map((o) => ({ ...o, scrapedAt: o.scrapedAt ?? scrapedAtDate }));
 
-    for (let i = 0; i < offersWithDate.length; i += BATCH_SIZE) {
-      const batch = offersWithDate.slice(i, i + BATCH_SIZE);
-      await prisma.$transaction(async (tx) => {
-        await tx.offers.createMany({
-          data: batch.map((o) => ({
-            brand: o.brand,
-            year: toIntOrNull(o.year),
-            make: o.make ?? null,
-            model: o.model ?? null,
-            modelCode: o.modelCode ?? null,
-            trim: o.trim ?? null,
-            offerType: o.offerType,
-            offerAmount: o.offerAmount ?? null,
-            aprRate: o.aprRate ?? null,
-            aprTermMonths: toIntOrNull(o.aprTermMonths),
-            leaseTermMonths: toIntOrNull(o.leaseTermMonths),
-            cashValue: o.cashValue ?? null,
-            tradeDiscount: o.tradeDiscount ?? null,
-            leaseDueAtSigning: o.leaseDueAtSigning ?? null,
-            leaseMonthlyPayment: o.leaseMonthlyPayment ?? null,
-            milesPerYear: toIntOrNull(o.milesPerYear),
-            terms: o.terms ?? null,
-            finePrint: o.finePrint ?? null,
-            expirationDate: o.expirationDate ?? null,
-            scrapedAt: o.scrapedAt ?? scrapedAtDate,
-            sourceUrl: o.sourceUrl ?? null,
-            loyaltyBonus: o.loyaltyBonus ?? null,
-            conquestBonus: o.conquestBonus ?? null,
-            militaryDiscount: o.militaryDiscount ?? null,
-            collegeGrad: o.collegeGrad ?? null,
-            firstResponder: o.firstResponder ?? null,
-          })),
-          skipDuplicates: true,
+    await prisma.$transaction(
+      async (tx) => {
+        for (const o of offersWithDate) {
+          const data = normalizedOfferToOffersWriteData(o);
+          const matchWhere: Prisma.OffersWhereInput = {
+            brand: data.brand,
+            modelCode: data.modelCode,
+            model: data.model,
+            offerType: data.offerType,
+            trim: data.trim,
+            year: data.year,
+          };
+          const existing = await tx.offers.findFirst({ where: matchWhere, orderBy: { createdAt: "desc" } });
+          let persisted: Offers;
+          if (existing) {
+            const changed = persistedOfferTermsChanged(existing, data);
+            if (changed) {
+              persisted = await tx.offers.update({
+                where: { id: existing.id },
+                data: { ...data, version: existing.version + 1 },
+              });
+              recordsReplaced++;
+            } else {
+              persisted = existing;
+            }
+          } else {
+            persisted = await tx.offers.create({ data });
+            recordsInserted++;
+          }
+
+          const offerForVersion = prismaOfferRowToNormalized(persisted);
+          await tx.offerVersion.create({
+            data: mapOfferToVersionRow(offerForVersion, event.id, o.scrapedAt ?? scrapedAtDate, null),
+          });
+          storedCount++;
+        }
+
+        await tx.scrapeSnapshot.create({
+          data: {
+            scrapeEventId: event.id,
+            rawPayload: rawPayload ?? { offers, source, brand },
+          },
         });
-        await tx.offerVersion.createMany({
-          data: batch.map((o) =>
-            mapOfferToVersionRow(o, event.id, o.scrapedAt ?? scrapedAtDate, null),
-          ),
-        });
-      });
-      storedCount += batch.length;
-    }
+      },
+      {
+        maxWait: 15_000,
+        timeout: 600_000,
+      },
+    );
 
     await prisma.scrapeEvent.update({
       where: { id: event.id },
       data: {
         completedAt: new Date(),
         status: "success",
-        recordsInserted: storedCount,
+        recordsInserted,
         recordsReplaced,
         recordsFailed: 0,
       },
@@ -335,7 +408,7 @@ export async function storeScrapedIncentives(params: {
         console.error("[storeScrapedIncentives] Failed to update ScrapeEvent to failure:", updateErr);
       }
     }
-    // Always record failure log for any failed step (connect, event create, snapshot, offers, etc.).
+    // Always record failure log for any failed step (event create, snapshot, offers, etc.).
     try {
       await prisma.scrapeFailureLog.create({
         data: {
@@ -356,7 +429,5 @@ export async function storeScrapedIncentives(params: {
       scrapeEventId: scrapeEventId ?? "",
       error: errorMessage,
     };
-  } finally {
-    await prisma.$disconnect();
   }
 }
